@@ -59,7 +59,6 @@ namespace BHungerGaemsBot
             {
                 participants.Add(new GiveawayParticipant(player));
             }
-            int i = 0;
             while (!winnerFound)
             {
                 foreach (GiveawayParticipant participant in participants)
@@ -67,7 +66,6 @@ namespace BHungerGaemsBot
                     if (cannelGame())
                         return;
                     int currentRoll = _random.Next(1000) + 1;
-                    if (i++ < 2) currentRoll = 999;
                     participant.SetRoll(currentRoll);
                     if (currentRoll > highestRoll)
                     {

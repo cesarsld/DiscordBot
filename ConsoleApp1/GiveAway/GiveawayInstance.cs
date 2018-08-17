@@ -14,7 +14,7 @@ namespace BHungerGaemsBot
 
         private string GetGiveawayMessage(string userName, int maxMinutesToWait)
         {
-            return $" Preparing to start a Giveaway for ```Markdown\r\n<{userName}> in {maxMinutesToWait} seconds"
+            return $" Preparing to start a Giveaway for ```Markdown\r\n<{userName}> will start his giveaway in {maxMinutesToWait} seconds."
                 + "```\r\n"
                 + $"React to this message with ANY emoji to enter!  Multiple Reactions(emojis) will NOT enter you more than once.\r\nPlayer entered: ";
         }
