@@ -21,3 +21,17 @@ $RECYCLE.BIN/
 # =========================
 # Operating System Files
 # =========================
+
+
+old_code
+ConsoleApp1/bin
+ConsoleApp1/obj
+/.vs/
+.dll
+
+packages
+*.dll
+ConsoleApp1/bin/Debug/MongoDB.Bson.dll
+
+/BotKey/
+/Logger/
