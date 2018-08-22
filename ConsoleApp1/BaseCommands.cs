@@ -667,11 +667,12 @@ namespace DiscordBot
         [Command("giveAway", RunMode = RunMode.Async), Summary("Starts a giveaway.")]
         public async Task GiveAway(
             [Summary("Max minutes to wait for players")]string strMaxSecToWait = null,
+            [Summary("Target number")]string strTargetNumber = null,
             [Summary("Number of Winners")]string strNumWinners = null,
             [Summary("Number of Winners")]string strTestUsers = null)
         {
             GiveawayInstance gameInstance = new GiveawayInstance();
-            await StartGiveAway(gameInstance, strMaxSecToWait, strNumWinners, strTestUsers);
+            await StartGiveAway(gameInstance, strMaxSecToWait, strTargetNumber, strNumWinners, strTestUsers);
         }
 
         [Command("startGame", RunMode = RunMode.Async), Summary("Starts the BHungerGames.")]
@@ -837,7 +838,7 @@ namespace DiscordBot
             }
         }
 
-        private async Task StartGiveAway(GiveawayInstance giveawayInstance, string strSecondsToWait, string strNumWinners, string strTestUsers)
+        private async Task StartGiveAway(GiveawayInstance giveawayInstance, string strSecondsToWait, string strTargetNumber, string strNumWinners, string strTestUsers)
         {
             bool cleanupCommandInstance = false;
             try
@@ -848,20 +849,23 @@ namespace DiscordBot
                 {
                     cleanupCommandInstance = true;
                     int maxSecsToWait;
+                    int targetNumber;
 
                     int numWinners;
                     int testUsers;
 
                     if (Int32.TryParse(strSecondsToWait, out maxSecsToWait) == false) maxSecsToWait = 5;
+                    if (Int32.TryParse(strTargetNumber, out targetNumber) == false) targetNumber = 1000;
                     if (Int32.TryParse(strNumWinners, out numWinners) == false) numWinners = 1;
                     if (Int32.TryParse(strTestUsers, out testUsers) == false) testUsers = 0;
+                    if (targetNumber > 1000) targetNumber = 1000;
                     if (numWinners <= 0) numWinners = 1;
                     if (maxSecsToWait <= 0) maxSecsToWait = 1;
 
 
                     SocketGuildUser user = Context.Message.Author as SocketGuildUser;
                     string userThatStartedGame = user?.Nickname ?? Context.Message.Author.Username;
-                    giveawayInstance.RunGiveaway(numWinners, maxSecsToWait, Context, userThatStartedGame, testUsers);
+                    giveawayInstance.RunGiveaway(numWinners, maxSecsToWait, targetNumber, Context, userThatStartedGame, testUsers);
                     cleanupCommandInstance = false;
                     //await Context.Channel.SendMessageAsync($"MaxUsers: {maxUsers}  MaxMinutesToWait: {maxMinutesToWait} SecondsDelayBetweenDays: {secondsDelayBetweenDays} NumWinners: {numWinners}");
                 }
