@@ -4,7 +4,7 @@ using System.Text;
 using System.Linq;
 using System.Threading;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     public class BHungerGames
     {

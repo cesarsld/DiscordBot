@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Discord;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     public static class Logger
     {

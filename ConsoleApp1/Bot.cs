@@ -5,7 +5,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     public class Bot
     {

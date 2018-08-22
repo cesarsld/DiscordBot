@@ -1,7 +1,7 @@
 ﻿using Discord;
 using System;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     class PlayerRPG : Player
     {

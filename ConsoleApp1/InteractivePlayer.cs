@@ -1,6 +1,6 @@
 ﻿using Discord;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     public class InteractivePlayer: Player
     {

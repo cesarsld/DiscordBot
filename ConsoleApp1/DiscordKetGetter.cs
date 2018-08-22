@@ -4,7 +4,7 @@ using System.Text;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     
     class DiscordKeyGetter

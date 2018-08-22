@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
-namespace BHungerGaemsBot
+
+
+namespace DiscordBot
 {
     public class GiveawayParticipant
     {
@@ -61,6 +63,13 @@ namespace BHungerGaemsBot
             {
                 participants.Add(new GiveawayParticipant(player));
             }
+
+            if(participants.Count == 0)
+            {
+                showMessageDelegate("Game cancelled, no players are eligible to play.");
+                return;
+            }
+
             while (!winnerFound)
             {
                 foreach (GiveawayParticipant participant in participants)
@@ -68,7 +77,9 @@ namespace BHungerGaemsBot
                     if (cannelGame())
                         return;
                     int currentRoll = _random.Next(1000) + 1;
+
                     int distanceToTarget = GetDistance(target, currentRoll);
+
                     participant.SetRoll(currentRoll);
                     if (distanceToTarget < bestRollDistance)
                     {

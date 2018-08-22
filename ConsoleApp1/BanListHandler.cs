@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 using System.Data;
 using System.IO;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     class BanListHandler
     {

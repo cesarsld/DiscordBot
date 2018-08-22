@@ -1,4 +1,4 @@
-﻿namespace BHungerGaemsBot
+﻿namespace DiscordBot
 {
     public class Item
     {
