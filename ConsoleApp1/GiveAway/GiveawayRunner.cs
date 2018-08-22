@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
-namespace BHungerGaemsBot
+
+
+namespace DiscordBot
 {
     public class GiveawayParticipant
     {
@@ -58,6 +60,11 @@ namespace BHungerGaemsBot
             foreach (Player player in contestants)
             {
                 participants.Add(new GiveawayParticipant(player));
+            }
+            if(participants.Count == 0)
+            {
+                showMessageDelegate("Game cancelled, no players are eligible to play.");
+                return;
             }
             while (!winnerFound)
             {
