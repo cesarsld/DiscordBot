@@ -10,7 +10,7 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver.Linq;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     public class Trainer
     {

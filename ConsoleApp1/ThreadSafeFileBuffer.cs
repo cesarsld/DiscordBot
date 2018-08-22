@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     public class ThreadSafeFileBuffer<T> : IDisposable
     {

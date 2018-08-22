@@ -1,5 +1,5 @@
 ﻿
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     public class RunningCommandInfo
     {

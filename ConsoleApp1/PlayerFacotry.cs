@@ -13,7 +13,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver.Linq;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     class PlayerFacotry
     {

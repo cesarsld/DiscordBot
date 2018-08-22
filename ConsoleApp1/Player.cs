@@ -2,7 +2,7 @@
 using Discord;
 using Discord.WebSocket;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     public class Player : IEquatable<Player>
     {

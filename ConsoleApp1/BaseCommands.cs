@@ -13,7 +13,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver.Linq;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     public class BaseCommands : ModuleBase
     {
@@ -143,6 +143,7 @@ namespace BHungerGaemsBot
                         return true;
                 }
             }
+            else if (Context.User.Id == 396792950870245386 || Context.User.Id == 195567858133106697) return true;
             return false;
         }
 

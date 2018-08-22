@@ -7,7 +7,7 @@ using System.Linq;
 using Discord;
 using System.IO;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     class BHungerGamesV3
     {

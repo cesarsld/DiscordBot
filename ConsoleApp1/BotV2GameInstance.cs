@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     public class BotV2GameInstance : BotGameInstance
     {

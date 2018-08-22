@@ -2,12 +2,12 @@
 using System.Threading.Tasks;
 using Discord;
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     public static class Logger
     {
-        //private static readonly ThreadSafeFileBuffer<string> LogWriter = new ThreadSafeFileBuffer<string>("Logger/log.txt"); // server
-        private static readonly ThreadSafeFileBuffer<string> LogWriter = new ThreadSafeFileBuffer<string>("..\\..\\..\\Logger\\log.txt"); // home
+        private static readonly ThreadSafeFileBuffer<string> LogWriter = new ThreadSafeFileBuffer<string>("Logger/log.txt"); // server
+        //private static readonly ThreadSafeFileBuffer<string> LogWriter = new ThreadSafeFileBuffer<string>("..\\..\\..\\Logger\\log.txt"); // home
         //C:\Users\Administrator\Documents\BotDeploy\Logger\log.txt
         //C:/Users/Cesar Jaimes/Documents/BHBot/log.txt
         public static void Log(string message)

@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Text;
 
 
-namespace BHungerGaemsBot
+namespace DiscordBot
 {
     class Adventure
     {

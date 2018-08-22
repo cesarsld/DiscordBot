@@ -7,7 +7,8 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using System.Threading;
-namespace BHungerGaemsBot
+
+namespace DiscordBot
 {
     class GiveawayInstance : BotGameInstance
     {
