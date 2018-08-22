@@ -20,12 +20,12 @@ namespace BHungerGaemsBot
         }
 
 
-        private void RunGiveawayInternal(int numWinners, List<Player> players)
+        private void RunGiveawayInternal(int numWinners, int target, List<Player> players)
         {
-            new GiveawayRunner().Run(numWinners, players, LogToChannel, SendMsg, GetCancelGame);
+            new GiveawayRunner().Run(numWinners, target, players, LogToChannel, SendMsg, GetCancelGame);
         }
 
-        public void RunGiveaway(int numWinners,int maxMinutesToWait, ICommandContext context, string userName, int testUsers)
+        public void RunGiveaway(int numWinners,int maxMinutesToWait, int target, ICommandContext context, string userName, int testUsers)
         {
             bool removeHandler = false;
             try
@@ -178,7 +178,7 @@ namespace BHungerGaemsBot
                     LogToChannel("Players REMOVED from game due to multiple NickNames:\r\n" + sb);
                 }
 
-                RunGiveawayInternal(numWinners, players);
+                RunGiveawayInternal(numWinners, target, players);
             }
             catch (Exception ex)
             {
