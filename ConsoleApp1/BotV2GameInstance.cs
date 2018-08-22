@@ -44,13 +44,13 @@ namespace DiscordBot
                    + "React to this message with any emoji to enter!  Multiple Reactions(emojis) will NOT enter you more than once.\r\nPlayer entered: ";
         }
 
-        protected override void RunGameInternal(int numWinners, int secondsDelayBetweenDays, List<Player> players, int maxPlayers = 0)
+        protected override async Task RunGameInternal(int numWinners, int secondsDelayBetweenDays, List<Player> players, int maxPlayers = 0)
         {
             Bot.DiscordClient.ReactionAdded += FetchPlayerInput;
             try
             {
                 _gameInstance = new BHungerGamesV2();
-                _gameInstance.Run(numWinners, players, LogToChannel, SendMsg, GetCancelGame, maxPlayers);
+                await _gameInstance.Run(numWinners, players, LogToChannel, SendMsg, GetCancelGame, maxPlayers);
 
             }
             finally

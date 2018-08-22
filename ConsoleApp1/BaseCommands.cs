@@ -738,7 +738,7 @@ namespace DiscordBot
 
                         SocketGuildUser user = Context.Message.Author as SocketGuildUser;
                         string userThatStartedGame = user?.Nickname ?? Context.Message.Author.Username;
-                        gameInstance.StartGame(numWinners, maxUsers, maxMinutesToWait, secondsDelayBetweenDays, Context, userThatStartedGame, testUsers);
+                        await gameInstance.StartGame(numWinners, maxUsers, maxMinutesToWait, secondsDelayBetweenDays, Context, userThatStartedGame, testUsers);
                         cleanupCommandInstance = false;
                         //await Context.Channel.SendMessageAsync($"MaxUsers: {maxUsers}  MaxMinutesToWait: {maxMinutesToWait} SecondsDelayBetweenDays: {secondsDelayBetweenDays} NumWinners: {numWinners}");
                     }

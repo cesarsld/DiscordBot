@@ -32,6 +32,21 @@ namespace DiscordBot
             }
         }
 
+        public InteractivePlayer(int index) : base(index)
+        {
+            Hp = 100;
+            ScenarioLikelihood = 30;
+            AlertCooldown = 0;
+            DuelCooldown = 0;
+            DebuffTimer = 0;
+            ScenarioItemFindBonus = 0;
+            Items = new Item[BHungerGamesV2.NumItemTypes];
+            for (var i = 0; i < Items.Length; i++)
+            {
+                Items[i] = new Item();
+            }
+        }
+
         public Item GetItem(ItemType itemType) => Items[(int) itemType];
 
         public int GetDuelChance()

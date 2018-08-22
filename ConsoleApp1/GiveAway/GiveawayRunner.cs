@@ -34,11 +34,10 @@ namespace DiscordBot
         
         private int GetDistance(int from, int to) => Math.Abs(from - to);
 
-        public void Run(int numWinners, int target, List<Player> contestants, BotGameInstance.ShowMessageDelegate showMessageDelegate, BotGameInstance.ShowMessageDelegate sendMsg, Func<bool> cannelGame)
+        public void Run(int numWinners, int target, List<Player> contestants, BotGameInstance.ShowMessageDelegate showMessageDelegate, BotGameInstance.ShowMessageDelegate sendMsg, Func<bool> cancelGame)
         {
             bool winnerFound = false;
-            TimeSpan delayBetweenDays = new TimeSpan(0, 0, 0, 3);
-            int day = 0;
+            TimeSpan delayBetweenMessagess = new TimeSpan(0, 0, 0, 3);
             int bestRollDistance = 1000;
             StringBuilder sb = new StringBuilder(2000);
             StringBuilder sbDeath = new StringBuilder(2000);
@@ -69,12 +68,16 @@ namespace DiscordBot
                 showMessageDelegate("Game cancelled, no players are eligible to play.");
                 return;
             }
+            int participantsPerMessage = 1;
+            if (participants.Count >= 100) participantsPerMessage = 5;
+            else if (participants.Count >= 40) participantsPerMessage = 3;
 
             while (!winnerFound)
             {
+                int participantsPerMessageIndex = 1;
                 foreach (GiveawayParticipant participant in participants)
                 {
-                    if (cannelGame())
+                    if (cancelGame())
                         return;
                     int currentRoll = _random.Next(1000) + 1;
 
@@ -89,15 +92,24 @@ namespace DiscordBot
                     }
                     else if (distanceToTarget == bestRollDistance) tiedParticipants.Add(participant);
 
-                    sendMsg($" <@{participant.playerInfo.UserId}>  rolled: **" + participant.GetRoll().ToString() + "**");
-                    Thread.Sleep(delayBetweenDays);
+                    sb.Append($"<@{participant.playerInfo.UserId}>  rolled: **" + participant.GetRoll().ToString() + "** \n");
+                    if (participantsPerMessageIndex == participantsPerMessage)
+                    {
+                        sendMsg(sb.ToString());
+                        participantsPerMessageIndex = 1;
+                        sb.Clear();
+                    }
+                    else participantsPerMessageIndex++;
+
+                    //Thread.Sleep(delayBetweenMessagess);
+                    Task.Delay(delayBetweenMessagess).GetAwaiter().GetResult();
                 }
                 participants = new List<GiveawayParticipant>(tiedParticipants);
                 if (participants.Count == 1) winnerFound = true;
                 else
                 {
                     showMessageDelegate("At least two participants have rolled the same highest roll. A new round will be ran to find the true winner.");
-                    bestRollDistance = target;
+                    bestRollDistance = 1000;
                 }
             }
 

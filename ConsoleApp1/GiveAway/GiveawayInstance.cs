@@ -13,9 +13,9 @@ namespace DiscordBot
     class GiveawayInstance : BotGameInstance
     {
 
-        private string GetGiveawayMessage(string userName, int maxMinutesToWait)
+        private string GetGiveawayMessage(string userName, int maxMinutesToWait, int target)
         {
-            return $" Preparing to start a Giveaway for ```Markdown\r\n<{userName}> will start his giveaway in {maxMinutesToWait} seconds."
+            return $" Preparing to start a Giveaway for ```Markdown\r\n<{userName}> will start his giveaway in {maxMinutesToWait} seconds. The participant closest to the number  * {target} * wins!"
                 + "```\r\n"
                 + $"React to this message with ANY emoji to enter!  Multiple Reactions(emojis) will NOT enter you more than once.\r\nPlayer entered: ";
         }
@@ -45,7 +45,7 @@ namespace DiscordBot
                     }
                 }
 
-                string gameMessageText = GetGiveawayMessage(userName, maxMinutesToWait);
+                string gameMessageText = GetGiveawayMessage(userName, maxMinutesToWait, target);
                 Task<IUserMessage> messageTask = _channel.SendMessageAsync(gameMessageText + "0");
                 Logger.Log(gameMessageText);
                 messageTask.Wait();

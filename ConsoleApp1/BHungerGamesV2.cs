@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Linq;
 using Discord;
+using System.Threading.Tasks;
 
 namespace DiscordBot
 {
@@ -323,7 +324,7 @@ namespace DiscordBot
             }
         }
 
-        public void Run(int numWinners, List<Player> contestantsTransfer, BotGameInstance.ShowMessageDelegate showMessageDelegate, BotGameInstance.ShowMessageDelegate sendMsg, Func<bool> cannelGame, int maxPlayers = 0)
+        public async Task Run(int numWinners, List<Player> contestantsTransfer, BotGameInstance.ShowMessageDelegate showMessageDelegate, BotGameInstance.ShowMessageDelegate sendMsg, Func<bool> cannelGame, int maxPlayers = 0)
         {
             int day = 0;
             int night = 0;
@@ -401,6 +402,8 @@ namespace DiscordBot
                     sb.Append($"<{player.ContestantName}>\t");
                 }
             }
+            
+            //_contestants.Add(new InteractivePlayer(1));
             showMessageDelegate("Players that successfully entered the arena:\r\n" + sb);
             sb.Clear();
 
@@ -426,7 +429,7 @@ namespace DiscordBot
                     _ignoreReactions = false;
                     int crowdOption = CrowdOption(sb, day);
                     showMessageDelegate(sb + "", null, EmojiListCrowdDecision);
-                    Thread.Sleep(DelayAfterOptions);
+                    await Task.Delay(DelayAfterOptions);
                     _ignoreReactions = true;
                     _crowdOptions = false;
                     sb.Clear();
@@ -458,7 +461,7 @@ namespace DiscordBot
                     _ignoreReactions = false;
                     showMessageDelegate($"GOBLIN ALERT\n============\nA * legendary * {(GoblinList)_random.Next(5)} is on the loose! Quick, catch him to get his excellent loot!\n"
                         + "Select how you would like to try to capture him. * A * To Lure him with gold, * B * to use a trap, * C * to charge at him and * D * to use your Bub offhand to nomnom him.", null, EmojiGoblinOption);
-                    Thread.Sleep(DelayAfterOptions);
+                    await Task.Delay(DelayAfterOptions);
                     _ignoreReactions = true;
                     _goblinOption = false;
                     if (cannelGame()) return;
@@ -495,7 +498,7 @@ namespace DiscordBot
                 showMessageDelegate($"\n Day**{day}**\nYou have {DelayAfterOptions.Seconds} seconds to input your decision\n"
                     + "You may select <:moneybag:> to Loot, <:blubber:> to capture Familiars, <:exclamation:> to Stay On Alert or <:crossed_swords:> to be immuned to Duels! If you do NOT select a reaction, you will Do Nothing." + sb, null, EmojiListOptions);
                 sb.Clear();
-                Thread.Sleep(DelayAfterOptions);
+                await Task.Delay(DelayAfterOptions);
                 _ignoreReactions = true;
                 if (cannelGame())
                     return;
@@ -550,7 +553,7 @@ namespace DiscordBot
                     + "You may select <:bomb:> to Make A Trap, <:gun:> To Steal or <:wrench:> To Sabotage! If you do NOT select a reaction, you will Do Nothing.\n", null, EmojiListEnhancedOptions);
                 //make bot react to prevent players from searching emojis
                 sb.Clear();
-                Thread.Sleep(DelayAfterOptions);
+                await Task.Delay(DelayAfterOptions);
                 _ignoreReactions = true;
                 if (cannelGame())
                     return;
@@ -761,7 +764,7 @@ namespace DiscordBot
                     showMessageDelegate("Next day until the end of the game, scenario number will be increased\n=====================================================================");
                 }
 
-                Thread.Sleep(DelayBetweenCycles);
+                await Task.Delay(DelayBetweenCycles);
 
                 if (cannelGame())
                     return;

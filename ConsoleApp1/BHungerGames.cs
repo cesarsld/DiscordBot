@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace DiscordBot
 {
@@ -198,7 +199,7 @@ namespace DiscordBot
                 for (int i = 0; i < numUsers; i++)
                     players.Add(new Player(i));
 
-                new BHungerGames().Run(1, 1, players, Console.WriteLine, Console.WriteLine, () => false, 40);
+                //new BHungerGames().Run(1, 1, players, Console.WriteLine, Console.WriteLine, () => false, 40);
                 Console.ReadLine();
             }
             catch (Exception e)
@@ -225,7 +226,7 @@ namespace DiscordBot
             }
         }
 
-        public void Run(int numWinners, int secondsDelayBetweenDays, List<Player> contestants, BotGameInstance.ShowMessageDelegate showMessageDelegate, BotGameInstance.ShowMessageDelegate sendMsg, Func<bool> cannelGame, int maxPlayers = 0)
+        public async Task Run(int numWinners, int secondsDelayBetweenDays, List<Player> contestants, BotGameInstance.ShowMessageDelegate showMessageDelegate, BotGameInstance.ShowMessageDelegate sendMsg, Func<bool> cannelGame, int maxPlayers = 0)
         {
             TimeSpan delayBetweenDays = new TimeSpan(0, 0, 0, secondsDelayBetweenDays);
             int day = 0;
@@ -339,7 +340,7 @@ namespace DiscordBot
                         sb.Clear();
                     }
 
-                    Thread.Sleep(delayBetweenDays);
+                    await Task.Delay(delayBetweenDays);
                 }
                 if (cannelGame())
                     return;
