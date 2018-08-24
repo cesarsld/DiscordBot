@@ -14,7 +14,8 @@ namespace DiscordBot
 
         public ThreadSafeFileBuffer(string filePath, int flushPeriodInSeconds = 5)
         {
-            _fileStream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.Read);
+            if(!File.Exists(filePath)) filePath = "..\\..\\..\\Logger\\log.txt";
+           _fileStream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.Read);
             _writer = new StreamWriter(_fileStream);
             var flushPeriod = TimeSpan.FromSeconds(flushPeriodInSeconds);
             _timer = new Timer(FlushBuffer, null, flushPeriod, flushPeriod);

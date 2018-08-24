@@ -34,7 +34,7 @@ namespace DiscordBot
         
         private int GetDistance(int from, int to) => Math.Abs(from - to);
 
-        public void Run(int numWinners, int target, List<Player> contestants, BotGameInstance.ShowMessageDelegate showMessageDelegate, BotGameInstance.ShowMessageDelegate sendMsg, Func<bool> cancelGame)
+        public async Task Run(int numWinners, int target, List<Player> contestants, BotGameInstance.ShowMessageDelegate showMessageDelegate, BotGameInstance.ShowMessageDelegate sendMsg, Func<bool> cancelGame)
         {
             bool winnerFound = false;
             TimeSpan delayBetweenMessagess = new TimeSpan(0, 0, 0, 3);
@@ -74,9 +74,11 @@ namespace DiscordBot
 
             while (!winnerFound)
             {
+                
                 int participantsPerMessageIndex = 1;
                 foreach (GiveawayParticipant participant in participants)
                 {
+                    Console.WriteLine("START");
                     if (cancelGame())
                         return;
                     int currentRoll = _random.Next(1000) + 1;
@@ -98,11 +100,11 @@ namespace DiscordBot
                         sendMsg(sb.ToString());
                         participantsPerMessageIndex = 1;
                         sb.Clear();
+                        await Task.Delay(delayBetweenMessagess);
                     }
                     else participantsPerMessageIndex++;
 
                     //Thread.Sleep(delayBetweenMessagess);
-                    Task.Delay(delayBetweenMessagess).GetAwaiter().GetResult();
                 }
                 participants = new List<GiveawayParticipant>(tiedParticipants);
                 if (participants.Count == 1) winnerFound = true;

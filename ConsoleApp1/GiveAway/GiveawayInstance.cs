@@ -21,12 +21,12 @@ namespace DiscordBot
         }
 
 
-        private void RunGiveawayInternal(int numWinners, int target, List<Player> players)
+        private async Task RunGiveawayInternal(int numWinners, int target, List<Player> players)
         {
-            new GiveawayRunner().Run(numWinners, target, players, LogToChannel, SendMsg, GetCancelGame);
+            await new GiveawayRunner().Run(numWinners, target, players, LogToChannel, SendMsg, GetCancelGame);
         }
 
-        public void RunGiveaway(int numWinners,int maxMinutesToWait, int target, ICommandContext context, string userName, int testUsers)
+        public async Task RunGiveaway(int numWinners,int maxMinutesToWait, int target, ICommandContext context, string userName, int testUsers)
         {
             bool removeHandler = false;
             try
@@ -61,7 +61,7 @@ namespace DiscordBot
                     LogAndReplyError("Error accessing Game Message.", "RunGame");
                     return;
                 }
-                gameMessage.AddReactionAsync(new Emoji("😃"));
+                await gameMessage.AddReactionAsync(new Emoji("😃"));
                 lock (SyncObj)
                 {
                     _players = new Dictionary<Player, Player>();
@@ -95,7 +95,7 @@ namespace DiscordBot
                         if (currentPlayerCount != lastPlayerCount)
                         {
                             lastPlayerCount = currentPlayerCount;
-                            gameMessage.ModifyAsync(x => x.Content = gameMessageText + currentPlayerCount); // + "```\r\n");
+                            await gameMessage.ModifyAsync(x => x.Content = gameMessageText + currentPlayerCount); // + "```\r\n");
                         }
                     }
 
@@ -150,7 +150,7 @@ namespace DiscordBot
 
                 if (lastPlayerCount != players.Count)
                 {
-                    gameMessage.ModifyAsync(x => x.Content = gameMessageText + players.Count); //  + "```\r\n"
+                    await gameMessage.ModifyAsync(x => x.Content = gameMessageText + players.Count); //  + "```\r\n"
                 }
 
                 if (newFirstPlayersToReact.Count > 0)
@@ -179,18 +179,18 @@ namespace DiscordBot
                     LogToChannel("Players REMOVED from game due to multiple NickNames:\r\n" + sb);
                 }
 
-                RunGiveawayInternal(numWinners, target, players);
+               await RunGiveawayInternal(numWinners, target, players);
             }
             catch (Exception ex)
             {
-                Logger.Log(new LogMessage(LogSeverity.Error, "RunGame", "Unexpected Exception", ex));
+                await Logger.Log(new LogMessage(LogSeverity.Error, "RunGame", "Unexpected Exception", ex));
                 try
                 {
                     LogAndReply("Error Starting Game.");
                 }
                 catch (Exception ex2)
                 {
-                    Logger.Log(new LogMessage(LogSeverity.Error, "RunGame", "Unexpected Exception Sending Error to Discord", ex2));
+                    await Logger.Log(new LogMessage(LogSeverity.Error, "RunGame", "Unexpected Exception Sending Error to Discord", ex2));
                 }
             }
             finally
@@ -205,7 +205,7 @@ namespace DiscordBot
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(new LogMessage(LogSeverity.Error, "RunGame", "Unexpected Exception In Finally", ex));
+                    await Logger.Log(new LogMessage(LogSeverity.Error, "RunGame", "Unexpected Exception In Finally", ex));
                 }
                 try
                 {
@@ -213,7 +213,7 @@ namespace DiscordBot
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(new LogMessage(LogSeverity.Error, "RunGame", "Unexpected Exception In Finally2", ex));
+                    await Logger.Log(new LogMessage(LogSeverity.Error, "RunGame", "Unexpected Exception In Finally2", ex));
                 }
                 try
                 {
@@ -232,7 +232,7 @@ namespace DiscordBot
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(new LogMessage(LogSeverity.Error, "RunGame", "Unexpected Exception In Finally3", ex));
+                    await Logger.Log(new LogMessage(LogSeverity.Error, "RunGame", "Unexpected Exception In Finally3", ex));
                 }
             }
         }

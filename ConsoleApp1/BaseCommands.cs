@@ -11,7 +11,10 @@ using System.Linq;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using MongoDB.Driver.Linq;
+using DiscordBot.Axie;
 
 namespace DiscordBot
 {
@@ -484,6 +487,28 @@ namespace DiscordBot
             await Context.Channel.SendMessageAsync($" <@{ Context.Message.Author.Id}>  rolled: **" + finalNumber.ToString() + "**");
         }
 
+        [Command("findaxie"), Summary("find an axie from API")]
+        public async Task FindAxie(int index)
+        {
+            string json = "";
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                try
+                {
+                    json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + index.ToString());
+                }
+                catch (Exception ex)
+                {
+                    await Context.Channel.SendMessageAsync("Error. Axie could not be found.");
+                    return;
+                }
+            }
+            JObject axieJson = JObject.Parse(json);
+            AxieData axieData = axieJson.ToObject<AxieData>();
+
+            if (axieData.stage <= 2) await Context.Channel.SendMessageAsync("Axie is still an egg! I can't check what it's going to be >:O ");
+            else await Context.Channel.SendMessageAsync("", false, AxieData.EmbedAxieData(axieData, axieJson));
+        }
         [Command("Demote"), Summary("Demotes user to next rank.")]
         public async Task Demote(SocketGuildUser user)
         {
@@ -865,7 +890,7 @@ namespace DiscordBot
 
                     SocketGuildUser user = Context.Message.Author as SocketGuildUser;
                     string userThatStartedGame = user?.Nickname ?? Context.Message.Author.Username;
-                    giveawayInstance.RunGiveaway(numWinners, maxSecsToWait, targetNumber, Context, userThatStartedGame, testUsers);
+                    await giveawayInstance.RunGiveaway(numWinners, maxSecsToWait, targetNumber, Context, userThatStartedGame, testUsers);
                     cleanupCommandInstance = false;
                     //await Context.Channel.SendMessageAsync($"MaxUsers: {maxUsers}  MaxMinutesToWait: {maxMinutesToWait} SecondsDelayBetweenDays: {secondsDelayBetweenDays} NumWinners: {numWinners}");
                 }

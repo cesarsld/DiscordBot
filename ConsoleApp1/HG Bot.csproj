@@ -172,6 +172,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Axie\AxieData.cs" />
     <Compile Include="BanListHandler.cs" />
     <Compile Include="DiscordKetGetter.cs" />
     <Compile Include="GiveAway\GiveawayInstance.cs" />
