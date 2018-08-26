@@ -884,6 +884,7 @@ namespace DiscordBot
                     if (Int32.TryParse(strNumWinners, out numWinners) == false) numWinners = 1;
                     if (Int32.TryParse(strTestUsers, out testUsers) == false) testUsers = 0;
                     if (targetNumber > 1000) targetNumber = 1000;
+                    if (targetNumber < 0) targetNumber = 0;
                     if (numWinners <= 0) numWinners = 1;
                     if (maxSecsToWait <= 0) maxSecsToWait = 1;
 
