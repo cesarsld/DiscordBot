@@ -50,7 +50,7 @@ namespace DiscordBot
             try
             {
                 _gameInstance = new BHungerGamesV2();
-                await _gameInstance.Run(numWinners, players, LogToChannel, SendMsg, GetCancelGame, maxPlayers);
+                await _gameInstance.Run(numWinners, players, LogToChannel, SendMsg, GetCancelGame, SendWinnerToAuthor, maxPlayers);
 
             }
             finally

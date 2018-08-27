@@ -12,6 +12,7 @@ namespace DiscordBot
     public class BotGameInstance
     {
         public delegate void ShowMessageDelegate(string msg, string logMsgOnly = null, IReadOnlyList<IEmote> emotes = null);
+        public delegate Task ShowMessageDelegate1(string msg);
 
         public const string Smiley = "😃"; // :smiley:
         public const string Smile = "😄"; // :smile:
@@ -27,7 +28,18 @@ namespace DiscordBot
 
         protected ulong MessageId;
         protected IMessageChannel _channel;
+        protected IGuild _guild;
         protected int testUsers;
+        protected IUser gameAuthor;
+
+        protected async Task SendWinnerToAuthor(string winnerMsg)
+        {
+            if (_guild.Name == "Bit Heroes" || true)
+            {
+                await gameAuthor.SendMessageAsync(winnerMsg);
+            }
+                
+        }
 
         protected void LogAndReply(string message)
         {
@@ -151,11 +163,11 @@ namespace DiscordBot
             }
         }
 
-        public async Task StartGame(int numWinners, int maxUsers, int maxMinutesToWait, int secondsDelayBetweenDays, ICommandContext context, string userName, int testUsers)
+        public async Task StartGame(int numWinners, int maxUsers, int maxMinutesToWait, int secondsDelayBetweenDays, ICommandContext context, string userName, ulong userId, int testUsers)
         {
             this.testUsers = testUsers;
 
-            await RunGame(numWinners, maxUsers, maxMinutesToWait, secondsDelayBetweenDays, context, userName, false);
+            await RunGame(numWinners, maxUsers, maxMinutesToWait, secondsDelayBetweenDays, context, userName, userId, false);
             //return true;
         }
         public bool StartGame(int maxTurn, int maxMinutesToWait, int maxScore, ICommandContext context, string userName, int testUsers)
@@ -218,17 +230,18 @@ namespace DiscordBot
 
         protected virtual async Task RunGameInternal(int numWinners, int secondsDelayBetweenDays, List<Player> players, int maxPlayers)
         {
-            await new BHungerGames().Run(numWinners, secondsDelayBetweenDays, players, LogToChannel, SendMsg, GetCancelGame, maxPlayers);
+            await new BHungerGames().Run(numWinners, secondsDelayBetweenDays, players, LogToChannel, SendMsg, GetCancelGame, SendWinnerToAuthor, maxPlayers);
         }
         protected virtual void RunGameInternal(int maxScore, int maxTurns, List<Player> players) { }
 
-        private async Task RunGame(int numWinners, int maxUsers, int maxMinutesToWait, int secondsDelayBetweenDays, ICommandContext context, string userName, bool startWhenMaxUsers = true)
+        private async Task RunGame(int numWinners, int maxUsers, int maxMinutesToWait, int secondsDelayBetweenDays, ICommandContext context, string userName, ulong userId, bool startWhenMaxUsers = true)
         {
             bool removeHandler = false;
             try
             {
                 _channel = context.Channel;
-
+                _guild = context.Guild;
+                gameAuthor = Bot.GetUser(userId);
                 // see if BHG exists, if so mention it
                 var roles = context.Guild.Roles;
                 string bhgRoleMention = "";

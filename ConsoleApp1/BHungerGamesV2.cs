@@ -324,7 +324,7 @@ namespace DiscordBot
             }
         }
 
-        public async Task Run(int numWinners, List<Player> contestantsTransfer, BotGameInstance.ShowMessageDelegate showMessageDelegate, BotGameInstance.ShowMessageDelegate sendMsg, Func<bool> cannelGame, int maxPlayers = 0)
+        public async Task Run(int numWinners, List<Player> contestantsTransfer, BotGameInstance.ShowMessageDelegate showMessageDelegate, BotGameInstance.ShowMessageDelegate sendMsg, Func<bool> cannelGame, BotGameInstance.ShowMessageDelegate1 sendWinnerMsg, int maxPlayers = 0)
         {
             int day = 0;
             int night = 0;
@@ -773,12 +773,16 @@ namespace DiscordBot
 
             sb.Append("\n\n**Game Over**\r\n\r\n");
             StringBuilder sbP = new StringBuilder(1000);
-            foreach (InteractivePlayer contestant in _contestants)
+            StringBuilder dmSb = new StringBuilder(1000);
+            dmSb.Append("Your BHunger games have completed.\n Your winners are : \n");
+            foreach (Player contestant in _contestants)
             {
                 sbP.Append($"(ID:{contestant.UserId})<{contestant.FullUserName}> is victorious!\r\n");
                 sb.Append($"<{contestant.FullUserName}> is victorious!\r\n");
+                dmSb.Append($"- {contestant.NickName} \n");
             }
             showMessageDelegate(sb.ToString(), sbP.ToString());
+            await sendWinnerMsg(dmSb.ToString());
         }
 
         //duel method

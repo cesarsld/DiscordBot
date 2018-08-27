@@ -78,7 +78,7 @@ namespace DiscordBot
                 int participantsPerMessageIndex = 1;
                 foreach (GiveawayParticipant participant in participants)
                 {
-                    Console.WriteLine("START");
+                    //Console.WriteLine("START");
                     if (cancelGame())
                         return;
                     int currentRoll = _random.Next(1000) + 1;

@@ -479,6 +479,17 @@ namespace DiscordBot
             }
         }
 
+        [Command("ping"), Summary("unBan user from HG games")]
+        public async Task PersonalPing(ulong userId)
+        {
+            //await Context.Message.Author.SendMessageAsync("Test ping");
+            if (Context.Message.Author.Id == 325186783367266306 || Context.Message.Author.Id == 195567858133106697)
+            {
+                await Bot.GetUser(userId).SendMessageAsync("Ping sent by: " + Context.Message.Author.Username);
+                await Context.Message.AddReactionAsync(new Emoji("😃"));
+            }
+        }
+
         [Command("roll"), Summary("roll a number between 1 and mentioned number")]
         public async Task RngRoll()
         {
@@ -763,7 +774,7 @@ namespace DiscordBot
 
                         SocketGuildUser user = Context.Message.Author as SocketGuildUser;
                         string userThatStartedGame = user?.Nickname ?? Context.Message.Author.Username;
-                        await gameInstance.StartGame(numWinners, maxUsers, maxMinutesToWait, secondsDelayBetweenDays, Context, userThatStartedGame, testUsers);
+                        await gameInstance.StartGame(numWinners, maxUsers, maxMinutesToWait, secondsDelayBetweenDays, Context, userThatStartedGame, user.Id, testUsers);
                         cleanupCommandInstance = false;
                         //await Context.Channel.SendMessageAsync($"MaxUsers: {maxUsers}  MaxMinutesToWait: {maxMinutesToWait} SecondsDelayBetweenDays: {secondsDelayBetweenDays} NumWinners: {numWinners}");
                     }
@@ -884,7 +895,7 @@ namespace DiscordBot
                     if (Int32.TryParse(strNumWinners, out numWinners) == false) numWinners = 1;
                     if (Int32.TryParse(strTestUsers, out testUsers) == false) testUsers = 0;
                     if (targetNumber > 1000) targetNumber = 1000;
-                    if (targetNumber < 0) targetNumber = 0;
+                    if (targetNumber <= 0) targetNumber = 1;
                     if (numWinners <= 0) numWinners = 1;
                     if (maxSecsToWait <= 0) maxSecsToWait = 1;
 

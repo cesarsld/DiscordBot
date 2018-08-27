@@ -48,6 +48,7 @@ namespace DiscordBot
             _commands = new CommandService();
             DiscordClient.Log += Logger.Log;
             DiscordClient.MessageReceived += HandleCommandAsync;
+            
         }
 
         ~Bot()
@@ -74,6 +75,8 @@ namespace DiscordBot
             catch { }
             return userName;
         }
+
+        public static IUser GetUser(ulong userId) => DiscordClient.GetUser(userId);
 
         public async Task HandleCommandAsync(SocketMessage messageParam)
         {
