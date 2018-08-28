@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Discord;
 
-namespace DiscordBot.Axie
+namespace DiscordBot
 {
     public class AxieData
     {

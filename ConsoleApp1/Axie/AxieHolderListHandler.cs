@@ -1,44 +1,28 @@
 ﻿using System;
-using System;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Serialization;
-using System.Data;
 using System.IO;
 using Discord;
+using Discord.Commands;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+
 namespace DiscordBot
 {
-    public class AxieHolder
-    {
-        private ulong userId;
-        private List<string> addressList;
-
-        public AxieHolder(ulong _userId, List<string> _addressList)
-        {
-            userId = _userId;
-            addressList = _addressList;
-        }
-        public ulong GetUserId() => userId;
-        public List<string> GetAddressList() => addressList;
-        public void AddAddress(string address) => addressList.Add(address);
-    }
     class AxieHolderListHandler
     {
-        private String strFilename = "Logger/AxieHolderList.XML";
-        DataTable dt;
+        private static string strFilename = "AxieHolderList.txt";
 
         public AxieHolderListHandler()
         {
 
         }
 
-        public List<AxieHolder> GetAxieHolders()
+        public static async Task<List<AxieHolder>> GetAxieHolders()
         {
             List<AxieHolder> list = new List<AxieHolder>();
             if(File.Exists(strFilename))
@@ -46,168 +30,148 @@ namespace DiscordBot
                 string fileData = "";
                 using (StreamReader sr = new StreamReader(strFilename))
                 {
-                    fileData = sr.ReadToEnd();
+                    fileData = await sr.ReadToEndAsync();
                 }
-                string[] jsonFiles = fileData.Split(',');
-                foreach(var json in jsonFiles)
+                string[] jsonFiles = Regex.Split(fileData, "\r\n|\r|\n");
+                foreach (var json in jsonFiles)
                 {
-                    list.Add(JObject.Parse(json).ToObject<AxieHolder>());
+                    AxieHolder obj = JObject.Parse(json).ToObject<AxieHolder>();
+                    if (obj != null) list.Add(obj);
                 }
             }
             return list;
         }
 
-        public Dictionary<ulong, string> GetAxieHolderList()
+        public static async Task AddUserAddress(ulong userId, string address, IMessageChannel channel = null)
         {
-            DataSet ds = new DataSet();
-            Dictionary<ulong, string> holderDictionary = new Dictionary<ulong, string>();
-
-            if (File.Exists(strFilename))
+            List<AxieHolder> axieHolders = await GetAxieHolders();
+            if (IsAddressValid(address))
             {
-                XmlSerializer xmlSerializer = new XmlSerializer(typeof(DataSet));
-                FileStream readStream = new FileStream(strFilename, FileMode.Open);
-                ds = (DataSet)xmlSerializer.Deserialize(readStream);
-                readStream.Close();
-
-                for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
+                foreach (var holder in axieHolders)
                 {
-                    //list.Add((ulong)ds.Tables[0].Rows[i]["UserID"]);
-                    holderDictionary.Add((ulong)ds.Tables[0].Rows[i][0], (string)ds.Tables[0].Rows[i][1]);
+                    if (holder.GetAddressList().Contains(address))
+                    {
+                        await channel.SendMessageAsync("Error. Address already used.");
+                        return;
+                    }
                 }
+                AxieHolder axieHolder = axieHolders.FirstOrDefault(holder => holder.GetUserId() == userId);
+                if (axieHolder == null)
+                {
+                    List<string> addressList = new List<string>() { address };
+                    axieHolders.Add(new AxieHolder(userId, addressList));
+                }
+                else
+                {
+                    axieHolder.AddAddress(address);
+                }
+                await SetAddressList(axieHolders);
+                await channel.SendMessageAsync("Address added :)");
             }
-
-            return holderDictionary;
+            else await channel.SendMessageAsync("Error. Invalid address >:(");
         }
 
-        private void AddUserAddress(ulong userId, string address, IMessageChannel channel)
+        public static async Task RemoveUser(ulong userId, IMessageChannel channel)
         {
-            List<AxieHolder> axieHolders = GetAxieHolders();
-            foreach(var holder in axieHolders)
-            {
-                if (holder.GetAddressList().Contains(address))
-                {
-                    channel.SendMessageAsync("Error. Address already used.");
-                    return;
-                }
-            }
-            AxieHolder axieHolder = axieHolders.First(holder => holder.GetUserId() == userId);
-            if (axieHolder == null)
-            {
-                List<string> addressList = new List<string>() { address };
-                axieHolders.Add(new AxieHolder(userId,addressList));
-            }
-            else 
-            {
-                axieHolder.AddAddress(address);
-            }
-            SetAddressList(axieHolders);
-        }
-
-        private void RemoveUser(ulong userId, IMessageChannel channel)
-        {
-            List<AxieHolder> axieHolders = GetAxieHolders();
+            List<AxieHolder> axieHolders = await GetAxieHolders();
 
             AxieHolder axieHolder = axieHolders.First(holder => holder.GetUserId() == userId);
             if (axieHolder == null)
             {
-                channel.SendMessageAsync("User does not exist, fool!");
+                await channel.SendMessageAsync("User does not exist, fool!");
             }
             else
             {
                 axieHolders.Remove(axieHolder);
-                SetAddressList(axieHolders);
+                await SetAddressList(axieHolders);
+                await channel.SendMessageAsync("User removed");
             }
         }
 
-
-        private void RemoveAddress(ulong userId, string address, IMessageChannel channel)
+        public static async Task RemoveAddress(ulong userId, string address, IMessageChannel channel)
         {
-            List<AxieHolder> axieHolders = GetAxieHolders();
-            AxieHolder axieHolder = axieHolders.First(holder => holder.GetUserId() == userId);
+            if (IsAddressValid(address))
+            {
+                List<AxieHolder> axieHolders = await GetAxieHolders();
+                AxieHolder axieHolder = axieHolders.First(holder => holder.GetUserId() == userId);
+                if (axieHolder == null)
+                {
+                    await channel.SendMessageAsync("This address doesn't belong to you :(");
+                }
+                else
+                {
+                    axieHolder.RemoveAddress(address);
+                    await channel.SendMessageAsync("Address removed!");
+
+                }
+                await SetAddressList(axieHolders);
+            }
+            else await channel.SendMessageAsync("Error. Invalid address >:(");
+        }
+
+        private static async Task SetAddressList(List<AxieHolder> axieHolderList)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i < axieHolderList.Count; i ++)
+            {
+                stringBuilder.Append( JsonConvert.SerializeObject(axieHolderList[i]));
+                if (i != axieHolderList.Count - 1)
+                stringBuilder.AppendLine();
+            }
+            
+            using (StreamWriter sw = new StreamWriter(strFilename))
+            {
+                await sw.WriteAsync(stringBuilder.ToString());
+            }
+        }
+
+        public static async Task GetHolderId(string address, ICommandContext context)
+        {
+            List<AxieHolder> axieHolders = await GetAxieHolders();
+            foreach (var holder in axieHolders)
+            {
+                if (holder.GetAddressList().Contains(address))
+                {
+                    await context.Channel.SendMessageAsync($"<@{holder.GetUserId()}> , one of your axies has caught the interest of <@{context.Message.Author.Id}> ! Take it to DM for further discussions ;)");
+                    return;
+                }
+            }
+            await context.Channel.SendMessageAsync("Uhoh... It looks like this axie doesn't belong to anyone in my Database :(");
+        }
+
+        public static async Task GetUserAddressList(ulong userId, IMessageChannel channel)
+        {
+            List<AxieHolder> axieHolders = await GetAxieHolders();
+            AxieHolder axieHolder = axieHolders.FirstOrDefault(holder => holder.GetUserId() == userId);
             if (axieHolder == null)
             {
-                channel.SendMessageAsync("This address doesn't belong to you :(");
+                await channel.SendMessageAsync("User does not exist :/");
             }
             else
             {
-                try 
+                StringBuilder sb = new StringBuilder();
+                foreach (var address in axieHolder.GetAddressList()) sb.Append($"- `{address}`\n");
+                await channel.SendMessageAsync("User's addresses:\n" + sb.ToString());
+            }
+        }
+
+        private static bool IsAddressValid(string address)
+        {
+            if (address.StartsWith("0x"))
+            {
+                char[] cleanAddress = address.ToLower().ToCharArray();
+                if (cleanAddress.Length == 42)
                 {
-                    axieHolder.AddAddress(address);
+                    for (int i = 2; i < cleanAddress.Length; i++)
+                    {
+                        if (!(cleanAddress[i] >= '0' && cleanAddress[i] <= '9' ||
+                              cleanAddress[i] >= 'a' && cleanAddress[i] <= 'f')) return false;
+                    }
                 }
-                catch (Exception e)
-                {
-                    channel.SendMessageAsync("Error, address does not exist in your address list.");
-                }
+                else return false;
+                return true;
             }
-            SetAddressList(axieHolders);
-        }
-
-        private void SetAddressList(List<AxieHolder> axieHolderList)
-        {
-            StringBuilder stringBuilder = new StringBuilder();
-            foreach(var holder in axieHolderList)
-            {
-                stringBuilder.Append(JsonConvert.SerializeObject(holder) + ",");
-                stringBuilder.AppendLine();
-            }
-            using(StreamWriter sw = new StreamWriter(strFilename))
-            {
-                sw.Write(stringBuilder.ToString());
-            }
-        }
-
-
-        private void SetHolderList(Dictionary<ulong, string> banList)
-        {
-            DataSet ds = new DataSet();
-            dt = new DataTable();
-            dt.Columns.Add(new DataColumn("UserID", typeof(ulong)));
-            dt.Columns.Add(new DataColumn("UserAddress", typeof(string)));
-            foreach (KeyValuePair<ulong, string>user in banList)
-            {
-                dt.Rows.Add(user.Key, user.Value);
-            }
-
-            ds.Tables.Add(dt);
-            ds.Tables[0].TableName = "AxieHolderList";
-
-            StreamWriter serialWriter;
-            serialWriter = new StreamWriter(strFilename);
-            XmlSerializer xmlWriter = new XmlSerializer(ds.GetType());
-            xmlWriter.Serialize(serialWriter, ds);
-            serialWriter.Close();
-            ds.Clear();
-        }
-
-        private void fillRow(ulong userID, string address)
-        {
-            DataRow dr;
-            dr = dt.NewRow();
-            //dr.
-            dt.Rows.Add(dr);
-        }
-        public void AddUserToHolderList(ulong userID, string address)
-        {
-            Dictionary<ulong, string> list = GetAxieHolderList();
-            //List<ulong> list = new List<ulong>();
-
-            if (!list.ContainsValue(address))
-            {
-                list.Add(userID, address);
-            }
-
-            SetHolderList(list);
-        }
-        public void RemoveUserFromHolderList(ulong userID)
-        {
-            Dictionary<ulong, string> list = GetAxieHolderList();
-
-            if (list.Contains(userID) == true)
-            {
-                list.Remove(userID);
-            }
-
-            SetHolderList(list);
+            return false;
         }
     }
 }
