@@ -485,7 +485,7 @@ namespace DiscordBot
             //await Context.Message.Author.SendMessageAsync("Test ping");
             if (Context.Message.Author.Id == 325186783367266306 || Context.Message.Author.Id == 195567858133106697)
             {
-                await Bot.GetUser(userId).SendMessageAsync("Ping sent by: " + Context.Message.Author.Username);
+                await Bot.GetUser(userId).SendMessageAsync("Ping sent with love by: " + Context.Message.Author.Username);
                 await Context.Message.AddReactionAsync(new Emoji("😃"));
             }
         }

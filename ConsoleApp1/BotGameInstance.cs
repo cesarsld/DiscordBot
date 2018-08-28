@@ -34,7 +34,7 @@ namespace DiscordBot
 
         protected async Task SendWinnerToAuthor(string winnerMsg)
         {
-            if (_guild.Name == "Bit Heroes" || true)
+            if (_guild.Name == "Bit Heroes")
             {
                 await gameAuthor.SendMessageAsync(winnerMsg);
             }
