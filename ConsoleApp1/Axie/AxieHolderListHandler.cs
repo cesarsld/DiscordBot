@@ -75,7 +75,7 @@ namespace DiscordBot
         {
             List<AxieHolder> axieHolders = await GetAxieHolders();
 
-            AxieHolder axieHolder = axieHolders.First(holder => holder.GetUserId() == userId);
+            AxieHolder axieHolder = axieHolders.FirstOrDefault(holder => holder.GetUserId() == userId);
             if (axieHolder == null)
             {
                 await channel.SendMessageAsync("User does not exist, fool!");
