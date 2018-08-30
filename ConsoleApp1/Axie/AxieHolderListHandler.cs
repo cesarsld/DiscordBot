@@ -16,6 +16,7 @@ namespace DiscordBot
     class AxieHolderListHandler
     {
         private static string strFilename = "AxieHolderList.txt";
+        private static readonly object SyncObj = new object();
 
         public AxieHolderListHandler()
         {
