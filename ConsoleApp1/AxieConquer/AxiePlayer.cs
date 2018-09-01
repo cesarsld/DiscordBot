@@ -1,10 +1,23 @@
 ﻿using System;
-namespace DiscordBot.AxieConquer
+using Discord;
+
+namespace DiscordBot
 {
-    public class AxiePlayer
+    public class AxiePlayer : Player
     {
-        public AxiePlayer()
+        private int LandCount { get; set; }
+        private AxieArmy Army;
+        private int MaterialCount { get; set; }
+
+        public AxiePlayer(IUser param) : base (param)
         {
+            LandCount = 10;
+            Army = new AxieArmy();
+            MaterialCount = 0;
         }
+
+
+
+
     }
 }
