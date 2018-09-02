@@ -80,6 +80,7 @@ namespace DiscordBot
                     _players.Add(axiePlayer);
                 }
             }
+            await Task.Delay(1);
         }
     }
 }

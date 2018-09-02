@@ -5,12 +5,32 @@ using System.IO;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using Newtonsoft.Json.Linq;
+using Nethereum;
+using DiscordBot.AxieRace;
 namespace DiscordBot
 {
     [Group("axie")]
-    public class AxieCommand : ModuleBase
+    public class AxieCommand : BaseCommands
     {
+
+        public static bool CreateChannelCommandInstance(string commandName, ulong userId, ulong channelId, ulong guildId, AxieRacingInstance gameInstance, out RunningCommandInfo instance)
+        {
+            lock (SyncObj)
+            {
+                ChannelCommandInstances.TryGetValue(channelId, out instance);
+                if (instance == null)
+                {
+                    instance = new RunningCommandInfo(commandName, userId, channelId, guildId, gameInstance);
+                    ChannelCommandInstances[channelId] = instance;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
         [Command("help"), Summary("register ETH wallet address to user ID")]
         public async Task PostHelp()
         {
@@ -63,7 +83,81 @@ namespace DiscordBot
         [Command("show"), Summary("show you addresses")]
         public async Task ShowAddresses()
         {
+            
             await AxieHolderListHandler.GetUserAddressList(Context.Message.Author.Id, Context.Channel);
+        }
+
+        [Command("SetRacerData"), Summary("Set racer data")]
+        public async Task SetRacerData(ulong gameId, string axieClass, int pace, int awareness, int diet)
+        {
+            RunningCommandInfo commandInfo = GetRunningCommandInfo(gameId);
+            if (commandInfo != null)
+            {
+                AxieClass _class = AxieClass.undefined;
+                Enum.TryParse(axieClass.ToLower(), out _class);
+                await commandInfo.RaceInstance.GetRacerDataFromDm(Context.Message.Author.Id, _class, pace, awareness, diet, Context);
+            }
+            else await Context.Channel.SendMessageAsync("I'm sorry I can't find the game instance. It may have ended or the ID you gave me is wrong :(");          
+        }
+        [Command("RaceGame", RunMode = RunMode.Async), Summary("Launch raceing game")]
+        public async Task AxieRacing([Summary("Max minutes to wait for players")]string strMaxMinutesToWait = null)
+        {
+
+            AxieRacingInstance gameInstance = new AxieRacingInstance(Context.Channel.Id);
+            await StartGameInternal(gameInstance, strMaxMinutesToWait);
+            
+        }
+        private async Task StartGameInternal(AxieRacingInstance raceInstance, string strSecondsToWait)
+        {
+            bool cleanupCommandInstance = false;
+            try
+            {
+                Logger.LogInternal($"G:{Context.Guild.Name}  Command " + $"'giveAway' executed by '{Context.Message.Author.Username}'");
+                RunningCommandInfo commandInfo;
+                if (CreateChannelCommandInstance("GiveAway", Context.User.Id, Context.Channel.Id, Context.Guild.Id, raceInstance, out commandInfo))
+                {
+                    cleanupCommandInstance = true;
+                    int maxSecsToWait;
+                    int testUsers = 0;
+
+                    if (Int32.TryParse(strSecondsToWait, out maxSecsToWait) == false) maxSecsToWait = 5;
+                    if (maxSecsToWait <= 0) maxSecsToWait = 1;
+
+
+                    SocketGuildUser user = Context.Message.Author as SocketGuildUser;
+                    string userThatStartedGame = user?.Nickname ?? Context.Message.Author.Username;
+                    await raceInstance.RunRace(maxSecsToWait, Context, userThatStartedGame, testUsers);
+                    cleanupCommandInstance = false;
+                    //await Context.Channel.SendMessageAsync($"MaxUsers: {maxUsers}  MaxMinutesToWait: {maxMinutesToWait} SecondsDelayBetweenDays: {secondsDelayBetweenDays} NumWinners: {numWinners}");
+                }
+                else
+                {
+                    try
+                    {
+                        await LogAndReplyAsync($"The '{commandInfo.CommandName}' command is currently running!.  Can't run this command until that finishes");
+                    }
+                    catch (Exception ex)
+                    {
+                        await Logger.Log(new LogMessage(LogSeverity.Error, "StartGameInternal", "Unexpected Exception", ex));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await Logger.Log(new LogMessage(LogSeverity.Error, "StartGame", "Unexpected Exception", ex));
+            }
+            finally
+            {
+                try
+                {
+                    if (cleanupCommandInstance)
+                        RemoveChannelCommandInstance(Context.Channel.Id);
+                }
+                catch (Exception ex)
+                {
+                    await Logger.Log(new LogMessage(LogSeverity.Error, "StartGame", "Unexpected Exception in Finally", ex));
+                }
+            }
         }
     }
 }

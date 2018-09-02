@@ -20,8 +20,8 @@ namespace DiscordBot
 {
     public class BaseCommands : ModuleBase
     {
-        private static readonly object SyncObj;
-        private static readonly Dictionary<ulong, RunningCommandInfo> ChannelCommandInstances;
+        protected static readonly object SyncObj;
+        protected static readonly Dictionary<ulong, RunningCommandInfo> ChannelCommandInstances;
 
         static BaseCommands()
         {
@@ -508,6 +508,7 @@ namespace DiscordBot
                 {
                     json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + index.ToString());
                 }
+
                 catch (Exception ex)
                 {
                     await Context.Channel.SendMessageAsync("Error. Axie could not be found.");
@@ -744,7 +745,7 @@ namespace DiscordBot
             //}
         }
 
-        private async Task StartGameInternal(BotGameInstance gameInstance, string strMaxUsers, string strMaxMinutesToWait, string strSecondsDelayBetweenDays, string strNumWinners, int testUsers)
+        protected async Task StartGameInternal(BotGameInstance gameInstance, string strMaxUsers, string strMaxMinutesToWait, string strSecondsDelayBetweenDays, string strNumWinners, int testUsers)
         {
             bool cleanupCommandInstance = false;
             try
@@ -808,7 +809,7 @@ namespace DiscordBot
                 }
             }
         }
-        private async Task StartGameInternal(BotGameInstance gameInstance, string strMaxMinutesToWait, string strMaxTurns, string strMaxScore, int testUsers)
+        protected async Task StartGameInternal(BotGameInstance gameInstance, string strMaxMinutesToWait, string strMaxTurns, string strMaxScore, int testUsers)
         {
             bool cleanupCommandInstance = false;
             try
@@ -874,7 +875,7 @@ namespace DiscordBot
             }
         }
 
-        private async Task StartGiveAway(GiveawayInstance giveawayInstance, string strSecondsToWait, string strTargetNumber, string strNumWinners, string strTestUsers)
+        protected async Task StartGiveAway(GiveawayInstance giveawayInstance, string strSecondsToWait, string strTargetNumber, string strNumWinners, string strTestUsers)
         {
             bool cleanupCommandInstance = false;
             try

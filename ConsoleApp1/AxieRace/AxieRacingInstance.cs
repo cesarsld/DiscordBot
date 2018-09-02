@@ -8,25 +8,75 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System.Threading;
 
-namespace DiscordBot
+namespace DiscordBot.AxieRace
 {
-    public class GiveawayInstance : BotGameInstance
+    public class AxieRacingInstance : BotGameInstance
     {
-
-        private string GetGiveawayMessage(string userName, int maxMinutesToWait, int target)
+        private ulong gameId;
+        private AxieRacingGame raceInstance;
+        protected override Player CreatePlayer(IUser user)
         {
-            return $" Preparing to start a Giveaway for ```Markdown\r\n<{userName}> will start his giveaway in {maxMinutesToWait} seconds. The participant closest to the number  * {target} * wins!"
+            return new AxieRacer(user);
+        }
+
+        public AxieRacingInstance(ulong _gameId)
+        {
+            gameId = _gameId;
+        }
+
+        public Task FetchPlayerInput(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel, SocketReaction reaction)
+        {
+            try
+            {
+                if (reaction != null && reaction.User.IsSpecified && reaction.UserId != msg.Value.Author.Id) // for now except all reactions && reaction.Emote.Name == ReactionToUse)
+                {
+                    lock (SyncObj)
+                    {
+                        if (msg.Value?.Id == MessageId)
+                        {
+                            raceInstance.HandlePlayerInput(reaction.UserId, reaction.Emote.Name);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(new LogMessage(LogSeverity.Error, "FethPlayerInput", "Unexpected Exception", ex));
+            }
+            return Task.CompletedTask;
+        }
+
+        public async Task GetRacerDataFromDm(ulong userId, AxieClass _class, int pace, int awareness, int diet, ICommandContext context)
+        {
+            if (raceInstance.GetPrepTimeStatus())
+            {
+                List<AxieRacer> playerList = raceInstance.GetPlayers();
+                AxieRacer player = playerList.FirstOrDefault(p => p.UserId == userId);
+                if (player != null)
+                {
+                    player.SetRacerData(_class, pace, awareness, diet);
+                    await raceInstance.TestConfig(context, player);
+                }
+                else await context.Channel.SendMessageAsync("You have not registered to participate in this game");
+            }
+            else await context.Channel.SendMessageAsync("Qualifiers have ended.");
+        }
+
+        private string GetRaceMessage(string userName, int maxMinutesToWait)
+        {
+            return $" Preparing to start an Axie Race for ```Markdown\r\n<{userName}> will start his race in {maxMinutesToWait} seconds. The player to finish the race first place wins!"
                 + "```\r\n"
                 + $"React to this message with ANY emoji to enter!  Multiple Reactions(emojis) will NOT enter you more than once.\r\nPlayer entered: ";
         }
 
-
-        private async Task RunGiveawayInternal(int numWinners, int target, List<Player> players)
+        private async Task RunRaceInternal(List<Player> players, ulong gameId)
         {
-            await new GiveawayRunner().Run(numWinners, target, players, LogToChannel, SendMsg, GetCancelGame);
+            raceInstance = new AxieRacingGame(gameId);
+            Bot.DiscordClient.ReactionAdded += FetchPlayerInput;
+            await raceInstance.Run(players, LogToChannel, SendMsg, GetCancelGame);
         }
 
-        public async Task RunGiveaway(int numWinners,int maxMinutesToWait, int target, ICommandContext context, string userName, int testUsers)
+        public async Task RunRace(int maxMinutesToWait, ICommandContext context, string userName, int testUsers)
         {
             bool removeHandler = false;
             try
@@ -45,7 +95,7 @@ namespace DiscordBot
                     }
                 }
 
-                string gameMessageText = GetGiveawayMessage(userName, maxMinutesToWait, target);
+                string gameMessageText = GetRaceMessage(userName, maxMinutesToWait);
                 Task<IUserMessage> messageTask = _channel.SendMessageAsync(gameMessageText + "0");
                 Logger.Log(gameMessageText);
                 messageTask.Wait();
@@ -170,7 +220,7 @@ namespace DiscordBot
                     LogToChannel("Players REMOVED from game due to multiple NickNames:\r\n" + sb);
                 }
 
-               await RunGiveawayInternal(numWinners, target, players);
+                await RunRaceInternal(players, context.Channel.Id);
             }
             catch (Exception ex)
             {
@@ -226,5 +276,7 @@ namespace DiscordBot
                 }
             }
         }
+
+
     }
 }

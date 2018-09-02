@@ -64,7 +64,6 @@ namespace DiscordBot
 
             await collection.InsertOneAsync(document);
         }
-
         static void Stuff()
         {
             var connectionString = "mongodb://localhost:27017";

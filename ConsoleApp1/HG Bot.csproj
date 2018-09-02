@@ -182,6 +182,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AxieRace\AxieClass.cs" />
+    <Compile Include="AxieRace\AxieRacer.cs" />
+    <Compile Include="AxieRace\AxieRacingGame.cs" />
+    <Compile Include="AxieRace\AxieRacingInstance.cs" />
+    <Compile Include="AxieRace\RaceConfig.cs" />
+    <Compile Include="AxieRace\RaceStyle.cs" />
     <Compile Include="Axie\AxieCommand.cs" />
     <Compile Include="Axie\AxieData.cs" />
     <Compile Include="Axie\AxieHolder.cs" />
@@ -253,8 +259,6 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="AxieConquer\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
