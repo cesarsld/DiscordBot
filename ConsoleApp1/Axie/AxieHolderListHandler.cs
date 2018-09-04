@@ -48,6 +48,7 @@ namespace DiscordBot
             List<AxieHolder> axieHolders = await GetAxieHolders();
             if (IsAddressValid(address))
             {
+                address = address.ToLower();
                 foreach (var holder in axieHolders)
                 {
                     if (holder.GetAddressList().Contains(address))

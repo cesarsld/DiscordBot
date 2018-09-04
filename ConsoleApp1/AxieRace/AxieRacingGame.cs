@@ -120,19 +120,54 @@ namespace DiscordBot.AxieRace
                 foreach (var player in _players)
                 {
                     //add aggressivity
-                    player.totalRaceTime += Convert.ToInt32(raceConfig.RandomRaceTime * ((float)player.totalScore / 400) * ((float)_random.Next(90, 111) / 100));
+                    player.raceLapTime = Convert.ToInt32(raceConfig.RandomRaceTime * (1 + Math.Pow((player.totalScore / 400), 0.5)) * ((float)_random.Next(90, 111) / 100));
+                    player.totalRaceTime += player.raceLapTime;
                 }
                 //sendMsg("hi");
                 _players = _players.OrderBy(player => player.QualifierRun).ToList();
+                //compute race duels
                 sb.Append("RACE LEADERBOARD\n\n");
                 for (int j = 0; j < _players.Count; j++)
                 {
-                    sb.Append($"{j + 1}. {_players[j].NickName} || Axie type = {_players[j].GetClass()} || total time = * {_players[j].totalRaceTime} * seconds\n");
+                    sb.Append($"{j + 1}. {_players[j].NickName} || Axie type = {_players[j].GetClass()} || total time = * {_players[j].totalRaceTime} * seconds || Last lap time = * {_players[j].raceLapTime} *\n");
                 }
                 showMessageDelegate("" + sb, null);
                 sb.Clear();
             }
             sendMsg("hi, it's game over for now");
+        }
+
+        private void ComputeRaceDuels(int index)
+        {
+            for (int i = index; i < _players.Count - 1; i++)
+            {
+                int positionDiff = _players[i + 1].totalRaceTime - _players[i].totalRaceTime;
+                if (positionDiff < 5)
+                {
+                    int firstIndex = i;
+                    int lastIndex = GetLastIndexOfCLuster(i + 1);
+                    //do stuff
+
+                    i = lastIndex;
+                }
+            }
+        }
+
+        private void RaceDuel(int first, int last)
+        {
+            int[] duelRanking = new int[last - first + 1];
+
+            for (int i = 0; i < duelRanking.Length; i++)
+            {
+                duelRanking[i] = _random.Next(_players[first + i].totalScore + 1000);
+            }
+        }
+
+        private int GetLastIndexOfCLuster(int currentIndex)
+        {
+            int positionDiff = _players[currentIndex + 1].totalRaceTime - _players[currentIndex].totalRaceTime;
+            if (positionDiff < 5) return GetLastIndexOfCLuster(currentIndex + 1);
+            else return currentIndex;
         }
 
         private void RunQualifiers()
@@ -144,21 +179,22 @@ namespace DiscordBot.AxieRace
                 int awarenessAdvantage = GetParamAdvantage(player.GetAwareness(), raceConfig.Awaraness);
                 int dietAdvantage = GetParamAdvantage(player.GetDiet(), raceConfig.Diet);
                 int finalScore = classAdvantage + paceAdvantage + awarenessAdvantage + dietAdvantage;
+                if (finalScore == 0) finalScore = 1;
                 player.totalScore = finalScore;
-                player.QualifierRun = Convert.ToInt32(raceConfig.RandomRaceTime * ((float)finalScore / 400) * ((float)_random.Next(90, 111) / 100));
+                player.QualifierRun = Convert.ToInt32(raceConfig.RandomRaceTime * (400 / (float)player.totalScore) * ((float)_random.Next(90, 111) / 100));
             }
         }
 
         private RaceConfig SetRaceConfig()
         {
-            RaceConfig raceConfig = new RaceConfig((AxieClass)(_random.Next(6) + 1),
+            RaceConfig _raceConfig = new RaceConfig((AxieClass)(_random.Next(6) + 1),
                                                                _random.Next(101),
                                                                _random.Next(101),
                                                                _random.Next(101),
                                                                _random.Next(50, 190),
                                                                ReturnRandomUniqueSequence(6));
-            Console.WriteLine($"Class : {raceConfig.classRanking[0]}|| Pace : {raceConfig.Pace}|| Awareness : {raceConfig.Awaraness}|| Diet : {raceConfig.Diet}|| RaceTime : {raceConfig.RandomRaceTime}");
-            return raceConfig;
+            Console.WriteLine($"Class : {_raceConfig.classRanking[0]}|| Pace : {_raceConfig.Pace}|| Awareness : {_raceConfig.Awaraness}|| Diet : {_raceConfig.Diet}|| RaceTime : {_raceConfig.RandomRaceTime}");
+            return _raceConfig;
         }
 
         public async Task TestConfig(ICommandContext context, AxieRacer player)
