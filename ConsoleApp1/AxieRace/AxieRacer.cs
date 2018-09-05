@@ -17,6 +17,7 @@ namespace DiscordBot.AxieRace
         public int QualifierRun { get; set; }
         public int raceDiffential = 0;
         public int totalRaceTime;
+        public int raceLapTime;
         public RaceStyle raceStyle { get; set; }
         public bool canPractice {
             get {
@@ -32,6 +33,7 @@ namespace DiscordBot.AxieRace
             PracticeTries = 60;
             QualifierRun = 9999;
             totalScore = 0;
+            raceLapTime = 0;
         }
 
         public AxieClass GetClass() => RacerClass;
