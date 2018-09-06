@@ -137,16 +137,16 @@ namespace DiscordBot.AxieRace
             sendMsg("hi, it's game over for now");
         }
 
-        private void ComputeRaceDuels(int index)
+        private void ComputeRaceDuels()
         {
-            for (int i = index; i < _players.Count - 1; i++)
+            for (int i = 0; i < _players.Count - 1; i++)
             {
                 int positionDiff = _players[i + 1].totalRaceTime - _players[i].totalRaceTime;
                 if (positionDiff < 5)
                 {
                     int firstIndex = i;
                     int lastIndex = GetLastIndexOfCLuster(i + 1);
-                    //do stuff
+                    RaceDuel(firstIndex, lastIndex);
 
                     i = lastIndex;
                 }
@@ -156,10 +156,20 @@ namespace DiscordBot.AxieRace
         private void RaceDuel(int first, int last)
         {
             int[] duelRanking = new int[last - first + 1];
-
+            int winnerIndex = -1;
+            int highestRoll = -1;
             for (int i = 0; i < duelRanking.Length; i++)
             {
                 duelRanking[i] = _random.Next(_players[first + i].totalScore + 1000);
+                if (duelRanking[i] > highestRoll)
+                {
+                    winnerIndex = first + i;
+                    highestRoll = duelRanking[i];
+                }
+            }
+            if(winnerIndex != first)
+            {
+                
             }
         }
 
