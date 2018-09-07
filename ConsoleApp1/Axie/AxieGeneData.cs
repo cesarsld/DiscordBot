@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DiscordBot.Axie
-{
-    class AxieGeneData
+namespace DiscordBot
+{ 
+    public class AxieGeneData
     {
         public string[] genome;
         public string Class;

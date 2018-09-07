@@ -43,7 +43,8 @@ namespace DiscordBot
                                                  + "- `>axie nonbuyable axie_id` : Remove an axie from being buyable.\n"
                                                  + "- `>axie buyable axie_id` : Add an axie to be buyable again.\n"
                                                  + "- `>axie buy input_id` : Ping the owner of this axie.\n"
-                                                 + "- `>axie show` : Show user's addresses");
+                                                 + "- `>axie show` : Show user's addresses.\n"
+                                                 + "- `>axie purechance axie_id_1 axie_id_2` : Show user's chance to breed a pure axie from 2 preset axies");
         }
         [Command("addaddress"), Summary("register ETH wallet address to user ID")]
         public async Task AddAddress(string address)
