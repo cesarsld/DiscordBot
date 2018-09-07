@@ -14,6 +14,7 @@ namespace DiscordBot
         public int id;
         public string name;
         public string owner;
+        public string genes;
         public string Class;
         public string title;
         public AxiePart[] parts;

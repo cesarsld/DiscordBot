@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver.Linq;
+using DiscordBot.Axie;
 
 
 namespace DiscordBot
@@ -19,6 +20,7 @@ namespace DiscordBot
                 try
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
+                    //PureBreeder.GetBreedingChance("8594385836028242049444494044180692155268569324804469339946759268613786701828", "8594385836028242049444494044180692155268569324804469339946759268613786701828");
                     //AxieHolderListHandler.AddUserAddress(0, "0").GetAwaiter().GetResult();
                     new Bot().RunAsync().GetAwaiter().GetResult();
                     //BanListHandler bl = new BanListHandler();

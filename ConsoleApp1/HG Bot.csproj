@@ -60,6 +60,9 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.2.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>..\packages\BouncyCastle.1.8.2\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
     <Reference Include="Common.Logging.Core, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
       <HintPath>..\packages\Common.Logging.Core.3.4.1\lib\net40\Common.Logging.Core.dll</HintPath>
     </Reference>
@@ -102,11 +105,20 @@
     <Reference Include="MongoDB.Driver.Core, Version=2.6.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MongoDB.Driver.Core.2.6.1\lib\net45\MongoDB.Driver.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Nethereum.Hex, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nethereum.Hex.2.5.1\lib\net451\Nethereum.Hex.dll</HintPath>
+    </Reference>
     <Reference Include="Nethereum.JsonRpc.Client, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nethereum.JsonRpc.Client.2.5.1\lib\net451\Nethereum.JsonRpc.Client.dll</HintPath>
     </Reference>
     <Reference Include="Nethereum.JsonRpc.RpcClient, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nethereum.JsonRpc.RpcClient.2.5.1\lib\net451\Nethereum.JsonRpc.RpcClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Nethereum.Portable, Version=1.0.6730.22796, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nethereum.Portable.2.5.1\lib\portable45-net45+win8+wpa81\Nethereum.Portable.dll</HintPath>
+    </Reference>
+    <Reference Include="Nethereum.Util, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nethereum.Util.2.5.1\lib\net451\Nethereum.Util.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -190,7 +202,9 @@
     <Compile Include="AxieRace\RaceStyle.cs" />
     <Compile Include="Axie\AxieCommand.cs" />
     <Compile Include="Axie\AxieData.cs" />
+    <Compile Include="Axie\AxieGeneData.cs" />
     <Compile Include="Axie\AxieHolder.cs" />
+    <Compile Include="Axie\PureBreeder.cs" />
     <Compile Include="BanListHandler.cs" />
     <Compile Include="DiscordKetGetter.cs" />
     <Compile Include="GiveAway\GiveawayInstance.cs" />

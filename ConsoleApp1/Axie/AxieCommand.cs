@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using Newtonsoft.Json.Linq;
 using Nethereum;
 using DiscordBot.AxieRace;
+using DiscordBot.Axie;
 namespace DiscordBot
 {
     [Group("axie")]
@@ -136,6 +137,33 @@ namespace DiscordBot
         {
             
             await AxieHolderListHandler.GetUserAddressList(Context.Message.Author.Id, Context.Channel);
+        }
+
+
+        [Command("purechance"), Summary("show you addresses")]
+        public async Task GetBreedingChance(int axie1, int axie2)
+        {
+            string json1 = "";
+            string json2 = "";
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                try
+                {
+                    json1 = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + axie1.ToString());
+                    json2 = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + axie2.ToString());
+                }
+                catch (Exception ex)
+                {
+                    await Context.Channel.SendMessageAsync("Error. Axies could not be found.");
+                    return;
+                }
+            }
+            JObject axieJson1 = JObject.Parse(json1);
+            AxieData axieData1 = axieJson1.ToObject<AxieData>();
+            JObject axieJson2 = JObject.Parse(json2);
+            AxieData axieData2 = axieJson2.ToObject<AxieData>();
+            float chance = PureBreeder.GetBreedingChance(axieData1.genes, axieData2.genes);
+            await Context.Channel.SendMessageAsync($"The chance to breed a pure axie with axies #{axieData1.id} and #{axieData2.id} is = {chance}%");
         }
 
         [Command("SetRacerData"), Summary("Set racer data")]
