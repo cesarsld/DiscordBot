@@ -13,16 +13,17 @@ namespace DiscordBot
 {
     [Group("axie")]
     public class AxieCommand : BaseCommands
-    {
-
+    { 
         private bool IsMarketPlace(ICommandContext context)
         {
-            return context.Channel.Id == 423343101428498435 ||context.Guild.Id == 329959863545364480;
+            CommandContext ctxt = new CommandContext(context.Client, context.Message);
+            return ctxt.IsPrivate || context.Channel.Id == 423343101428498435 ||context.Guild.Id == 329959863545364480;
         }
 
         private bool CanSendMessages(ICommandContext context)
         {
-            return context.Channel.Id == 487932149354463232 || context.Channel.Id == 414794784448970752 || context.Guild.Id == 329959863545364480;
+            CommandContext ctxt = new CommandContext(context.Client, context.Message);
+            return ctxt.IsPrivate|| context.Channel.Id == 487932149354463232 || context.Channel.Id == 414794784448970752 || context.Guild.Id == 329959863545364480;
         }
 
         public static bool CreateChannelCommandInstance(string commandName, ulong userId, ulong channelId, ulong guildId, AxieRacingInstance gameInstance, out RunningCommandInfo instance)
@@ -163,7 +164,50 @@ namespace DiscordBot
             if (IsMarketPlace(Context))
                 await AxieHolderListHandler.GetUserAddressList(Context.Message.Author.Id, Context.Channel);
         }
+        [Command("find"), Summary("find an axie from API")]
+        public async Task FindAxie(int index)
+        {
+            if (CanSendMessages(Context))
+            {
+                string json = "";
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    try
+                    {
+                        json = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/axies/" + index.ToString()); //https://axieinfinity.com/api/axies/
+                    }
 
+                    catch (Exception ex)
+                    {
+                        await Context.Channel.SendMessageAsync("Error. Axie could not be found.");
+                        return;
+                    }
+                }
+                JObject axieJson = JObject.Parse(json);
+                AxieData axieData = axieJson.ToObject<AxieData>();
+
+                if (axieData.stage <= 2) await Context.Channel.SendMessageAsync("Axie is still an egg! I can't check what it's going to be >:O ");
+                else await Context.Channel.SendMessageAsync("", false, AxieData.EmbedAxieData(axieData, axieJson));
+                string imageUrl = axieJson["figure"]["static"]["idle"].ToString();
+
+
+                byte[] imageData = null;
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    try
+                    {
+                        imageData = wc.DownloadData(imageUrl); //https://axieinfinity.com/api/axies/
+                    }
+
+                    catch (Exception ex)
+                    {
+                    }
+                }
+                var image = new Image(new MemoryStream(imageData));
+
+                await Context.Channel.SendFileAsync(image.Stream, "axieIdle.png");
+            }
+        }
 
         [Command("purechance"), Summary("show you addresses")]
         public async Task GetBreedingChance(int axie1, int axie2, string isBeta = null)

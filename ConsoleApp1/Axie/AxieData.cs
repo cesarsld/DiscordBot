@@ -17,7 +17,7 @@ namespace DiscordBot
         public string genes;
         public string Class;
         public string title;
-        public AxiePart[] parts;
+        public AxieParts parts;
         public int exp;
         public int level;
         public int stage;
@@ -25,8 +25,11 @@ namespace DiscordBot
         //public AxieFigure figure;
         public static EmbedBuilder EmbedAxieData(AxieData axieData, JObject axieJson)
         {
-            string imageUrl = (string)axieJson["figure"]["images"][axieData.id.ToString() + ".png"];
-            int pureness = axieData.parts.Count(p => p.Class == axieData.Class);
+            string imageUrl = axieJson["figure"]["static"]["idle"].ToString();
+            int pureness = GetPureness(axieData);
+
+
+
             var embed = new EmbedBuilder();
             embed.WithTitle(axieData.name);
             embed.AddInlineField("Class", axieData.Class);
@@ -38,12 +41,12 @@ namespace DiscordBot
             embed.AddInlineField("Speed", axieData.stats.speed.ToString());
             embed.AddInlineField("Skill", axieData.stats.skill.ToString());
             embed.AddField("Morale", axieData.stats.morale.ToString());
-            embed.AddInlineField("Eyes || " + axieData.parts[0].Class, axieData.parts[0].name + (axieData.parts[0].mystic ? " (M)" : ""));
-            embed.AddInlineField("Mouth || " + axieData.parts[1].Class, axieData.parts[1].name + (axieData.parts[1].mystic ? " (M)" : ""));
-            embed.AddInlineField("Ears || " + axieData.parts[2].Class, axieData.parts[2].name + (axieData.parts[2].mystic ? " (M)" : ""));
-            embed.AddInlineField("Horn || " + axieData.parts[3].Class, axieData.parts[3].name + (axieData.parts[3].mystic ? " (M)" : ""));
-            embed.AddInlineField("Back || " + axieData.parts[4].Class, axieData.parts[4].name + (axieData.parts[4].mystic ? " (M)" : ""));
-            embed.AddInlineField("Tail || " + axieData.parts[5].Class, axieData.parts[5].name + (axieData.parts[5].mystic ? " (M)" : ""));
+            embed.AddInlineField("Eyes || " + axieData.parts.eyes.Clazz, axieData.parts.eyes.name + (axieData.parts.eyes.mystic ? " (M)" : ""));
+            embed.AddInlineField("Mouth || " + axieData.parts.mouth.Clazz, axieData.parts.mouth.name + (axieData.parts.mouth.mystic ? " (M)" : ""));
+            embed.AddInlineField("Ears || " + axieData.parts.ears.Clazz, axieData.parts.ears.name + (axieData.parts.ears.mystic ? " (M)" : ""));
+            embed.AddInlineField("Horn || " + axieData.parts.horn.Clazz, axieData.parts.horn.name + (axieData.parts.horn.mystic ? " (M)" : ""));
+            embed.AddInlineField("Back || " + axieData.parts.back.Clazz, axieData.parts.back.name + (axieData.parts.back.mystic ? " (M)" : ""));
+            embed.AddInlineField("Tail || " + axieData.parts.tail.Clazz, axieData.parts.tail.name + (axieData.parts.tail.mystic ? " (M)" : ""));
             embed.AddField("Pureness", pureness);
             embed.WithImageUrl(imageUrl);
             Color color = Color.Default;
@@ -71,12 +74,34 @@ namespace DiscordBot
             embed.WithColor(color);
             return embed;
         }
+        public static int GetPureness(AxieData axie)
+        {
+            int pureness = 0;
+            if (axie.parts.ears.Clazz == axie.Class) pureness++;
+            if (axie.parts.tail.Clazz == axie.Class) pureness++;
+            if (axie.parts.horn.Clazz == axie.Class) pureness++;
+            if (axie.parts.back.Clazz == axie.Class) pureness++;
+            if (axie.parts.eyes.Clazz == axie.Class) pureness++;
+            if (axie.parts.mouth.Clazz == axie.Class) pureness++;
+            return pureness++;
+        }
     }
+
+    public class AxieParts
+    {
+        public AxiePart tail;
+        public AxiePart back;
+        public AxiePart horn;
+        public AxiePart ears;
+        public AxiePart mouth;
+        public AxiePart eyes;
+    }
+
     public class AxiePart
     {
         public string id;
         public string name;
-        public string Class;
+        public string Clazz;
         public string type;
         public bool mystic;
     }
