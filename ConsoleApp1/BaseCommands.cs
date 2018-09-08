@@ -638,7 +638,7 @@ namespace DiscordBot
             }
             catch (Exception ex)
             {
-                await Logger.Log(new LogMessage(LogSeverity.Error, "CleanUp", "Unexpected Exception", ex));
+                await Logger.Log(new LogMessage(LogSeverity.Error, "CleanUp", "Unexpected Exception : " + ex.ToString(), ex));
             }
             finally
             {

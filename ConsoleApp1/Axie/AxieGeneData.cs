@@ -51,9 +51,9 @@ namespace DiscordBot
         public float GetTraitTransmissionProbability(string desiredClass, int index)
         {
             float probability = 0;
-            probability += TraitData[index].DominantClass == desiredClass ? 0.3f : 0;
-            probability += TraitData[index].R1Class == desiredClass ? 0.18f : 0;
-            probability += TraitData[index].R2Class == desiredClass ? 0.02f : 0;
+            probability += TraitData[index].DominantClass == desiredClass ? 0.375f : 0; //0.35
+            probability += TraitData[index].R1Class == desiredClass ? 0.09375f : 0;      //0.11
+            probability += TraitData[index].R2Class == desiredClass ? 0.03125f : 0;      //0.04 from freak  234375f weird from trung
             return probability;
         }
     }
