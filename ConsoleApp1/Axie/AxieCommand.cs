@@ -97,8 +97,9 @@ namespace DiscordBot
                 }
 
                 JObject axieJson = JObject.Parse(json);
-                AxieData axieData = axieJson.ToObject<AxieData>();
-                await AxieHolderListHandler.AddNonBuyableAxie(axieData.id, Context.Message.Author.Id, axieData.owner, Context);
+                string owner = (string)axieJson["owner"];
+                int axieId = (int)axieJson["id"];
+                await AxieHolderListHandler.AddNonBuyableAxie(axieId, Context.Message.Author.Id, owner, Context);
             }
         }
 
@@ -121,8 +122,9 @@ namespace DiscordBot
                     }
                 }
                 JObject axieJson = JObject.Parse(json);
-                AxieData axieData = axieJson.ToObject<AxieData>();
-                await AxieHolderListHandler.RemoveNonBuyableAxie(axieData.id, Context.Message.Author.Id, axieData.owner, Context);
+                string owner = (string)axieJson["owner"];
+                int axieId = (int)axieJson["id"];
+                await AxieHolderListHandler.RemoveNonBuyableAxie(axieId, Context.Message.Author.Id, owner, Context);
             }
         }
 
@@ -152,9 +154,9 @@ namespace DiscordBot
                     }
                 }
                 JObject axieJson = JObject.Parse(json);
-                AxieData axieData = axieJson.ToObject<AxieData>();
-                await AxieHolderListHandler.GetHolderId(axieData.owner, axieData.id, Context);
-                //if (axieData.stage <= 2) await Context.Channel.SendMessageAsync("Axie is still an egg! I can't check what it's going to be >:O ");
+                string owner = (string)axieJson["owner"];
+                int axieId = (int)axieJson["id"];
+                await AxieHolderListHandler.GetHolderId(owner, axieId, Context);
             }
         }
 
@@ -179,7 +181,8 @@ namespace DiscordBot
 
                     catch (Exception ex)
                     {
-                        await Context.Channel.SendMessageAsync("Error. Axie could not be found.");
+                        await Context.Channel.SendMessageAsync("Error. Axie could not be found. " + ex.Message);
+                        Console.WriteLine(ex.ToString());
                         return;
                     }
                 }

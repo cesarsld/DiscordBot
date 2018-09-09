@@ -18,6 +18,7 @@ namespace DiscordBot
         public string Class;
         public string title;
         public AxieParts parts;
+
         public int exp;
         public int level;
         public int stage;
@@ -27,7 +28,7 @@ namespace DiscordBot
         {
             string imageUrl = axieJson["figure"]["static"]["idle"].ToString();
             int pureness = GetPureness(axieData);
-
+            
 
 
             var embed = new EmbedBuilder();
@@ -37,16 +38,21 @@ namespace DiscordBot
             embed.AddInlineField("Exp", axieData.exp);
             embed.AddInlineField("Level", axieData.level);
             embed.AddField("Owner", axieData.owner);
-            embed.AddField("HP", axieData.stats.hp.ToString());
-            embed.AddInlineField("Speed", axieData.stats.speed.ToString());
-            embed.AddInlineField("Skill", axieData.stats.skill.ToString());
-            embed.AddField("Morale", axieData.stats.morale.ToString());
-            embed.AddInlineField("Eyes || " + axieData.parts.eyes.Clazz, axieData.parts.eyes.name + (axieData.parts.eyes.mystic ? " (M)" : ""));
-            embed.AddInlineField("Mouth || " + axieData.parts.mouth.Clazz, axieData.parts.mouth.name + (axieData.parts.mouth.mystic ? " (M)" : ""));
-            embed.AddInlineField("Ears || " + axieData.parts.ears.Clazz, axieData.parts.ears.name + (axieData.parts.ears.mystic ? " (M)" : ""));
-            embed.AddInlineField("Horn || " + axieData.parts.horn.Clazz, axieData.parts.horn.name + (axieData.parts.horn.mystic ? " (M)" : ""));
-            embed.AddInlineField("Back || " + axieData.parts.back.Clazz, axieData.parts.back.name + (axieData.parts.back.mystic ? " (M)" : ""));
-            embed.AddInlineField("Tail || " + axieData.parts.tail.Clazz, axieData.parts.tail.name + (axieData.parts.tail.mystic ? " (M)" : ""));
+            //embed.AddField("HP", axieData.stats.hp.ToString());
+            embed.AddField("HP", $" ({axieData.stats.hp})".PadLeft( 5 + axieData.stats.hp, '|'));
+            embed.AddField("Speed", $" ({axieData.stats.speed})".PadLeft(5 + axieData.stats.speed, '|'));
+            embed.AddField("Skill", $" ({axieData.stats.skill})".PadLeft(5 + axieData.stats.skill, '|'));
+            embed.AddField("Morale", $" ({axieData.stats.morale})".PadLeft(5 + axieData.stats.morale, '|'));
+
+            //embed.AddField("Speed", axieData.stats.speed.ToString());
+            //embed.AddField("Skill", axieData.stats.skill.ToString());
+            //embed.AddField("Morale", axieData.stats.morale.ToString());
+            //embed.AddInlineField("Eyes || " + axieData.parts.eyes.Clazz, axieData.parts.eyes.name + (axieData.parts.eyes.mystic ? " (M)" : ""));
+            //embed.AddInlineField("Mouth || " + axieData.parts.mouth.Clazz, axieData.parts.mouth.name + (axieData.parts.mouth.mystic ? " (M)" : ""));
+            //embed.AddInlineField("Ears || " + axieData.parts.ears.Clazz, axieData.parts.ears.name + (axieData.parts.ears.mystic ? " (M)" : ""));
+            //embed.AddInlineField("Horn || " + axieData.parts.horn.Clazz, axieData.parts.horn.name + (axieData.parts.horn.mystic ? " (M)" : ""));
+            //embed.AddInlineField("Back || " + axieData.parts.back.Clazz, axieData.parts.back.name + (axieData.parts.back.mystic ? " (M)" : ""));
+            //embed.AddInlineField("Tail || " + axieData.parts.tail.Clazz, axieData.parts.tail.name + (axieData.parts.tail.mystic ? " (M)" : ""));
             embed.AddField("Pureness", pureness);
             embed.WithImageUrl(imageUrl);
             Color color = Color.Default;
