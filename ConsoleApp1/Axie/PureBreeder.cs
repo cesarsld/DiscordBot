@@ -34,6 +34,12 @@ namespace DiscordBot.Axie
             // Convert first byte to binary.
             var binary = Convert.ToString(bytes[idx], 2).PadLeft(8, '0');
 
+            if (bytes.Length < 32)
+            {
+                for (int i = 0; i < 32 - bytes.Length; i++) base2.Append("00000000");
+            }
+            
+
             // Ensure leading zero exists if value is positive.
             if (binary[0] != '0' && gene256.Sign == 1)
             {

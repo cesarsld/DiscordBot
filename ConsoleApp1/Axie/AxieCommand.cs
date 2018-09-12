@@ -13,18 +13,25 @@ namespace DiscordBot
 {
     [Group("axie")]
     public class AxieCommand : BaseCommands
-    { 
+    {
         private bool IsMarketPlace(ICommandContext context)
         {
             CommandContext ctxt = new CommandContext(context.Client, context.Message);
-            return ctxt.IsPrivate || context.Channel.Id == 423343101428498435 ||context.Guild.Id == 329959863545364480;
+            return ctxt.IsPrivate || context.Channel.Id == 423343101428498435 || context.Guild.Id == 329959863545364480;
         }
 
-        private bool CanSendMessages(ICommandContext context)
+        private bool IsBotCommand(ICommandContext context)
         {
             CommandContext ctxt = new CommandContext(context.Client, context.Message);
-            return ctxt.IsPrivate|| context.Channel.Id == 487932149354463232 || context.Channel.Id == 414794784448970752 || context.Guild.Id == 329959863545364480;
+            return ctxt.IsPrivate || context.Channel.Id == 487932149354463232 || context.Guild.Id == 329959863545364480; //487932149354463232
         }
+
+
+        private bool IsGeneral(ICommandContext context)
+        {
+            CommandContext ctxt = new CommandContext(context.Client, context.Message);
+            return ctxt.IsPrivate|| context.Channel.Id == 410537147116814348 || context.Channel.Id == 414794784448970752 || context.Guild.Id == 329959863545364480;
+        } 
 
         public static bool CreateChannelCommandInstance(string commandName, ulong userId, ulong channelId, ulong guildId, AxieRacingInstance gameInstance, out RunningCommandInfo instance)
         {
@@ -45,7 +52,7 @@ namespace DiscordBot
         [Command("help"), Summary("register ETH wallet address to user ID")]
         public async Task PostHelp()
         {
-            if(CanSendMessages(Context))
+            if(IsBotCommand(Context))
             await Context.Channel.SendMessageAsync("Commands that you can use :\n"
                                                  + "- `>axie addaddress input_address` : register an ETH wallet address to user ID. You can add several addresses if you own more than 1 . \n"
                                                  + "- `>axie removeaddress input_address` : remove an ETH wallet address from user.\n"
@@ -60,27 +67,27 @@ namespace DiscordBot
         [Command("addaddress"), Summary("register ETH wallet address to user ID")]
         public async Task AddAddress(string address)
         {
-            if(IsMarketPlace(Context))
+            if (IsMarketPlace(Context) || IsBotCommand(Context))
                 await AxieHolderListHandler.AddUserAddress(Context.Message.Author.Id, address, Context);
         }
 
         [Command("removeaddress"), Summary("remove ETH wallet address to user ID")]
         public async Task RemoveAddress(string address)
         {
-            if (IsMarketPlace(Context))
+            if (IsMarketPlace(Context) || IsBotCommand(Context))
                 await AxieHolderListHandler.RemoveAddress(Context.Message.Author.Id, address, Context);
         }
         [Command("removeuser"), Summary("remove user from DB")]
         public async Task RemoveUser()
         {
-            if (IsMarketPlace(Context))
+            if (IsMarketPlace(Context) || IsBotCommand(Context))
                 await AxieHolderListHandler.RemoveUser(Context.Message.Author.Id, Context);
         }
 
         [Command("nonbuyable"), Summary("change ping status")]
         public async Task AddNonBuyable(int axieNumber)
         {
-            if (IsMarketPlace(Context))
+            if (IsMarketPlace(Context) || IsBotCommand(Context))
             {
                 string json = "";
                 using (System.Net.WebClient wc = new System.Net.WebClient())
@@ -106,7 +113,7 @@ namespace DiscordBot
         [Command("buyable"), Summary("change ping status")]
         public async Task RemoveNonBuyable(int axieNumber)
         {
-            if (IsMarketPlace(Context))
+            if (IsMarketPlace(Context) || IsBotCommand(Context))
             {
                 string json = "";
                 using (System.Net.WebClient wc = new System.Net.WebClient())
@@ -131,14 +138,14 @@ namespace DiscordBot
         [Command("Ping"), Summary("change ping status")]
         public async Task SetPingStatus()
         {
-            if (IsMarketPlace(Context))
+            if (IsMarketPlace(Context) || IsBotCommand(Context))
                 await AxieHolderListHandler.SetPingStatus(Context.Message.Author.Id, Context);
         }
 
         [Command("buy"), Summary("notify buyer than you want to buy axie")]
         public async Task BuyAxie(int axieNumber)
         {
-            if (IsMarketPlace(Context))
+            if (IsMarketPlace(Context) || IsBotCommand(Context))
             {
                 string json = "";
                 using (System.Net.WebClient wc = new System.Net.WebClient())
@@ -163,13 +170,13 @@ namespace DiscordBot
         [Command("show"), Summary("show you addresses")]
         public async Task ShowAddresses()
         {
-            if (IsMarketPlace(Context))
+            if (IsMarketPlace(Context) || IsBotCommand(Context))
                 await AxieHolderListHandler.GetUserAddressList(Context.Message.Author.Id, Context.Channel);
         }
         [Command("find"), Summary("find an axie from API")]
         public async Task FindAxie(int index)
         {
-            if (CanSendMessages(Context))
+            if (IsGeneral(Context) || IsBotCommand(Context))
             {
                 string json = "";
                 using (System.Net.WebClient wc = new System.Net.WebClient())
@@ -215,7 +222,7 @@ namespace DiscordBot
         [Command("purechance"), Summary("show you addresses")]
         public async Task GetBreedingChance(int axie1, int axie2, string isBeta = null)
         {
-            if (CanSendMessages(Context))
+            if (IsBotCommand(Context))
             {
                 string url = isBeta == "beta" ? "http://beta.axieinfinity.com/api/axies/" : "https://axieinfinity.com/api/axies/";
                 string json1 = "";
@@ -234,11 +241,15 @@ namespace DiscordBot
                     }
                 }
                 JObject axieJson1 = JObject.Parse(json1);
-                AxieData axieData1 = axieJson1.ToObject<AxieData>();
                 JObject axieJson2 = JObject.Parse(json2);
-                AxieData axieData2 = axieJson2.ToObject<AxieData>();
-                float chance = PureBreeder.GetBreedingChance(axieData1.genes, axieData2.genes);
-                await Context.Channel.SendMessageAsync($"The chance to breed a pure axie with axies #{axieData1.id} and #{axieData2.id} is = {chance}%");
+                //AxieData axieData1 = axieJson1.ToObject<AxieData>();
+                string genes1 = (string)axieJson1["genes"];
+                string genes2 = (string)axieJson2["genes"];
+                int id1 = (int)axieJson1["id"];
+                int id2 = (int)axieJson2["id"];
+                //AxieData axieData2 = axieJson2.ToObject<AxieData>();
+                float chance = PureBreeder.GetBreedingChance(genes1, genes2);
+                await Context.Channel.SendMessageAsync($"The chance to breed a pure axie with axies #{id1} and #{id2} is = {chance}%");
             }
         }
 
