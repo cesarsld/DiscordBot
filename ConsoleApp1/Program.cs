@@ -7,10 +7,13 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver.Linq;
 using DiscordBot.Axie;
-
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace DiscordBot
 {
+
     class Program
     {
         static void RunBot()
@@ -20,8 +23,7 @@ namespace DiscordBot
                 try
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
-                    //PureBreeder.GetBreedingChance("8594385836028242049444494044180692155268569324804469339946759268613786701828", "8594385836028242049444494044180692155268569324804469339946759268613786701828");
-                    //AxieHolderListHandler.AddUserAddress(0, "0").GetAwaiter().GetResult();
+                    //FightDataHandler.GetData();
                     new Bot().RunAsync().GetAwaiter().GetResult();
                     //BanListHandler bl = new BanListHandler();
                     //bl.UnbanUserFromBannedList(111);
@@ -33,6 +35,7 @@ namespace DiscordBot
                     Console.WriteLine(ex.ToString());
                 }
                 Thread.Sleep(1000);
+                break;
             }
             //BHungerGamesV3 bh = new BHungerGamesV3();
             //bh.Run(1, new System.Collections.Generic.List<Player>(),);
@@ -44,6 +47,7 @@ namespace DiscordBot
             //MainAsync().Wait();
             //Console.ReadLine();
         }
+
         static async Task MainAsync()
         {
             var connectionString = "mongodb://localhost:27017";

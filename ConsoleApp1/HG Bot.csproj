@@ -189,8 +189,11 @@
     <Compile Include="Axie\AxieData.cs" />
     <Compile Include="Axie\AxieGeneData.cs" />
     <Compile Include="Axie\AxieHolder.cs" />
+    <Compile Include="Axie\FightDataHandler.cs" />
     <Compile Include="Axie\PureBreeder.cs" />
     <Compile Include="BanListHandler.cs" />
+    <Compile Include="BH\BhCommands.cs" />
+    <Compile Include="BH\DataFetcher.cs" />
     <Compile Include="DiscordKetGetter.cs" />
     <Compile Include="GiveAway\GiveawayInstance.cs" />
     <Compile Include="GiveAway\GiveawayRunner.cs" />

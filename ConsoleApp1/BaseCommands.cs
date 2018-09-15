@@ -259,6 +259,11 @@ namespace DiscordBot
             return false;
         }
 
+        protected bool NotInBHGeneral()
+        {
+            return Context.Channel.Id != 241550898998935552;
+        }
+
         public async Task ShowGameHelp()
         {
             await ReplyAsync("```Markdown\r\n<'>StartGame'> - Starts a new game if one is not already running.\n"
@@ -297,6 +302,7 @@ namespace DiscordBot
         [Command("V2Rules"), Summary("Show HG2 rules")]
         public async Task Helpv2()
         {
+            if (!NotInBHGeneral()) return;
             try
             {
                 if (CheckAccess(true))
@@ -345,6 +351,7 @@ namespace DiscordBot
         [Command("V3Rules"), Summary("Show HG3 rules")]
         public async Task Helpv3()
         {
+            if (!NotInBHGeneral()) return;
             try
             {
                 if (CheckAccess(true))
@@ -404,6 +411,7 @@ namespace DiscordBot
         [Command("CancelGame"), Summary("Cancels the current running game.")]
         public async Task CancelGame()
         {
+            if (!NotInBHGeneral()) return;
             try
             {
                 //Logger.LogInternal($"Command 'CancelGame' executed by '{Context.Message.Author.Username}'");
@@ -634,6 +642,7 @@ namespace DiscordBot
         [Command("startGame"), Summary("Starts the BHungerGames.")]
         public async Task StartGame()
         {
+            if (!NotInBHGeneral()) return;
             //Logger.LogInternal($"Command 'startGame <Help>' executed by '{Context.Message.Author.Username}'");
 
             if (CheckAccess(true))
@@ -645,6 +654,7 @@ namespace DiscordBot
         [Command("startv2"), Summary("input")]
         public async Task PvP()
         {
+            if (!NotInBHGeneral()) return;
             if (CheckAccess())
             {
                 Thread.Sleep(5000);
@@ -662,6 +672,7 @@ namespace DiscordBot
             [Summary("Number of Winners")]string strMaxScore = null
         )
         {
+            if (!NotInBHGeneral()) return;
             if (CheckAccess())
             {
                 BotV3GameInstance gameInstance = new BotV3GameInstance();
@@ -669,14 +680,6 @@ namespace DiscordBot
             }
         }
 
-        [Command("Lure", RunMode = RunMode.Async), Summary("lure bots")]
-        public async Task Lure()
-        {
-            await ReplyAsync($"<@&344302343703101441> Preparing to start a Game for ```Markdown\r\n<[K] Je suis Shadown88 🐛> in 5 minutes"
-                + $"!  At the start of the game the # of players will be reduced to 150 if needed." + "```\r\n"
-                + $"React to this message with the 😃 emoji to enter!  Multiple Reactions(emojis) will NOT enter you more than once.\r\nPlayer entered: \n\n"
-                + "**THIS IS A TEST TO FIND SELF BOTS PLEASE DO NOT REACT IF YOU ARE A HUMAN AS WE WILL PERMA BAN PEOPLE USING SELF BOTS**");
-        }
 
         [Command("giveAway", RunMode = RunMode.Async), Summary("Starts a giveaway.")]
         public async Task GiveAway(
@@ -695,6 +698,7 @@ namespace DiscordBot
             [Summary("Seconds to delay between displaying next day")]string strSecondsDelayBetweenDays = null,
             [Summary("Number of Winners")]string strNumWinners = null)
         {
+            if (!NotInBHGeneral()) return;
             BotGameInstance gameInstance = new BotGameInstance();
             await StartGameInternal(gameInstance, strMaxUsers, strMaxMinutesToWait, strSecondsDelayBetweenDays, strNumWinners, 0);
         }
@@ -717,6 +721,7 @@ namespace DiscordBot
         {
             // if (CheckAccessForBitHeroesGuildOnly())
             // {
+            if (!NotInBHGeneral()) return;
             BotV2GameInstance gameInstance = new BotV2GameInstance();
             await StartGameInternal(gameInstance, strMaxUsers, strMaxMinutesToWait, "1", strNumWinners, 0);
             //}

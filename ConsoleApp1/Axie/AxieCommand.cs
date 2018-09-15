@@ -198,24 +198,24 @@ namespace DiscordBot
 
                 if (axieData.stage <= 2) await Context.Channel.SendMessageAsync("Axie is still an egg! I can't check what it's going to be >:O ");
                 else await Context.Channel.SendMessageAsync("", false, AxieData.EmbedAxieData(axieData, axieJson));
-                string imageUrl = axieJson["figure"]["static"]["idle"].ToString();
+                //string imageUrl = axieJson["figure"]["static"]["idle"].ToString();
 
 
-                byte[] imageData = null;
-                using (System.Net.WebClient wc = new System.Net.WebClient())
-                {
-                    try
-                    {
-                        imageData = wc.DownloadData(imageUrl); //https://axieinfinity.com/api/axies/
-                    }
+                //byte[] imageData = null;
+                //using (System.Net.WebClient wc = new System.Net.WebClient())
+                //{
+                //    try
+                //    {
+                //        imageData = wc.DownloadData(imageUrl); //https://axieinfinity.com/api/axies/
+                //    }
 
-                    catch (Exception ex)
-                    {
-                    }
-                }
-                var image = new Image(new MemoryStream(imageData));
+                //    catch (Exception ex)
+                //    {
+                //    }
+                //}
+                //var image = new Image(new MemoryStream(imageData));
 
-                await Context.Channel.SendFileAsync(image.Stream, "axieIdle.png");
+                //await Context.Channel.SendFileAsync(image.Stream, "axieIdle.png");
             }
         }
 

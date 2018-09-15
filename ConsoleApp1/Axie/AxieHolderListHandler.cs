@@ -218,7 +218,11 @@ namespace DiscordBot
                     {
                         if (!holder.nonBuyableAxieList.Contains(axieId))
                         {
-                            if (!(holder.userId == context.Message.Author.Id)) await context.Channel.SendMessageAsync($"<@{holder.GetUserId()}> , one of your axies has caught the interest of <@{context.Message.Author.Id}> ! Take it to DM for further discussions ;)");
+                            if (!(holder.userId == context.Message.Author.Id))
+                            {
+                                await Bot.GetUser(holder.userId).SendMessageAsync($"<@{holder.GetUserId()}> , axie #{axieId} has caught the interest of <@{context.Message.Author.Id}> ! Take it to DM for further discussions ;)");
+                                await context.Channel.SendMessageAsync($"The buy has been notified of your interest to buy his axie! He will contact you in due time :D");
+                            }
                             else await context.Channel.SendMessageAsync($"Stop trying to buy your own axies! >:(");
                         }
                         else await context.Channel.SendMessageAsync($"The seller does not want to sell this specific axie :(");
