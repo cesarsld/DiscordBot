@@ -106,5 +106,39 @@ namespace DiscordBot.BH
             return embed;
         }
 
+        public static EmbedBuilder GetMountData(JObject obj)
+        {
+            var embed = new EmbedBuilder();
+            embed.WithTitle((string)obj["name"]);
+            embed.AddField("Movement speed", (string)obj["moveSpeed"] + "%");
+            embed.AddField("Skill", (string)obj["skill"]);
+            string coststr = "";
+            foreach (var cost in obj["purchase"][0])
+            {
+                coststr += $"{(int)cost["count"]} {(string)cost["material"]}";
+            }
+            embed.AddField("Cost", coststr);
+            Color color = Color.Orange;
+            switch ((string)obj["type"])
+            {
+                case "Common":
+                    color = Color.Green;
+                    break;
+                case "Rare":
+                    color = Color.Blue;
+                    break;
+                case "Epic":
+                    color = Color.DarkRed;
+                    break;
+                case "Legendary":
+                    color = Color.Gold;
+                    break;
+                case "Mythic":
+                    color = Color.Magenta;
+                    break;
+            }
+            embed.WithColor(color);
+            return embed;
+        }
     }
 }
