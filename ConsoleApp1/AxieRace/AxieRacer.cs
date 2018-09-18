@@ -33,7 +33,6 @@ namespace DiscordBot.AxieRace
             PracticeTries = 60;
             QualifierRun = 9999;
             totalScore = 0;
-            raceLapTime = 0;
         }
 
         public AxieClass GetClass() => RacerClass;
