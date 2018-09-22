@@ -271,7 +271,7 @@ namespace DiscordBot
                     LogAndReplyError("Error accessing Game Message.", "RunGame");
                     return;
                 }
-                await gameMessage.AddReactionAsync(new Emoji("🐰")); //🐰😃
+                await gameMessage.AddReactionAsync(new Emoji("🦄")); //🐰😃
                 lock (SyncObj)
                 {
                     _players = new Dictionary<Player, Player>();
@@ -498,7 +498,7 @@ namespace DiscordBot
                     LogAndReplyError("Error accessing Game Message.", "RunGame");
                     return;
                 }
-                gameMessage.AddReactionAsync(new Emoji("🐰"));
+                gameMessage.AddReactionAsync(new Emoji("🦄"));
                 lock (SyncObj)
                 {
                     _players = new Dictionary<Player, Player>();

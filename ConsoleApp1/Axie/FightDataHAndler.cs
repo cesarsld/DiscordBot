@@ -38,7 +38,7 @@ namespace DiscordBot.Axie
             int battleCount = 12500;
             int axieIndex = 0;
             int safetyNet = 0;
-            int perc = battleCount / 100; ;
+            int perc = battleCount / 100;
             int currentPerc = 0;
             while (axieIndex < battleCount)
             {
@@ -133,4 +133,105 @@ namespace DiscordBot.Axie
 
 
     }
+
+    public class StatDataHandler
+    {
+        public static void GetData()
+        {
+            Rank[] rankingList = new Rank[100];
+            for (int i = 0; i < rankingList.Length; i++)
+            {
+                rankingList[i] = new Rank(i + 1);
+            }
+            bool dataAvailable = true;
+            int axieCount = 5664;
+            int axieIndex = 0;
+            int safetyNet = 0;
+            int perc = axieCount / 100;
+            int currentPerc = 0;
+            while (axieIndex < axieCount && dataAvailable)
+            {
+                axieIndex++;
+                if (axieIndex % perc == 0)
+                {
+                    currentPerc++;
+                    Console.WriteLine(currentPerc.ToString() + "%");
+                }
+                string json = null;
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    try
+                    {
+                        json = wc.DownloadString("https://api.axieinfinity.com/v1/axies/" + axieIndex.ToString());
+                        safetyNet = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        safetyNet++;
+                        if (safetyNet > 25)
+                        {
+                            //dataAvailable = false;
+                            axieIndex++;
+                        }
+                        axieIndex--;
+                        //Console.WriteLine(ex.Message);
+                    }
+                }
+                if (json != null)
+                {
+                    JObject axieJson = JObject.Parse(json);
+                    AxieData axieData = axieJson.ToObject<AxieData>();
+                    axieData.jsonData = axieJson;
+                    if (axieData.stage <= 2)
+                    {
+                        Console.WriteLine("Axie still egg, moving on.");
+                        continue;
+                    }
+                    int dpsScore = (int)Math.Floor(axieData.GetDPR() / AxieData.GetMaxDPR() * 100);
+                    if (dpsScore == 0) dpsScore++;
+                    try
+                    {
+                        rankingList[100 - dpsScore].axies.Add(axieData.id);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("oops");
+                    }
+
+                }
+            }
+            string data = JsonConvert.SerializeObject(rankingList, Formatting.Indented);
+            string path = "DpsRankingList.txt";
+            if (!File.Exists(path))
+            {
+                File.Create(path);
+                using (var tw = new StreamWriter(path))
+                {
+                    tw.Write(data);
+                }
+            }
+            else if (File.Exists(path))
+            {
+                using (var tw = new StreamWriter(path))
+                {
+                    tw.Write(data);
+                }
+            }
+        }
+    }
+
+    public class Rank
+    {
+        public int rank;
+        public List<int> axies;
+
+        public Rank(int _rank)
+        {
+            rank = _rank;
+            axies = new List<int>();
+        }
+    }
 }
+
+
+

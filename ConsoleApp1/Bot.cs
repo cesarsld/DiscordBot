@@ -48,7 +48,7 @@ namespace DiscordBot
             _commands = new CommandService();
             DiscordClient.Log += Logger.Log;
             DiscordClient.MessageReceived += HandleCommandAsync;
-            
+            DiscordClient.Ready += Axie.Web3Axie.AxieSaleGetter.GetData;
         }
 
         ~Bot()
@@ -77,6 +77,10 @@ namespace DiscordBot
         }
 
         public static IUser GetUser(ulong userId) => DiscordClient.GetUser(userId);
+
+        public static SocketChannel GetChannelContext(ulong channelId) => DiscordClient.GetChannel(channelId);
+        
+
 
         public async Task HandleCommandAsync(SocketMessage messageParam)
         {

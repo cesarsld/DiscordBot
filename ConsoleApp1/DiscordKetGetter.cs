@@ -11,7 +11,7 @@ namespace DiscordBot
     {
         //private static readonly string keyPath = "..\\..\\..\\ShadBotKey.txt"; // server
         private static readonly string keyPath = "BotKey/ShadBotKey.txt"; // server
-        //private static readonly string keyPath = "C:/Users/Cesar Jaimes/Documents/GitHub/DiscrodBot/ShadBotKey.txt"; // home
+        private static readonly string testKeyPath = "TestKey/TestKey.txt"; //home
         public static string GetKey()
         {
             if (File.Exists(keyPath))
@@ -24,7 +24,11 @@ namespace DiscordBot
             }
             else
             {
-                return "NDQ5NjY5OTIyMjIyNzY4MTMz.DeoDfg.RY3tz6u3tY_S_KBwthcy511L4w4";
+                using (StreamReader sr = new StreamReader(testKeyPath, Encoding.UTF8))
+                {
+                    string key = sr.ReadToEnd();
+                    return key;
+                }
             }
         }
     }

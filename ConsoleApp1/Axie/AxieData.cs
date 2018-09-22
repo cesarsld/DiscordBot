@@ -18,45 +18,44 @@ namespace DiscordBot
         public string Class;
         public string title;
         public AxieParts parts;
-
+        public bool hasMystic
+        {
+            get
+            {
+                return parts.ears.mystic || parts.mouth.mystic || parts.horn.mystic || parts.tail.mystic || parts.eyes.mystic || parts.back.mystic;
+            }
+        }
         public int exp;
         public int level;
         public int stage;
         public AxieStats stats;
         //public AxieFigure figure;
-        public static EmbedBuilder EmbedAxieData(AxieData axieData, JObject axieJson)
+        public JObject jsonData;
+        public  EmbedBuilder EmbedAxieData()
         {
-            string imageUrl = axieJson["figure"]["static"]["idle"].ToString();
-            int pureness = GetPureness(axieData);
+            string imageUrl = jsonData["figure"]["static"]["idle"].ToString();
+            int pureness = GetPureness();
             
 
 
             var embed = new EmbedBuilder();
-            embed.WithTitle(axieData.name);
-            embed.AddInlineField("Class", axieData.Class);
-            embed.AddInlineField("Title", axieData.title == null ? "None" : axieData.title);
-            embed.AddInlineField("Exp", axieData.exp);
-            embed.AddInlineField("Level", axieData.level);
-            embed.AddField("Owner", axieData.owner);
-            //embed.AddField("HP", axieData.stats.hp.ToString());
-            embed.AddField("HP", $" ({axieData.stats.hp})".PadLeft( 5 + axieData.stats.hp, '|'));
-            embed.AddField("Speed", $" ({axieData.stats.speed})".PadLeft(5 + axieData.stats.speed, '|'));
-            embed.AddField("Skill", $" ({axieData.stats.skill})".PadLeft(5 + axieData.stats.skill, '|'));
-            embed.AddField("Morale", $" ({axieData.stats.morale})".PadLeft(5 + axieData.stats.morale, '|'));
-
-            //embed.AddField("Speed", axieData.stats.speed.ToString());
-            //embed.AddField("Skill", axieData.stats.skill.ToString());
-            //embed.AddField("Morale", axieData.stats.morale.ToString());
-            //embed.AddInlineField("Eyes || " + axieData.parts.eyes.Clazz, axieData.parts.eyes.name + (axieData.parts.eyes.mystic ? " (M)" : ""));
-            //embed.AddInlineField("Mouth || " + axieData.parts.mouth.Clazz, axieData.parts.mouth.name + (axieData.parts.mouth.mystic ? " (M)" : ""));
-            //embed.AddInlineField("Ears || " + axieData.parts.ears.Clazz, axieData.parts.ears.name + (axieData.parts.ears.mystic ? " (M)" : ""));
-            //embed.AddInlineField("Horn || " + axieData.parts.horn.Clazz, axieData.parts.horn.name + (axieData.parts.horn.mystic ? " (M)" : ""));
-            //embed.AddInlineField("Back || " + axieData.parts.back.Clazz, axieData.parts.back.name + (axieData.parts.back.mystic ? " (M)" : ""));
-            //embed.AddInlineField("Tail || " + axieData.parts.tail.Clazz, axieData.parts.tail.name + (axieData.parts.tail.mystic ? " (M)" : ""));
-            embed.AddField("Pureness", pureness);
-            embed.WithImageUrl(imageUrl);
+            embed.WithTitle(name);
+            
+            embed.AddInlineField("Class", Class + $" ({pureness}/6)");
+            embed.AddInlineField("Title", title == null ? "None" : title);
+            embed.AddInlineField("Exp", exp);
+            embed.AddInlineField("Level", level);
+            //embed.AddField("Owner", axieData.owner);
+            embed.AddInlineField("HP", $" ({stats.hp})".PadLeft( 5 + stats.hp/2, '|'));
+            embed.AddInlineField("Skill", $" ({stats.skill})".PadLeft(5 + stats.skill/2, '|'));
+            embed.AddInlineField("Speed", $" ({stats.speed})".PadLeft(5 + stats.speed/2, '|'));
+            
+            embed.AddInlineField("Morale", $" ({stats.morale})".PadLeft(5 + stats.morale/2, '|'));
+            //embed.AddField("Pureness", pureness);
+            embed.WithThumbnailUrl(imageUrl);
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
             Color color = Color.Default;
-            switch (axieData.Class)
+            switch (Class)
             {
                 case "plant":
                     color = Color.Green;
@@ -80,17 +79,72 @@ namespace DiscordBot
             embed.WithColor(color);
             return embed;
         }
-        public static int GetPureness(AxieData axie)
+        public EmbedBuilder EmbedAxieSaleData(float price)
+        {
+            string imageUrl = jsonData["figure"]["static"]["idle"].ToString();
+            var embed = new EmbedBuilder();
+            embed.WithTitle(name);
+            embed.WithDescription("Has been sold!");
+            embed.AddInlineField("Price", price.ToString() + " ether");
+            Color color = Color.Default;
+            switch (Class)
+            {
+                case "plant":
+                    color = Color.Green;
+                    break;
+                case "beast":
+                    color = Color.Gold;
+                    break;
+                case "aquatic":
+                    color = Color.Blue;
+                    break;
+                case "bug":
+                    color = Color.Red;
+                    break;
+                case "bird":
+                    color = new Color(255, 182, 193);
+                    break;
+                case "reptile":
+                    color = Color.Magenta;
+                    break;
+            }
+            embed.WithColor(color);
+            embed.WithThumbnailUrl(imageUrl);
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
+            return embed;
+        }
+        public int GetPureness()
         {
             int pureness = 0;
-            if (axie.parts.ears.Clazz == axie.Class) pureness++;
-            if (axie.parts.tail.Clazz == axie.Class) pureness++;
-            if (axie.parts.horn.Clazz == axie.Class) pureness++;
-            if (axie.parts.back.Clazz == axie.Class) pureness++;
-            if (axie.parts.eyes.Clazz == axie.Class) pureness++;
-            if (axie.parts.mouth.Clazz == axie.Class) pureness++;
+            if (parts.ears.Clazz == Class) pureness++;
+            if (parts.tail.Clazz == Class) pureness++;
+            if (parts.tail.Clazz == Class) pureness++;
+            if (parts.horn.Clazz == Class) pureness++;
+            if (parts.back.Clazz == Class) pureness++;
+            if (parts.eyes.Clazz == Class) pureness++;
+            if (parts.mouth.Clazz == Class) pureness++;
             return pureness++;
         }
+        public int GetDPR()
+        {
+            int dpr = 0;
+            dpr += parts.back.moves[0].attack * parts.back.moves[0].accuracy / 100;
+            dpr += parts.mouth.moves[0].attack * parts.mouth.moves[0].accuracy / 100;
+            dpr += parts.horn.moves[0].attack * parts.horn.moves[0].accuracy / 100;
+            dpr += parts.tail.moves[0].attack * parts.tail.moves[0].accuracy / 100;
+            return dpr;
+        }
+
+        public float GetTNK()
+        {
+            float tnk = 0;
+            tnk += parts.back.moves[0].attack * parts.back.moves[0].accuracy / 100;
+            tnk += parts.mouth.moves[0].attack * parts.mouth.moves[0].accuracy / 100;
+            tnk += parts.horn.moves[0].attack * parts.horn.moves[0].accuracy / 100;
+            tnk += parts.tail.moves[0].attack * parts.tail.moves[0].accuracy / 100;
+            return tnk;
+        }
+        public static float GetMaxDPR() =>  91.5f;
     }
 
     public class AxieParts
@@ -110,7 +164,19 @@ namespace DiscordBot
         public string Clazz;
         public string type;
         public bool mystic;
+        public PartMove[] moves;
     }
+
+    public class PartMove
+    {
+        public string id;
+        public string name;
+        public string type;
+        public int attack;
+        public int defence;
+        public int accuracy;
+    }
+
     public class AxieStats
     {
         public int hp;

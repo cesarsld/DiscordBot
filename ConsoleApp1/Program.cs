@@ -23,8 +23,8 @@ namespace DiscordBot
                 try
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
-                    //FightDataHandler.GetData();
-                    new Bot().RunAsync().GetAwaiter().GetResult();
+                    StatDataHandler.GetData();
+                    //new Bot().RunAsync().GetAwaiter().GetResult();
                     //BanListHandler bl = new BanListHandler();
                     //bl.UnbanUserFromBannedList(111);
                     //BHungerGames.Test();

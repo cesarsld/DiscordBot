@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using Newtonsoft.Json.Linq;
 using DiscordBot.AxieRace;
 using DiscordBot.Axie;
+using DiscordBot.Axie.Web3Axie;
 namespace DiscordBot
 {
     [Group("axie")]
@@ -195,9 +196,10 @@ namespace DiscordBot
                 }
                 JObject axieJson = JObject.Parse(json);
                 AxieData axieData = axieJson.ToObject<AxieData>();
+                axieData.jsonData = axieJson;
 
                 if (axieData.stage <= 2) await Context.Channel.SendMessageAsync("Axie is still an egg! I can't check what it's going to be >:O ");
-                else await Context.Channel.SendMessageAsync("", false, AxieData.EmbedAxieData(axieData, axieJson));
+                else await Context.Channel.SendMessageAsync("", false, axieData.EmbedAxieData());
                 //string imageUrl = axieJson["figure"]["static"]["idle"].ToString();
 
 
@@ -219,7 +221,19 @@ namespace DiscordBot
             }
         }
 
-        [Command("purechance"), Summary("show you addresses")]
+        [Command("rebootSales"), Summary("show you addresses")]
+        public async Task RebootSales()
+        {
+            if (!AxieSaleGetter.IsServiceOn)
+            {
+                await AxieSaleGetter.GetData();
+                await Context.Message.AddReactionAsync(new Emoji("✅"));
+            }
+        }
+            
+            
+            
+            [Command("purechance"), Summary("show you addresses")]
         public async Task GetBreedingChance(int axie1, int axie2, string isBeta = null)
         {
             if (IsBotCommand(Context))
@@ -252,6 +266,8 @@ namespace DiscordBot
                 await Context.Channel.SendMessageAsync($"The chance to breed a pure axie with axies #{id1} and #{id2} is = {chance}%");
             }
         }
+
+
 
         [Command("SetRacerData"), Summary("Set racer data")]
         public async Task SetRacerData(ulong gameId, string axieClass, int pace, int awareness, int diet)

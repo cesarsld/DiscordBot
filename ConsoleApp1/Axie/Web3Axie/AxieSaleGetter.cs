@@ -6,15 +6,16 @@ using Nethereum.Hex.HexConvertors.Extensions;
 using Nethereum.RPC.Eth.DTOs;
 using System.Threading.Tasks;
 using System.Numerics;
-using Nethereum.Contracts.CQS;
-using Nethereum.Util;
-using Nethereum.Web3.Accounts;
-using Nethereum.Contracts;
 using Nethereum.Hex.HexTypes;
+using Discord;
+using Discord.WebSocket;
+
+using Newtonsoft.Json.Linq;
 namespace DiscordBot.Axie.Web3Axie
 {
     public class AxieSaleGetter
     {
+        #region ABI & contract declaration
         private static string AxieCoreContractAddress = "0xF4985070Ce32b6B1994329DF787D1aCc9a2dd9e2";
         private static string ABI = @"[
   {
@@ -462,34 +463,95 @@ namespace DiscordBot.Axie.Web3Axie
     'type': 'function'
   }
 ]";
+        #endregion
+        private static ulong marketPlaceChannelId = 423343101428498435;
+        private static BigInteger lastBlockChecked = 6357537;
+        public static bool IsServiceOn= true;
         public AxieSaleGetter()
         {
         }
 
         public static async Task GetData()
         {
-
+            IsServiceOn = true;
             var web3 = new Web3("https://mainnet.infura.io");
             var contract = web3.Eth.GetContract(ABI, AxieCoreContractAddress);
             var auctionSuccesfulEvent = contract.GetEvent("AuctionSuccessful");
-            var firstBlock = new BlockParameter(new HexBigInteger(6357537));
-            //var lastBlock = new BlockParameter(new HexBigInteger(6357958));
+            var penultimateBlockNumber = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+            var firstBlock = new BlockParameter(penultimateBlockNumber);
             var lastBlock = BlockParameter.CreateLatest();
-
-            try
+            while (true)
             {
-                //var filterAll = await auctionSuccesfulEvent.CreateFilterBlockRangeAsync(firstBlock, lastBlock); //error here
-                var filterAll = auctionSuccesfulEvent.CreateFilterInput(firstBlock, lastBlock); //error here
+                try
+                {
+                    var filterAll = auctionSuccesfulEvent.CreateFilterInput(firstBlock, lastBlock);
+                    var logs = await auctionSuccesfulEvent.GetAllChanges<AuctionSuccessfulEvent>(filterAll);
+                    if (logs != null && logs.Count > 0)
+                    {
+                        foreach (var log in logs)
+                        {
+                            int axieId = Convert.ToInt32(log.Event.tokenId.ToString());
+                            float priceinEth = Convert.ToSingle(Nethereum.Util.UnitConversion.Convert.FromWei(log.Event.totalPrice).ToString());
+                            await PostAxieToMarketplace(axieId, priceinEth);
+                            await Task.Delay(5000);
+                        };
+                        Console.WriteLine("End of batch");
+                    }
+                    var lastBlockNumber = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+                    lastBlockChecked = lastBlockNumber.Value;
+                    firstBlock = new BlockParameter(new HexBigInteger(lastBlockChecked));
+                    lastBlock = BlockParameter.CreateLatest();
+                    await Task.Delay(60000);
 
-                var logs = await auctionSuccesfulEvent.GetAllChanges<AuctionSuccessfulEvent>(filterAll);
-
+                }
+                catch (Nethereum.JsonRpc.Client.RpcClientUnknownException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    IsServiceOn = false;
+                    await PostToMarketplace("Something went wrong... Please this service using this command `>axie rebootSales`.");
+                    break;
+                }
             }
-            catch (Nethereum.JsonRpc.Client.RpcClientUnknownException ex)
+        }
+
+        private static async Task PostToMarketplace(string text)
+        {
+            SocketChannel channel = Bot.GetChannelContext(marketPlaceChannelId);
+            IMessageChannel msgChannel = channel as IMessageChannel;
+            await msgChannel.SendMessageAsync(text);
+        }
+
+            private static async Task PostAxieToMarketplace(int index, float price)
+        {
+            SocketChannel channel = Bot.GetChannelContext(479664564061995019);
+            IMessageChannel msgChannel = channel as IMessageChannel;
+            string json = "";
+            int safetyNet = 0;
+            while (safetyNet < 10)
             {
-                Console.WriteLine(ex.Message);
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    try
+                    {
+                        json = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/axies/" + index.ToString()); //https://axieinfinity.com/api/axies/
+                        break;
+                    }
+
+                    catch (Exception ex)
+                    {
+                        safetyNet++;
+                        Console.WriteLine(ex.ToString());
+                    }
+                }
             }
+            if (safetyNet == 10) await msgChannel.SendMessageAsync("Error. Axie data could not be retrieved.");
+            JObject axieJson = JObject.Parse(json);
+            AxieData axieData = axieJson.ToObject<AxieData>();
+            axieData.jsonData = axieJson;
+            if(price > 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData( price));
 
         }
+
     }
 
     public class AuctionSuccessfulEvent
