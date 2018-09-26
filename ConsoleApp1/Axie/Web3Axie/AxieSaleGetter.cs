@@ -465,7 +465,7 @@ namespace DiscordBot.Axie.Web3Axie
 ]";
         #endregion
         private static ulong marketPlaceChannelId = 423343101428498435;
-        private static BigInteger lastBlockChecked = 6357537;
+        private static BigInteger lastBlockChecked = 6379721;
         public static bool IsServiceOn= true;
         public AxieSaleGetter()
         {
@@ -479,13 +479,19 @@ namespace DiscordBot.Axie.Web3Axie
             var auctionSuccesfulEvent = contract.GetEvent("AuctionSuccessful");
             var penultimateBlockNumber = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
             var firstBlock = new BlockParameter(penultimateBlockNumber);
+            //var firstBlock = new BlockParameter(new HexBigInteger(lastBlockChecked));
             var lastBlock = BlockParameter.CreateLatest();
             while (true)
             {
                 try
                 {
+                    Console.WriteLine("Fetching data from blockchain");
                     var filterAll = auctionSuccesfulEvent.CreateFilterInput(firstBlock, lastBlock);
+                    var lastBlockNumber = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
                     var logs = await auctionSuccesfulEvent.GetAllChanges<AuctionSuccessfulEvent>(filterAll);
+                    lastBlockChecked = lastBlockNumber.Value;
+                    firstBlock = new BlockParameter(new HexBigInteger(lastBlockChecked));
+                    lastBlock = BlockParameter.CreateLatest();
                     if (logs != null && logs.Count > 0)
                     {
                         foreach (var log in logs)
@@ -497,10 +503,6 @@ namespace DiscordBot.Axie.Web3Axie
                         };
                         Console.WriteLine("End of batch");
                     }
-                    var lastBlockNumber = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-                    lastBlockChecked = lastBlockNumber.Value;
-                    firstBlock = new BlockParameter(new HexBigInteger(lastBlockChecked));
-                    lastBlock = BlockParameter.CreateLatest();
                     await Task.Delay(60000);
 
                 }
@@ -523,7 +525,7 @@ namespace DiscordBot.Axie.Web3Axie
 
             private static async Task PostAxieToMarketplace(int index, float price)
         {
-            SocketChannel channel = Bot.GetChannelContext(479664564061995019);
+            SocketChannel channel = Bot.GetChannelContext(marketPlaceChannelId);  //479664564061995019
             IMessageChannel msgChannel = channel as IMessageChannel;
             string json = "";
             int safetyNet = 0;

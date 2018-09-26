@@ -23,6 +23,7 @@ namespace DiscordBot
         protected readonly object SyncObj = new object();
         protected Dictionary<Player, Player> _players;
         protected Dictionary<Player, List<string>> _cheatingPlayers;
+        protected List<Player> _spamAccounts;
         protected List<string> _firstPlayersToReact;
         protected bool CancelGame;
         protected bool StartSooner;
@@ -39,7 +40,7 @@ namespace DiscordBot
             {
                 await gameAuthor.SendMessageAsync(winnerMsg);
             }
-                
+
         }
 
         protected void LogAndReply(string message)
@@ -88,7 +89,13 @@ namespace DiscordBot
                             else
                             {
                                 Player existingPlayer;
-                                if (_players.TryGetValue(player, out existingPlayer))
+                                if (DateTime.Now.Subtract(reaction.User.Value.CreatedAt.DateTime).TotalDays < 10)
+                                {
+                                    BanListHandler banList = new BanListHandler();
+                                    banList.AddUserToBannedList(player.UserId);
+                                    _spamAccounts.Add(player);
+                                }
+                                else if (_players.TryGetValue(player, out existingPlayer))
                                 {
                                     if (player.FullUserName.Equals(existingPlayer.FullUserName) == false)
                                     {
@@ -175,7 +182,7 @@ namespace DiscordBot
         {
             this.testUsers = testUsers;
 
-            Task.Run(() => RunGame( maxMinutesToWait, maxScore, maxTurn, context, userName));
+            Task.Run(() => RunGame(maxMinutesToWait, maxScore, maxTurn, context, userName));
             return true;
         }
 
@@ -400,6 +407,7 @@ namespace DiscordBot
                     LogToChannel("Players REMOVED from game due to multiple NickNames:\r\n" + sb);
                 }
 
+
                 await RunGameInternal(numWinners, secondsDelayBetweenDays, players, startWhenMaxUsers ? 0 : maxUsers);
             }
             catch (Exception ex)
@@ -459,7 +467,7 @@ namespace DiscordBot
         }
 
         //method used for HG3
-        private void RunGame( int maxMinutesToWait, int maxScore, int maxTurn, ICommandContext context, string userName)
+        private void RunGame(int maxMinutesToWait, int maxScore, int maxTurn, ICommandContext context, string userName)
         {
             bool removeHandler = false;
             try
@@ -684,7 +692,7 @@ namespace DiscordBot
                 }
             }
         }
-        
+
         protected IUserMessage SendMarkdownMsg(string msg)
         {
             var message = _channel.SendMessageAsync("```Markdown\r\n" + msg + "```\r\n").GetAwaiter().GetResult();

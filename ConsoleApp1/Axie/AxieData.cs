@@ -15,7 +15,7 @@ namespace DiscordBot
         public string name;
         public string owner;
         public string genes;
-        public string Class;
+        public string clazz;
         public string title;
         public AxieParts parts;
         public bool hasMystic
@@ -31,7 +31,7 @@ namespace DiscordBot
         public AxieStats stats;
         //public AxieFigure figure;
         public JObject jsonData;
-        public  EmbedBuilder EmbedAxieData()
+        public  EmbedBuilder EmbedAxieData(string extra)
         {
             string imageUrl = jsonData["figure"]["static"]["idle"].ToString();
             int pureness = GetPureness();
@@ -41,7 +41,7 @@ namespace DiscordBot
             var embed = new EmbedBuilder();
             embed.WithTitle(name);
             
-            embed.AddInlineField("Class", Class + $" ({pureness}/6)");
+            embed.AddInlineField("Class", clazz.First().ToString().ToUpper() + clazz.Substring(1) + $" ({pureness}/6)");
             embed.AddInlineField("Title", title == null ? "None" : title);
             embed.AddInlineField("Exp", exp);
             embed.AddInlineField("Level", level);
@@ -51,11 +51,17 @@ namespace DiscordBot
             embed.AddInlineField("Speed", $" ({stats.speed})".PadLeft(5 + stats.speed/2, '|'));
             
             embed.AddInlineField("Morale", $" ({stats.morale})".PadLeft(5 + stats.morale/2, '|'));
+            if (extra != null && extra == "m")
+            { 
+                embed.WithDescription("Disclaimer : DPS and Tank ratings are not official nor endorsed by the Axie team.");
+                embed.AddInlineField("DPS Score", (int)Math.Floor(GetDPR() / GetMaxDPR() * 100));
+                embed.AddInlineField("Tank Score", GetTNKScore());
+            }
             //embed.AddField("Pureness", pureness);
             embed.WithThumbnailUrl(imageUrl);
             embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
             Color color = Color.Default;
-            switch (Class)
+            switch (clazz)
             {
                 case "plant":
                     color = Color.Green;
@@ -87,7 +93,7 @@ namespace DiscordBot
             embed.WithDescription("Has been sold!");
             embed.AddInlineField("Price", price.ToString() + " ether");
             Color color = Color.Default;
-            switch (Class)
+            switch (clazz)
             {
                 case "plant":
                     color = Color.Green;
@@ -116,13 +122,12 @@ namespace DiscordBot
         public int GetPureness()
         {
             int pureness = 0;
-            if (parts.ears.Clazz == Class) pureness++;
-            if (parts.tail.Clazz == Class) pureness++;
-            if (parts.tail.Clazz == Class) pureness++;
-            if (parts.horn.Clazz == Class) pureness++;
-            if (parts.back.Clazz == Class) pureness++;
-            if (parts.eyes.Clazz == Class) pureness++;
-            if (parts.mouth.Clazz == Class) pureness++;
+            if (parts.ears.Class == clazz) pureness++;
+            if (parts.tail.Class == clazz) pureness++;
+            if (parts.horn.Class == clazz) pureness++;
+            if (parts.back.Class == clazz) pureness++;
+            if (parts.eyes.Class == clazz) pureness++;
+            if (parts.mouth.Class == clazz) pureness++;
             return pureness++;
         }
         public int GetDPR()
@@ -135,16 +140,27 @@ namespace DiscordBot
             return dpr;
         }
 
+
         public float GetTNK()
         {
-            float tnk = 0;
-            tnk += parts.back.moves[0].attack * parts.back.moves[0].accuracy / 100;
-            tnk += parts.mouth.moves[0].attack * parts.mouth.moves[0].accuracy / 100;
-            tnk += parts.horn.moves[0].attack * parts.horn.moves[0].accuracy / 100;
-            tnk += parts.tail.moves[0].attack * parts.tail.moves[0].accuracy / 100;
+            float tnk = stats.hp;
+            tnk += parts.back.moves[0].defense;
+            tnk += parts.mouth.moves[0].defense;
+            tnk += parts.horn.moves[0].defense;
+            tnk += parts.tail.moves[0].defense;
             return tnk;
         }
-        public static float GetMaxDPR() =>  91.5f;
+
+        public int GetTNKScore()
+        {
+            float tnk = GetTNK();
+            float minTnk = GetMinTNK();
+            return (int)Math.Floor((tnk - minTnk) / (GetMaxTNK() - minTnk) * 100);
+        }
+
+        public static float GetMaxDPR() => 91.5f;
+        public static float GetMaxTNK() => 129f;
+        public static float GetMinTNK() => 33;
     }
 
     public class AxieParts
@@ -161,7 +177,7 @@ namespace DiscordBot
     {
         public string id;
         public string name;
-        public string Clazz;
+        public string Class;
         public string type;
         public bool mystic;
         public PartMove[] moves;
@@ -173,7 +189,7 @@ namespace DiscordBot
         public string name;
         public string type;
         public int attack;
-        public int defence;
+        public int defense;
         public int accuracy;
     }
 

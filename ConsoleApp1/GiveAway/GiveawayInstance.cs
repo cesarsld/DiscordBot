@@ -66,6 +66,7 @@ namespace DiscordBot
                 {
                     _players = new Dictionary<Player, Player>();
                     _cheatingPlayers = new Dictionary<Player, List<string>>();
+                    _spamAccounts = new List<Player>();
                     _firstPlayersToReact = new List<string>();
                     MessageId = gameMessage.Id;
                 }
@@ -170,7 +171,17 @@ namespace DiscordBot
                     LogToChannel("Players REMOVED from game due to multiple NickNames:\r\n" + sb);
                 }
 
-               await RunGiveawayInternal(numWinners, target, players);
+                if (_spamAccounts.Count > 0)
+                {
+                    StringBuilder sb = new StringBuilder(2000);
+                    foreach (var player in _spamAccounts)
+                    {
+                        sb.Append($"{player.UserName} ");
+                    }
+                    LogToChannel("Participants REMOVED from giveaway due to account not old enough : \n" + sb);
+                }
+
+                await RunGiveawayInternal(numWinners, target, players);
             }
             catch (Exception ex)
             {

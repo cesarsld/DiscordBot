@@ -13,6 +13,7 @@ using DiscordBot.Axie.Web3Axie;
 namespace DiscordBot
 {
     [Group("axie")]
+    [Alias("a")]
     public class AxieCommand : BaseCommands
     {
         private bool IsMarketPlace(ICommandContext context)
@@ -63,7 +64,9 @@ namespace DiscordBot
                                                  + "- `>axie buyable axie_id` : Add an axie to be buyable again.\n"
                                                  + "- `>axie buy input_id` : Ping the owner of this axie.\n"
                                                  + "- `>axie show` : Show user's addresses.\n"
-                                                 + "- `>axie purechance axie_id_1 axie_id_2 (optional)beta` : Show user's chance to breed a pure axie from 2 preset axies. Write beta at the end if you want to access axies in beta.");
+                                                 + "- `>axie find/f axie_id` : Show axie data.\n"
+                                                 + "- `>axie purechance/pure/p axie_id_1 axie_id_2 (optional)beta` : Show user's chance to breed a pure axie from 2 preset axies. Write beta at the end if you want to access axies in beta.\n"
+                                                 + "NOTE : You may use the prefix `>a` instead of >axie>");
         }
         [Command("addaddress"), Summary("register ETH wallet address to user ID")]
         public async Task AddAddress(string address)
@@ -175,9 +178,10 @@ namespace DiscordBot
                 await AxieHolderListHandler.GetUserAddressList(Context.Message.Author.Id, Context.Channel);
         }
         [Command("find"), Summary("find an axie from API")]
-        public async Task FindAxie(int index)
+        [Alias("f")]
+        public async Task FindAxie(int index , string extra = null)
         {
-            if (IsGeneral(Context) || IsBotCommand(Context))
+            if (IsBotCommand(Context))
             {
                 string json = "";
                 using (System.Net.WebClient wc = new System.Net.WebClient())
@@ -199,7 +203,7 @@ namespace DiscordBot
                 axieData.jsonData = axieJson;
 
                 if (axieData.stage <= 2) await Context.Channel.SendMessageAsync("Axie is still an egg! I can't check what it's going to be >:O ");
-                else await Context.Channel.SendMessageAsync("", false, axieData.EmbedAxieData());
+                else await Context.Channel.SendMessageAsync("", false, axieData.EmbedAxieData(extra));
                 //string imageUrl = axieJson["figure"]["static"]["idle"].ToString();
 
 
@@ -233,7 +237,8 @@ namespace DiscordBot
             
             
             
-            [Command("purechance"), Summary("show you addresses")]
+        [Command("purechance"), Summary("show you addresses")]
+        [Alias("pure", "p")]
         public async Task GetBreedingChance(int axie1, int axie2, string isBeta = null)
         {
             if (IsBotCommand(Context))
