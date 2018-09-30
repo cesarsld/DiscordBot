@@ -1199,7 +1199,7 @@ namespace DiscordBot.Axie.Web3Axie
         private static ulong marketPlaceChannelId = 423343101428498435;
         private static ulong botCommandChannelId = 487932149354463232;
         private static BigInteger lastBlockChecked = 6379721;
-        private static float initialAxieMeoS2Price = 1.0001f;
+        public static float eggLabPrice = 1.0001f;
         public static bool IsServiceOn= true;
         public AxieSaleGetter()
         {
@@ -1241,6 +1241,7 @@ namespace DiscordBot.Axie.Web3Axie
                         foreach (var log in labLogs)
                         {
                             float priceinEth = Convert.ToSingle(Nethereum.Util.UnitConversion.Convert.FromWei(log.Event.price).ToString());
+                            eggLabPrice = priceinEth * 1.07f;
                             int amount = log.Event.amount;
                             await PostLabSaleToBotCommand(amount, priceinEth);
                             await Task.Delay(5000);
@@ -1324,6 +1325,14 @@ namespace DiscordBot.Axie.Web3Axie
             return new BlockParameter(new HexBigInteger(firstBlock));
         }
 
+        public static async Task UpdateEggPrice()
+        {
+            while (IsServiceOn)
+            {
+                eggLabPrice *= 0.999f;
+                await Task.Delay(60000);
+            }
+        }
     }
 
     public class AuctionSuccessfulEvent

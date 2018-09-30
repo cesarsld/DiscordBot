@@ -305,6 +305,13 @@ namespace DiscordBot
             }
 
         }
+        [Command("labprice"), Summary("Launch raceing game")]
+        public async Task ChangeLapPrice(float newPrice)
+        {
+            AxieSaleGetter.eggLabPrice = newPrice;
+            await Context.Message.AddReactionAsync(new Emoji("✅"));
+        }
+
         private async Task StartGameInternal(AxieRacingInstance raceInstance, string strSecondsToWait)
         {
             bool cleanupCommandInstance = false;
