@@ -15,7 +15,7 @@ namespace DiscordBot
         public string name;
         public string owner;
         public string genes;
-        public string clazz;
+        public string Class;
         public string title;
         public AxieParts parts;
         public bool hasMystic
@@ -41,7 +41,7 @@ namespace DiscordBot
             var embed = new EmbedBuilder();
             embed.WithTitle(name);
             
-            embed.AddInlineField("Class", clazz.First().ToString().ToUpper() + clazz.Substring(1) + $" ({pureness}/6)");
+            embed.AddInlineField("Class", Class.First().ToString().ToUpper() + Class.Substring(1) + $" ({pureness}/6)");
             embed.AddInlineField("Title", title == null ? "None" : title);
             embed.AddInlineField("Exp", exp);
             embed.AddInlineField("Level", level);
@@ -61,7 +61,7 @@ namespace DiscordBot
             embed.WithThumbnailUrl(imageUrl);
             embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
             Color color = Color.Default;
-            switch (clazz)
+            switch (Class)
             {
                 case "plant":
                     color = Color.Green;
@@ -93,7 +93,7 @@ namespace DiscordBot
             embed.WithDescription("Has been sold!");
             embed.AddInlineField("Price", price.ToString() + " ether");
             Color color = Color.Default;
-            switch (clazz)
+            switch (Class)
             {
                 case "plant":
                     color = Color.Green;
@@ -122,12 +122,12 @@ namespace DiscordBot
         public int GetPureness()
         {
             int pureness = 0;
-            if (parts.ears.Class == clazz) pureness++;
-            if (parts.tail.Class == clazz) pureness++;
-            if (parts.horn.Class == clazz) pureness++;
-            if (parts.back.Class == clazz) pureness++;
-            if (parts.eyes.Class == clazz) pureness++;
-            if (parts.mouth.Class == clazz) pureness++;
+            if (parts.ears.Class == Class) pureness++;
+            if (parts.tail.Class == Class) pureness++;
+            if (parts.horn.Class == Class) pureness++;
+            if (parts.back.Class == Class) pureness++;
+            if (parts.eyes.Class == Class) pureness++;
+            if (parts.mouth.Class == Class) pureness++;
             return pureness++;
         }
         public int GetDPR()
