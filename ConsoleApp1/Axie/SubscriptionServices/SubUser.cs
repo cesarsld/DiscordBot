@@ -9,7 +9,9 @@ namespace DiscordBot.Axie.SubscriptionServices
 {
     public class SubUser
     {
+        [JsonProperty]
         private ulong userId;
+        [JsonProperty]
         private List<ISubscriptionService> subServiceList;
 
         public ulong GetId() => userId;

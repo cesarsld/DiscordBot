@@ -16,13 +16,16 @@ namespace DiscordBot.Axie.SubscriptionServices
     {
         private static string subFileName = "SubList.txt";
         private static readonly object SyncObj = new object();
+        private static List<SubUser> subUserList;
+        public static List<SubUser> GetSubList() => subUserList;
 
-
-        public static async Task<List<SubUser>> GetSubUserList()
+        public static async Task<List<SubUser>> SetSubListFromFile()
         {
             List<SubUser> list = new List<SubUser>();
             if (File.Exists(subFileName))
             {
+                var settings = new JsonSerializerSettings();
+                settings.Converters.Add(new SubServiceConverter());
                 string fileData = "";
                 using (StreamReader sr = new StreamReader(subFileName))
                 {
@@ -31,6 +34,7 @@ namespace DiscordBot.Axie.SubscriptionServices
                 string[] jsonFiles = Regex.Split(fileData, "\r\n|\r|\n");
                 foreach (var json in jsonFiles)
                 {
+                    var user = JsonConvert.DeserializeObject<SubUser>(json);
                     SubUser obj = JObject.Parse(json).ToObject<SubUser>();
                     if (obj != null) list.Add(obj);
                 }
@@ -41,8 +45,8 @@ namespace DiscordBot.Axie.SubscriptionServices
         #region Axie Lab
         public static async Task SubscribeToLabNotif(ulong newUserId)
         {
-            var subUserList = await GetSubUserList();
-
+            if (subUserList == null) subUserList = await SetSubListFromFile();
+            //subUserList = new List<SubUser>();
             var existingUser = subUserList.FirstOrDefault(user => user.GetId() == newUserId);
             if (existingUser == null)
             {
@@ -59,12 +63,12 @@ namespace DiscordBot.Axie.SubscriptionServices
 
         public static async Task SetLabPriceTrigger(ulong userId, float priceTrigger, ICommandContext context)
         {
-            var subUserList = await GetSubUserList();
+            if (subUserList == null) subUserList = await SetSubListFromFile();
             var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
             if (existingUser != null)
             {
                 var axieLabService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.AxieLab) as AxieLabService;
-                if(axieLabService != null)
+                if (axieLabService != null)
                 {
                     if (priceTrigger >= 0.13f)
                     {
@@ -77,7 +81,7 @@ namespace DiscordBot.Axie.SubscriptionServices
                         await context.Channel.SendMessageAsync("Price trigger is lower than lowest egg price :/");
                     }
                 }
-
+                else await context.Channel.SendMessageAsync("User is not not subscribed to service. Please subscribe using command `>axie axieLabSub` .");
             }
         }
         #endregion
@@ -86,14 +90,15 @@ namespace DiscordBot.Axie.SubscriptionServices
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = 0; i < subList.Count; i++)
             {
-                stringBuilder.Append(JsonConvert.SerializeObject(subList[i]));
+                stringBuilder.Append(JsonConvert.SerializeObject(subList[i], Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects}));
                 if (i != subList.Count - 1)
                     stringBuilder.AppendLine();
             }
-
+           
             using (StreamWriter sw = new StreamWriter(subFileName))
             {
                 await sw.WriteAsync(stringBuilder.ToString());
+                
             }
         }
 

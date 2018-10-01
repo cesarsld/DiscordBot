@@ -9,11 +9,12 @@ using System.Numerics;
 using Nethereum.Hex.HexTypes;
 using Discord;
 using Discord.WebSocket;
-
+using DiscordBot.Axie.SubscriptionServices;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 namespace DiscordBot.Axie.Web3Axie
 {
-    public class AxieSaleGetter
+    public class AxieDataGetter
     {
 
         #region ABI & contract declaration
@@ -1199,15 +1200,16 @@ namespace DiscordBot.Axie.Web3Axie
         private static ulong marketPlaceChannelId = 423343101428498435;
         private static ulong botCommandChannelId = 487932149354463232;
         private static BigInteger lastBlockChecked = 6379721;
-        public static float eggLabPrice = 1.0001f;
+        public static float eggLabPrice = 0.6f;
         public static bool IsServiceOn= true;
-        public AxieSaleGetter()
+        public AxieDataGetter()
         {
         }
 
         public static async Task GetData()
         {
             IsServiceOn = true;
+            UpdateEggPrice();
             var web3 = new Web3("https://mainnet.infura.io");
             var auctionContract = web3.Eth.GetContract(auctionABI, AxieCoreContractAddress);
             var labContract = web3.Eth.GetContract(labABI, AxieLabContractAddress);
@@ -1306,7 +1308,7 @@ namespace DiscordBot.Axie.Web3Axie
             EmbedBuilder embed = new EmbedBuilder();
             embed.WithTitle("Lab alert!!!");
             embed.WithUrl("https://axieinfinity.com/axie-lab");
-            embed.WithDescription($"{count} " + (count > 1? "eggs have" : "egg has") + $" been bought for {price.ToString("F4")} ether"+ (count > 1 ? " each" : "") + "!");
+            embed.WithDescription($"{count} " + (count > 1? "pods have" : "pod has") + $" been bought for {price.ToString("F4")} ether"+ (count > 1 ? " each" : "") + "!");
             embed.WithColor(Color.Orange);
             await msgChannel.SendMessageAsync("", false , embed.Build());
 
@@ -1330,7 +1332,24 @@ namespace DiscordBot.Axie.Web3Axie
             while (IsServiceOn)
             {
                 eggLabPrice *= 0.999f;
-                await Task.Delay(60000);
+                var subList = SubscriptionServicesHandler.GetSubList();
+                if (subList != null)
+                {
+                    foreach (var sub in subList)
+                    {
+                        var axieLabSub = sub.GetServiceList().FirstOrDefault(service => service.name == ServiceEnum.AxieLab) as AxieLabService;
+                        if (axieLabSub != null)
+                        {
+                            if (axieLabSub.GetPrice() >= eggLabPrice)
+                            {
+                                var user = Bot.GetUser(sub.GetId());
+                                await user.SendMessageAsync("", false, axieLabSub.GetTriggerEmbedMessage());
+                            }
+                        }
+                    }
+                }
+                Console.WriteLine(eggLabPrice);
+                await Task.Delay(1000);
             }
         }
     }
@@ -1368,4 +1387,3 @@ namespace DiscordBot.Axie.Web3Axie
         public BigInteger referralReward { get; set; }
     }
 }
-

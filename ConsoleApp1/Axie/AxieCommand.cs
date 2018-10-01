@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using Newtonsoft.Json.Linq;
 using DiscordBot.AxieRace;
 using DiscordBot.Axie;
+using DiscordBot.Axie.SubscriptionServices;
 using DiscordBot.Axie.Web3Axie;
 namespace DiscordBot
 {
@@ -230,7 +231,7 @@ namespace DiscordBot
         {
             if (!AxieDataGetter.IsServiceOn)
             {
-                await AxieDataGetter.GetData();
+                AxieDataGetter.GetData();
                 await Context.Message.AddReactionAsync(new Emoji("✅"));
             }
         }
@@ -305,12 +306,28 @@ namespace DiscordBot
             }
 
         }
+        #region Lab services
         [Command("labprice"), Summary("Launch raceing game")]
         public async Task ChangeLapPrice(float newPrice)
         {
             AxieDataGetter.eggLabPrice = newPrice;
             await Context.Message.AddReactionAsync(new Emoji("✅"));
         }
+
+        [Command("labsubscribe"), Summary("subscribe to lab service")]
+        public async Task SubscribeToLabService()
+        {
+            await SubscriptionServicesHandler.SubscribeToLabNotif(Context.Message.Author.Id);
+            await Context.Message.AddReactionAsync(new Emoji("✅"));
+        }
+
+        [Command("labtrigger"), Summary("set pod trigger")]
+        public async Task SetLabPodPriceTrigger(float priceTrigger)
+        {
+            await SubscriptionServicesHandler.SetLabPriceTrigger(Context.Message.Author.Id, priceTrigger, Context);
+        }
+
+        #endregion
 
         private async Task StartGameInternal(AxieRacingInstance raceInstance, string strSecondsToWait)
         {

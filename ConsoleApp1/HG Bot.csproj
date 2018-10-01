@@ -194,6 +194,7 @@
     <Compile Include="Axie\AxieHolder.cs" />
     <Compile Include="Axie\FightDataHandler.cs" />
     <Compile Include="Axie\PureBreeder.cs" />
+    <Compile Include="Axie\SubscriptionServices\SubServiceConverter.cs" />
     <Compile Include="BanListHandler.cs" />
     <Compile Include="BH\BhCommands.cs" />
     <Compile Include="BH\DataFetcher.cs" />
@@ -271,8 +272,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="Axie\Web3Axie\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
