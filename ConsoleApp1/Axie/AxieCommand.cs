@@ -228,9 +228,9 @@ namespace DiscordBot
         [Command("rebootSales"), Summary("show you addresses")]
         public async Task RebootSales()
         {
-            if (!AxieSaleGetter.IsServiceOn)
+            if (!AxieDataGetter.IsServiceOn)
             {
-                await AxieSaleGetter.GetData();
+                await AxieDataGetter.GetData();
                 await Context.Message.AddReactionAsync(new Emoji("✅"));
             }
         }
@@ -308,7 +308,7 @@ namespace DiscordBot
         [Command("labprice"), Summary("Launch raceing game")]
         public async Task ChangeLapPrice(float newPrice)
         {
-            AxieSaleGetter.eggLabPrice = newPrice;
+            AxieDataGetter.eggLabPrice = newPrice;
             await Context.Message.AddReactionAsync(new Emoji("✅"));
         }
 

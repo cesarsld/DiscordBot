@@ -7,6 +7,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using Discord.Commands;
+using Discord;
 
 namespace DiscordBot.Axie.SubscriptionServices
 {
@@ -55,7 +57,7 @@ namespace DiscordBot.Axie.SubscriptionServices
             await SetSubList(subUserList);
         }
 
-        public static async Task SetLabPriceTrigger(ulong userId, float priceTrigger)
+        public static async Task SetLabPriceTrigger(ulong userId, float priceTrigger, ICommandContext context)
         {
             var subUserList = await GetSubUserList();
             var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
@@ -68,10 +70,11 @@ namespace DiscordBot.Axie.SubscriptionServices
                     {
                         axieLabService.SetPrice(priceTrigger);
                         await SetSubList(subUserList);
+                        await context.Message.AddReactionAsync(new Emoji("✅"));
                     }
                     else
                     {
-                        //price too low
+                        await context.Channel.SendMessageAsync("Price trigger is lower than lowest egg price :/");
                     }
                 }
 

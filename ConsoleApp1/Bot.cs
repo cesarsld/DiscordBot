@@ -48,7 +48,7 @@ namespace DiscordBot
             _commands = new CommandService();
             DiscordClient.Log += Logger.Log;
             DiscordClient.MessageReceived += HandleCommandAsync;
-            DiscordClient.Ready += Axie.Web3Axie.AxieSaleGetter.GetData;
+            DiscordClient.Ready += Axie.Web3Axie.AxieDataGetter.GetData;
         }
 
         ~Bot()

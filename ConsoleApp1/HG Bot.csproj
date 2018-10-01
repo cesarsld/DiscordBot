@@ -244,7 +244,12 @@
     <Compile Include="AxieConquer\AxieConquerGame.cs" />
     <Compile Include="AxieConquer\AxiePlayer.cs" />
     <Compile Include="AxieConquer\AxieArmy.cs" />
-    <Compile Include="Axie\Web3Axie\AxieSaleGetter.cs" />
+    <Compile Include="Axie\Web3Axie\AxieDataGetter.cs" />
+    <Compile Include="Axie\SubscriptionServices\AxieLabService.cs" />
+    <Compile Include="Axie\SubscriptionServices\ISubscriptionService.cs" />
+    <Compile Include="Axie\SubscriptionServices\ServiceEnum.cs" />
+    <Compile Include="Axie\SubscriptionServices\SubUser.cs" />
+    <Compile Include="Axie\SubscriptionServices\SubscriptionServicesHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
