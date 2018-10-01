@@ -34,9 +34,18 @@ namespace DiscordBot.Axie.SubscriptionServices
                 string[] jsonFiles = Regex.Split(fileData, "\r\n|\r|\n");
                 foreach (var json in jsonFiles)
                 {
-                    var user = JsonConvert.DeserializeObject<SubUser>(json);
-                    SubUser obj = JObject.Parse(json).ToObject<SubUser>();
-                    if (obj != null) list.Add(obj);
+                    JObject userJson = JObject.Parse(json);
+                    SubUser user = new SubUser((ulong)userJson["userId"]);
+                    foreach (var service in userJson["subServiceList"])
+                    {
+                        switch ((int)service["name"])
+                        {
+                            case 0:
+                                user.AddService(service.ToObject<AxieLabService>());
+                                break;
+                        }
+                    }
+                    list.Add(user);
                 }
             }
             return list;
@@ -90,7 +99,7 @@ namespace DiscordBot.Axie.SubscriptionServices
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = 0; i < subList.Count; i++)
             {
-                stringBuilder.Append(JsonConvert.SerializeObject(subList[i], Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects}));
+                stringBuilder.Append(JsonConvert.SerializeObject(subList[i]));
                 if (i != subList.Count - 1)
                     stringBuilder.AppendLine();
             }
