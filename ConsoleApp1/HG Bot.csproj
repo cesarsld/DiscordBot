@@ -194,6 +194,8 @@
     <Compile Include="Axie\AxieHolder.cs" />
     <Compile Include="Axie\FightDataHandler.cs" />
     <Compile Include="Axie\PureBreeder.cs" />
+    <Compile Include="Axie\SubscriptionServices\MarketplaceService.cs" />
+    <Compile Include="Axie\SubscriptionServices\MarketPlaceTriggerTypeEnum.cs" />
     <Compile Include="Axie\SubscriptionServices\SubServiceConverter.cs" />
     <Compile Include="BanListHandler.cs" />
     <Compile Include="BH\BhCommands.cs" />

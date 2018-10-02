@@ -67,8 +67,39 @@ namespace DiscordBot
                                                  + "- `>axie show` : Show user's addresses.\n"
                                                  + "- `>axie find/f axie_id` : Show axie data.\n"
                                                  + "- `>axie purechance/pure/p axie_id_1 axie_id_2 (optional)beta` : Show user's chance to breed a pure axie from 2 preset axies. Write beta at the end if you want to access axies in beta.\n"
-                                                 + "NOTE : You may use the prefix `>a` instead of >axie>");
+                                                 + "- `>axie subs` : Show services user can subscribe to.\n"
+                                                 + "NOTE : You may use the prefix `>a` instead of >axie");
         }
+
+        [Command("subscription"), Summary("register ETH wallet address to user ID")]
+        [Alias("subs")]
+        public async Task PostSubs()
+        {
+            if (IsBotCommand(Context))
+                await Context.Channel.SendMessageAsync("Subscriptions that you can use :\n"
+                                                     + "- Axie Lab service. For more info input `>a sub lab` \n"
+                                                     + "");
+        }
+
+        [Command("sub"), Summary("register ETH wallet address to user ID")]
+        public async Task PostSub(string service)
+        {
+            if (IsBotCommand(Context))
+            {
+                string message = "";
+                switch (service)
+                {
+                    case "lab":
+                        message = "Commands: \n"
+                                + "- `>a labsub` : subscribe to Axie Lab services\n"
+                                + "- `>a labtrigger trigger_price` : change trigger price so that the bot notidies you when the pod price reaches your trigger price.";
+                        break;
+                }
+                await Context.Channel.SendMessageAsync(message);
+            }
+        }
+
+        #region Generic commands
         [Command("addaddress"), Summary("register ETH wallet address to user ID")]
         public async Task AddAddress(string address)
         {
@@ -183,55 +214,20 @@ namespace DiscordBot
         public async Task FindAxie(int index , string extra = null)
         {
             if (IsBotCommand(Context))
-            {
-                string json = "";
-                using (System.Net.WebClient wc = new System.Net.WebClient())
-                {
-                    try
-                    {
-                        json = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/axies/" + index.ToString()); //https://axieinfinity.com/api/axies/
-                    }
-
-                    catch (Exception ex)
-                    {
-                        await Context.Channel.SendMessageAsync("Error. Axie could not be found. " + ex.Message);
-                        Console.WriteLine(ex.ToString());
-                        return;
-                    }
-                }
-                JObject axieJson = JObject.Parse(json);
-                AxieData axieData = axieJson.ToObject<AxieData>();
-                axieData.jsonData = axieJson;
+            { 
+                AxieData axieData = await AxieData.GetAxieFromApi(index);
 
                 if (axieData.stage <= 2) await Context.Channel.SendMessageAsync("Axie is still an egg! I can't check what it's going to be >:O ");
                 else await Context.Channel.SendMessageAsync("", false, axieData.EmbedAxieData(extra));
-                //string imageUrl = axieJson["figure"]["static"]["idle"].ToString();
-
-
-                //byte[] imageData = null;
-                //using (System.Net.WebClient wc = new System.Net.WebClient())
-                //{
-                //    try
-                //    {
-                //        imageData = wc.DownloadData(imageUrl); //https://axieinfinity.com/api/axies/
-                //    }
-
-                //    catch (Exception ex)
-                //    {
-                //    }
-                //}
-                //var image = new Image(new MemoryStream(imageData));
-
-                //await Context.Channel.SendFileAsync(image.Stream, "axieIdle.png");
             }
         }
-
+        #endregion
         [Command("rebootSales"), Summary("show you addresses")]
         public async Task RebootSales()
         {
             if (!AxieDataGetter.IsServiceOn)
             {
-                AxieDataGetter.GetData();
+                _= AxieDataGetter.GetData();
                 await Context.Message.AddReactionAsync(new Emoji("✅"));
             }
         }
@@ -306,6 +302,8 @@ namespace DiscordBot
             }
 
         }
+
+
         #region Lab services
         [Command("labprice"), Summary("Launch raceing game")]
         public async Task ChangeLapPrice(float newPrice)
@@ -314,7 +312,7 @@ namespace DiscordBot
             await Context.Message.AddReactionAsync(new Emoji("✅"));
         }
 
-        [Command("labsubscribe"), Summary("subscribe to lab service")]
+        [Command("labsub"), Summary("subscribe to lab service")]
         public async Task SubscribeToLabService()
         {
             await SubscriptionServicesHandler.SubscribeToLabNotif(Context.Message.Author.Id);
@@ -335,8 +333,10 @@ namespace DiscordBot
             [Summary("Number of Winners")]string strTestUsers = null)
         {
             await GiveAway(strMaxSecToWait, strTargetNumber, strNumWinners, strTestUsers);
-
         }
+
+        [Command("ping2")]
+        public async Task pong() => await Context.Channel.SendMessageAsync("pong");
         private async Task StartGameInternal(AxieRacingInstance raceInstance, string strSecondsToWait)
         {
             bool cleanupCommandInstance = false;

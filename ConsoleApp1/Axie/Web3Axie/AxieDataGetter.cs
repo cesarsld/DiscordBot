@@ -1209,7 +1209,7 @@ namespace DiscordBot.Axie.Web3Axie
         public static async Task GetData()
         {
             IsServiceOn = true;
-            UpdateEggPrice();
+            _= UpdateEggPrice();
             var web3 = new Web3("https://mainnet.infura.io");
             var auctionContract = web3.Eth.GetContract(auctionABI, AxieCoreContractAddress);
             var labContract = web3.Eth.GetContract(labABI, AxieLabContractAddress);
@@ -1225,8 +1225,6 @@ namespace DiscordBot.Axie.Web3Axie
                     var labFilterAll = axieBoughtEvent.CreateFilterInput(firstBlock, lastBlock);
                     var auctionLogs = await auctionSuccesfulEvent.GetAllChanges<AuctionSuccessfulEvent>(auctionFilterAll);
                     var labLogs = await axieBoughtEvent.GetAllChanges<AxieBoughtEvent>(labFilterAll);
-                    firstBlock = lastBlock;
-                    lastBlock = await GetLastBlockCheckpoint(web3);
                     if (auctionLogs != null && auctionLogs.Count > 0)
                     {
                         foreach (var log in auctionLogs)
@@ -1251,11 +1249,12 @@ namespace DiscordBot.Axie.Web3Axie
                         Console.WriteLine("End of batch");
                     }
                     await Task.Delay(60000);
-
+                    firstBlock = new BlockParameter(new HexBigInteger(lastBlock.BlockNumber.Value + 1));
+                    lastBlock = await GetLastBlockCheckpoint(web3);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.ToString());
                     IsServiceOn = false;
                     await PostToMarketplace("Something went wrong... Please this service using this command `>axie rebootSales`.");
                     break;
@@ -1333,6 +1332,7 @@ namespace DiscordBot.Axie.Web3Axie
             {
                 bool hasTriggered = false;
                 eggLabPrice *= 0.999f;
+                if (eggLabPrice < 0.133f) eggLabPrice = 0.133f;
                 var subList = SubscriptionServicesHandler.GetSubList();
                 if (subList != null)
                 {
@@ -1344,20 +1344,19 @@ namespace DiscordBot.Axie.Web3Axie
                             if (axieLabSub.GetPrice() >= eggLabPrice)
                             {
                                 hasTriggered = true;
-                                await Bot.GetUser(sub.GetId()).SendMessageAsync("", false, axieLabSub.GetTriggerEmbedMessage());
+                                _ = Bot.GetUser(sub.GetId()).SendMessageAsync("", false, axieLabSub.GetTriggerEmbedMessage());
                                 axieLabSub.SetPrice(0);
-                                await Task.Delay(3000);
                             }
                         }
                     }
                     if (hasTriggered)
                     {
-                        await SubscriptionServicesHandler.SetSubList();
+                        _= SubscriptionServicesHandler.SetSubList();
                         hasTriggered = false;
                     }
                 }
                 Console.WriteLine(eggLabPrice);
-                await Task.Delay(1000);
+                await Task.Delay(60000);
             }
         }
     }

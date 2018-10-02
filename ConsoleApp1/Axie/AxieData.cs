@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Discord;
+using System.Numerics;
 
 namespace DiscordBot
 {
@@ -29,7 +30,7 @@ namespace DiscordBot
         public int level;
         public int stage;
         public AxieStats stats;
-        //public AxieFigure figure;
+        public AxieAuction auction;
         public JObject jsonData;
         public  EmbedBuilder EmbedAxieData(string extra)
         {
@@ -161,6 +162,29 @@ namespace DiscordBot
         public static float GetMaxDPR() => 91.5f;
         public static float GetMaxTNK() => 129f;
         public static float GetMinTNK() => 33;
+
+        public static async Task<AxieData> GetAxieFromApi(int axieId)
+        {
+            string json = "";
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                try
+                {
+                    json = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/
+                }
+
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    return null;
+                }
+            }
+            JObject axieJson = JObject.Parse(json);
+            AxieData axieData = axieJson.ToObject<AxieData>();
+            axieData.jsonData = axieJson;
+            return axieData;
+        }
+
     }
 
     public class AxieParts
@@ -206,7 +230,17 @@ namespace DiscordBot
         public AxieImage images;
         public string model;
     }
-
+    public class AxieAuction
+    {
+        public string type;
+        public BigInteger startingPrice;
+        public BigInteger endingPrice;
+        public BigInteger buyNowPrice;
+        public BigInteger suggestedPrice;
+        public int startingTime;
+        public int duration;
+        public int timeLeft;
+    }
     public class AxieImage
     {
         [JsonProperty(PropertyName = "")]

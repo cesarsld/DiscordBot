@@ -43,6 +43,9 @@ namespace DiscordBot.Axie.SubscriptionServices
                             case 0:
                                 user.AddService(service.ToObject<AxieLabService>());
                                 break;
+                            case 1:
+                                user.AddService(service.ToObject<MarketplaceService>());
+                                break;
                         }
                     }
                     list.Add(user);
@@ -107,12 +110,40 @@ namespace DiscordBot.Axie.SubscriptionServices
                 var newUser = new SubUser(newUserId);
                 newUser.AddService(new MarketplaceService(ServiceEnum.MarketPlace));
                 subUserList.Add(newUser);
+                await SetSubList();
             }
             else if (!existingUser.GetServiceList().Exists(_service => _service.name == ServiceEnum.MarketPlace))
             {
                 existingUser.AddService(new MarketplaceService(ServiceEnum.AxieLab));
+                await SetSubList();
             }
-            await SetSubList();
+        }
+
+        public static async Task SetAxieTriggerPrice(ulong userId, int axieId, double priceTrigger, ICommandContext context)
+        {
+            if (subUserList == null) subUserList = await GetSubListFromFile();
+            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
+            if (existingUser != null)
+            {
+                var axieLabService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.MarketPlace) as MarketplaceService;
+                if (!axieLabService.GetList().Exists(trigger => trigger.axieId == axieId))
+                {
+                    var axieData = await AxieData.GetAxieFromApi(axieId);
+                    if (axieData.auction != null)
+                    {
+                        axieLabService.AddTrigger(new AxieTrigger(
+                                                                    axieId,
+                                                                    MarketPlaceTriggerTypeEnum.OnPriceTrigger, 
+                                                                    axieData.auction.startingTime, 
+                                                                    axieData.auction.duration,
+                                                                    axieData.auction.startingPrice, 
+                                                                    axieData.auction.endingPrice));
+                        await SetSubList();
+                        await context.Message.AddReactionAsync(new Emoji("✅"));
+                    }
+                }
+                else await context.Channel.SendMessageAsync("You already have a trigger for that  axie >:O");
+            }
         }
 
         #endregion
@@ -129,7 +160,6 @@ namespace DiscordBot.Axie.SubscriptionServices
             using (StreamWriter sw = new StreamWriter(subFileName))
             {
                 await sw.WriteAsync(stringBuilder.ToString());
-                
             }
         }
 

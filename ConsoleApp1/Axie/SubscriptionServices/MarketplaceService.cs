@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Newtonsoft.Json;
+using System.Numerics;
 namespace DiscordBot.Axie.SubscriptionServices
 {
     public class MarketplaceService : ISubscriptionService
@@ -40,9 +41,23 @@ namespace DiscordBot.Axie.SubscriptionServices
 
     public class AxieTrigger
     {
-        public int id;
+        public int axieId;
         public MarketPlaceTriggerTypeEnum triggerTypeEnum;
-        public double price;
+        public int auctionStartTime;
+        public int duration;
+        public BigInteger startprice;
+        public BigInteger endPrice;
+
+        public AxieTrigger(int id, MarketPlaceTriggerTypeEnum type, int startTime, int _duration, BigInteger _startPrice, BigInteger _endPrice)
+        {
+            axieId = id;
+            triggerTypeEnum = type;
+            duration = _duration;
+            auctionStartTime = startTime;
+            startprice = _startPrice;
+            endPrice = _endPrice;
+
+        }
     }
 
 
