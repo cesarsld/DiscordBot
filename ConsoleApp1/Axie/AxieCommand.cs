@@ -328,7 +328,15 @@ namespace DiscordBot
         }
 
         #endregion
+        [Command("GiveAway"), Summary("hi")]
+        public async Task LaunchGiveAway([Summary("Max minutes to wait for players")]string strMaxSecToWait = null,
+            [Summary("Target number")]string strTargetNumber = null,
+            [Summary("Number of Winners")]string strNumWinners = null,
+            [Summary("Number of Winners")]string strTestUsers = null)
+        {
+            await GiveAway(strMaxSecToWait, strTargetNumber, strNumWinners, strTestUsers);
 
+        }
         private async Task StartGameInternal(AxieRacingInstance raceInstance, string strSecondsToWait)
         {
             bool cleanupCommandInstance = false;

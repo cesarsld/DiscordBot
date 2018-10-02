@@ -8,6 +8,7 @@ namespace DiscordBot.Axie.SubscriptionServices
 {
     public enum ServiceEnum
     {
-        AxieLab
+        AxieLab,
+        MarketPlace
     }
 }

@@ -19,7 +19,7 @@ namespace DiscordBot.Axie.SubscriptionServices
         private static List<SubUser> subUserList;
         public static List<SubUser> GetSubList() => subUserList;
 
-        public static async Task<List<SubUser>> SetSubListFromFile()
+        public static async Task<List<SubUser>> GetSubListFromFile()
         {
             List<SubUser> list = new List<SubUser>();
             if (File.Exists(subFileName))
@@ -54,7 +54,7 @@ namespace DiscordBot.Axie.SubscriptionServices
         #region Axie Lab
         public static async Task SubscribeToLabNotif(ulong newUserId)
         {
-            if (subUserList == null) subUserList = await SetSubListFromFile();
+            if (subUserList == null) subUserList = await GetSubListFromFile();
             //subUserList = new List<SubUser>();
             var existingUser = subUserList.FirstOrDefault(user => user.GetId() == newUserId);
             if (existingUser == null)
@@ -67,12 +67,12 @@ namespace DiscordBot.Axie.SubscriptionServices
             {
                 existingUser.AddService(new AxieLabService(ServiceEnum.AxieLab));
             }
-            await SetSubList(subUserList);
+            await SetSubList();
         }
 
         public static async Task SetLabPriceTrigger(ulong userId, float priceTrigger, ICommandContext context)
         {
-            if (subUserList == null) subUserList = await SetSubListFromFile();
+            if (subUserList == null) subUserList = await GetSubListFromFile();
             var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
             if (existingUser != null)
             {
@@ -82,7 +82,7 @@ namespace DiscordBot.Axie.SubscriptionServices
                     if (priceTrigger >= 0.13f)
                     {
                         axieLabService.SetPrice(priceTrigger);
-                        await SetSubList(subUserList);
+                        await SetSubList();
                         await context.Message.AddReactionAsync(new Emoji("✅"));
                     }
                     else
@@ -94,13 +94,35 @@ namespace DiscordBot.Axie.SubscriptionServices
             }
         }
         #endregion
-        private static async Task SetSubList(List<SubUser> subList)
+
+        #region Markeplace
+
+        public static async Task SubscribeToMarketPlace(ulong newUserId)
+        {
+            if (subUserList == null) subUserList = await GetSubListFromFile();
+            //subUserList = new List<SubUser>();
+            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == newUserId);
+            if (existingUser == null)
+            {
+                var newUser = new SubUser(newUserId);
+                newUser.AddService(new MarketplaceService(ServiceEnum.MarketPlace));
+                subUserList.Add(newUser);
+            }
+            else if (!existingUser.GetServiceList().Exists(_service => _service.name == ServiceEnum.MarketPlace))
+            {
+                existingUser.AddService(new MarketplaceService(ServiceEnum.AxieLab));
+            }
+            await SetSubList();
+        }
+
+        #endregion
+        public static async Task SetSubList()
         {
             StringBuilder stringBuilder = new StringBuilder();
-            for (int i = 0; i < subList.Count; i++)
+            for (int i = 0; i < subUserList.Count; i++)
             {
-                stringBuilder.Append(JsonConvert.SerializeObject(subList[i]));
-                if (i != subList.Count - 1)
+                stringBuilder.Append(JsonConvert.SerializeObject(subUserList[i]));
+                if (i != subUserList.Count - 1)
                     stringBuilder.AppendLine();
             }
            

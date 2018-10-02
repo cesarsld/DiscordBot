@@ -18,6 +18,7 @@ using DiscordBot;
 
 namespace DiscordBot
 {
+    [Group("bh")]
     public class BaseCommands : ModuleBase
     {
         protected static readonly object SyncObj;
@@ -409,6 +410,7 @@ namespace DiscordBot
         }
 
         [Command("CancelGame"), Summary("Cancels the current running game.")]
+        [Alias("cancel")]
         public async Task CancelGame()
         {
             if (!NotInBHGeneral()) return;
@@ -565,6 +567,7 @@ namespace DiscordBot
                 [RequireUserPermission(GuildPermission.ManageMessages)]
         */
         [Command("cleanup", RunMode = RunMode.Async), Summary("Provides Help with commands.")]
+        [Alias("clean", "delete", "remove")]
         public async Task CleanUp()
         {
             bool cleanupCommandInstance = false;
@@ -667,6 +670,7 @@ namespace DiscordBot
             }
         }
         [Command("StartV3", RunMode = RunMode.Async), Summary("STart the BitHeroes BattleGriund")]
+        [Alias("hg3")]
         public async Task BHBG([Summary("Max minutes to wait for players")]string strMaxMinutesToWait = null,
             [Summary("Max User that can play")]string strMaxTurns = null,
             [Summary("Number of Winners")]string strMaxScore = null
@@ -682,7 +686,7 @@ namespace DiscordBot
 
 
         [Command("giveAway", RunMode = RunMode.Async), Summary("Starts a giveaway.")]
-        public async Task GiveAway(
+        protected async Task GiveAway(
             [Summary("Max minutes to wait for players")]string strMaxSecToWait = null,
             [Summary("Target number")]string strTargetNumber = null,
             [Summary("Number of Winners")]string strNumWinners = null,
@@ -693,6 +697,7 @@ namespace DiscordBot
         }
 
         [Command("startGame", RunMode = RunMode.Async), Summary("Starts the BHungerGames.")]
+        [Alias("hg1")]
         public async Task StartGame([Summary("Max User that can play")]string strMaxUsers,
             [Summary("Max minutes to wait for players")]string strMaxMinutesToWait = null,
             [Summary("Seconds to delay between displaying next day")]string strSecondsDelayBetweenDays = null,
@@ -714,6 +719,7 @@ namespace DiscordBot
         }
 
         [Command("StartV2", RunMode = RunMode.Async), Summary("Start the Hunger Games V2")]
+        [Alias("hg2")]
         public async Task StartV2([Summary("Max User that can play")]string strMaxUsers,
             [Summary("Max minutes to wait for players")]string strMaxMinutesToWait = null,
             [Summary("Number of Winners")]string strNumWinners = null

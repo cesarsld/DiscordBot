@@ -1200,7 +1200,7 @@ namespace DiscordBot.Axie.Web3Axie
         private static ulong marketPlaceChannelId = 423343101428498435;
         private static ulong botCommandChannelId = 487932149354463232;
         private static BigInteger lastBlockChecked = 6379721;
-        public static float eggLabPrice = 0.6f;
+        public static float eggLabPrice = 0.6f; //change to double
         public static bool IsServiceOn= true;
         public AxieDataGetter()
         {
@@ -1331,6 +1331,7 @@ namespace DiscordBot.Axie.Web3Axie
         {
             while (IsServiceOn)
             {
+                bool hasTriggered = false;
                 eggLabPrice *= 0.999f;
                 var subList = SubscriptionServicesHandler.GetSubList();
                 if (subList != null)
@@ -1342,10 +1343,17 @@ namespace DiscordBot.Axie.Web3Axie
                         {
                             if (axieLabSub.GetPrice() >= eggLabPrice)
                             {
-                                var user = Bot.GetUser(sub.GetId());
-                                await user.SendMessageAsync("", false, axieLabSub.GetTriggerEmbedMessage());
+                                hasTriggered = true;
+                                await Bot.GetUser(sub.GetId()).SendMessageAsync("", false, axieLabSub.GetTriggerEmbedMessage());
+                                axieLabSub.SetPrice(0);
+                                await Task.Delay(3000);
                             }
                         }
+                    }
+                    if (hasTriggered)
+                    {
+                        await SubscriptionServicesHandler.SetSubList();
+                        hasTriggered = false;
                     }
                 }
                 Console.WriteLine(eggLabPrice);
