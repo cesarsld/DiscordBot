@@ -25,7 +25,6 @@ namespace DiscordBot
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
                     //StatDataHandler.GetData();
-                    Console.WriteLine(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
                     //Console.WriteLine(GetTriggerTime(1000000000000000000, 2000000000000000000, 500000000000000000, 86400, 1538561950));
                     new Bot().RunAsync().GetAwaiter().GetResult();
                     //BanListHandler bl = new BanListHandler();

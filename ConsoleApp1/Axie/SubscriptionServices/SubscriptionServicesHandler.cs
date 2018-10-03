@@ -150,8 +150,22 @@ namespace DiscordBot.Axie.SubscriptionServices
                 {
                     var trigger = axieLabService.GetList().Find(t => t.axieId == axieId);
                     var axieData = await AxieData.GetAxieFromApi(axieId);
+
                     BigInteger convertedPrice = new BigInteger(priceTrigger * Math.Pow(10, 12));
-                    trigger = new AxieTrigger
+                    if(axieData.auction != null)
+                    {
+                        trigger = new AxieTrigger(
+                                                    axieId,
+                                                    MarketPlaceTriggerTypeEnum.OnPriceTrigger,
+                                                    axieData.auction.startingTime,
+                                                    axieData.auction.duration,
+                                                    axieData.auction.startingPrice,
+                                                    axieData.auction.endingPrice,
+                                                    convertedPrice,
+                                                    axieData.GetImageUrl());
+                        await SetSubList();
+                        await context.Message.AddReactionAsync(new Emoji("✅"));
+                    }
                 }
             }
         }

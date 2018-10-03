@@ -34,6 +34,7 @@ namespace DiscordBot.Axie.SubscriptionServices
         public bool SetNotifStatus(bool status) => notifyOnSale = status;
 
         public List<AxieTrigger> GetList() => triggerList;
+        public void RemoveElements(List<AxieTrigger> listToRemove) => triggerList = triggerList.Except(listToRemove).ToList();
         public void AddTrigger(AxieTrigger trigger) => triggerList.Add(trigger);
         public void RemoveTrigger(AxieTrigger trigger) => triggerList.Remove(trigger);
 
@@ -49,8 +50,9 @@ namespace DiscordBot.Axie.SubscriptionServices
         public BigInteger startPrice;
         public BigInteger endPrice;
         public BigInteger triggerPrice;
+        public string imageUrl;
 
-        public AxieTrigger(int id, MarketPlaceTriggerTypeEnum type, int startTime, int _duration, BigInteger _startPrice, BigInteger _endPrice, BigInteger _trigger)
+        public AxieTrigger(int id, MarketPlaceTriggerTypeEnum type, int startTime, int _duration, BigInteger _startPrice, BigInteger _endPrice, BigInteger _trigger, string url)
         {
             axieId = id;
             triggerTypeEnum = type;
@@ -60,6 +62,7 @@ namespace DiscordBot.Axie.SubscriptionServices
             endPrice = _endPrice;
             triggerPrice = _trigger;
             triggerTime = GetTriggerTime();
+            imageUrl = imageUrl;
 
         }
 
@@ -67,6 +70,24 @@ namespace DiscordBot.Axie.SubscriptionServices
         {
             BigInteger time = (triggerPrice * duration) / BigInteger.Abs(startPrice - endPrice) + auctionStartTime;
             return (int)(time);
+        }
+
+        public EmbedBuilder GetTriggerMessage()
+        {
+            var embed = new EmbedBuilder();
+            embed.WithTitle("TRIGGER ALERT!!!");
+            embed.WithDescription($"Axie #{axieId} price has dropped below your threshold of {ConvertToEth().ToString("F4")} ether!");
+            embed.WithUrl("https://axieinfinity.com/axie/"+ axieId.ToString() +"?r=9SG7dDe-x3sLFShtw_Sah7mUZ3M");
+            embed.AddField("", "Your price trigger will now be removed.");
+            embed.WithThumbnailUrl(imageUrl);
+            embed.WithColor(Color.Red);
+
+            return embed;
+        }
+
+        private float ConvertToEth()
+        {
+            return Convert.ToSingle(Nethereum.Util.UnitConversion.Convert.FromWei(triggerPrice));
         }
     }
 

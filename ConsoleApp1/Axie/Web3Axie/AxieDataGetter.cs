@@ -1358,13 +1358,17 @@ namespace DiscordBot.Axie.Web3Axie
                         var marketplaceSub = sub.GetServiceList().FirstOrDefault(service => service.name == ServiceEnum.MarketPlace) as MarketplaceService;
                         if(marketplaceSub != null)
                         {
+                            var triggersToRemove = new List<AxieTrigger>();
                             foreach(var trigger in marketplaceSub.GetList())
                             {
                                 if(unixTime > trigger.triggerTime)
                                 {
-                                    //DM user
+                                    hasTriggered = true;
+                                    _ = Bot.GetUser(sub.GetId()).SendMessageAsync("", false, trigger.GetTriggerMessage());
+                                    triggersToRemove.Add(trigger);
                                 }
                             }
+                            marketplaceSub.RemoveElements(triggersToRemove);
                         }
                     }
                     if (hasTriggered)

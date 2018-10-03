@@ -32,6 +32,7 @@ namespace DiscordBot
         public AxieStats stats;
         public AxieAuction auction;
         public JObject jsonData;
+
         public  EmbedBuilder EmbedAxieData(string extra)
         {
             string imageUrl = jsonData["figure"]["static"]["idle"].ToString();
@@ -120,6 +121,7 @@ namespace DiscordBot
             embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
             return embed;
         }
+
         public int GetPureness()
         {
             int pureness = 0;
@@ -140,8 +142,6 @@ namespace DiscordBot
             dpr += parts.tail.moves[0].attack * parts.tail.moves[0].accuracy / 100;
             return dpr;
         }
-
-
         public float GetTNK()
         {
             float tnk = stats.hp;
@@ -151,7 +151,6 @@ namespace DiscordBot
             tnk += parts.tail.moves[0].defense;
             return tnk;
         }
-
         public int GetTNKScore()
         {
             float tnk = GetTNK();
@@ -188,7 +187,7 @@ namespace DiscordBot
         }
 
     }
-
+    //support classes
     public class AxieParts
     {
         public AxiePart tail;
@@ -198,7 +197,6 @@ namespace DiscordBot
         public AxiePart mouth;
         public AxiePart eyes;
     }
-
     public class AxiePart
     {
         public string id;
@@ -208,7 +206,6 @@ namespace DiscordBot
         public bool mystic;
         public PartMove[] moves;
     }
-
     public class PartMove
     {
         public string id;
@@ -218,7 +215,6 @@ namespace DiscordBot
         public int defense;
         public int accuracy;
     }
-
     public class AxieStats
     {
         public int hp;
