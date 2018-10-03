@@ -1209,11 +1209,12 @@ namespace DiscordBot.Axie.Web3Axie
         public static async Task GetData()
         {
             IsServiceOn = true;
-            _= UpdateEggPrice();
+            _= UpdateServiceCheckLoop();
             var web3 = new Web3("https://mainnet.infura.io");
             var auctionContract = web3.Eth.GetContract(auctionABI, AxieCoreContractAddress);
             var labContract = web3.Eth.GetContract(labABI, AxieLabContractAddress);
             var auctionSuccesfulEvent = auctionContract.GetEvent("AuctionSuccessful");
+            var auctionCreatedEvent = auctionContract.GetEvent("AuctionCreated");
             var axieBoughtEvent = labContract.GetEvent("AxieBought");
             var lastBlock = await GetLastBlockCheckpoint(web3);
             var firstBlock = GetInitialBlockCheckpoint(lastBlock.BlockNumber);
@@ -1222,10 +1223,13 @@ namespace DiscordBot.Axie.Web3Axie
                 try
                 {
                     var auctionFilterAll = auctionSuccesfulEvent.CreateFilterInput(firstBlock, lastBlock);
+                    var auctionCreationFilterAll = auctionCreatedEvent.CreateFilterInput(firstBlock, lastBlock);
                     var labFilterAll = axieBoughtEvent.CreateFilterInput(firstBlock, lastBlock);
+
                     var auctionLogs = await auctionSuccesfulEvent.GetAllChanges<AuctionSuccessfulEvent>(auctionFilterAll);
                     var labLogs = await axieBoughtEvent.GetAllChanges<AxieBoughtEvent>(labFilterAll);
-                    if (auctionLogs != null && auctionLogs.Count > 0)
+                    var auctionCreationLogs = await auctionCreatedEvent.GetAllChanges<AuctionCreatedEvent>(auctionCreationFilterAll);
+                    if(auctionLogs != null && auctionLogs.Count > 0)
                     {
                         foreach (var log in auctionLogs)
                         {
@@ -1326,18 +1330,20 @@ namespace DiscordBot.Axie.Web3Axie
             return new BlockParameter(new HexBigInteger(firstBlock));
         }
 
-        public static async Task UpdateEggPrice()
+        public static async Task UpdateServiceCheckLoop()
         {
             while (IsServiceOn)
             {
                 bool hasTriggered = false;
                 eggLabPrice *= 0.999f;
+                int unixTime = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
                 if (eggLabPrice < 0.133f) eggLabPrice = 0.133f;
                 var subList = SubscriptionServicesHandler.GetSubList();
                 if (subList != null)
                 {
                     foreach (var sub in subList)
                     {
+                        //Axie lab service check
                         var axieLabSub = sub.GetServiceList().FirstOrDefault(service => service.name == ServiceEnum.AxieLab) as AxieLabService;
                         if (axieLabSub != null)
                         {
@@ -1346,6 +1352,18 @@ namespace DiscordBot.Axie.Web3Axie
                                 hasTriggered = true;
                                 _ = Bot.GetUser(sub.GetId()).SendMessageAsync("", false, axieLabSub.GetTriggerEmbedMessage());
                                 axieLabSub.SetPrice(0);
+                            }
+                        }
+                        //MarketPlace trigger check
+                        var marketplaceSub = sub.GetServiceList().FirstOrDefault(service => service.name == ServiceEnum.MarketPlace) as MarketplaceService;
+                        if(marketplaceSub != null)
+                        {
+                            foreach(var trigger in marketplaceSub.GetList())
+                            {
+                                if(unixTime > trigger.triggerTime)
+                                {
+                                    //DM user
+                                }
                             }
                         }
                     }
@@ -1392,5 +1410,27 @@ namespace DiscordBot.Axie.Web3Axie
 
         [Parameter("uint256", "_referralReward", 4)]
         public BigInteger referralReward { get; set; }
+    }
+
+    public class AuctionCreatedEvent
+    {
+        [Parameter("address", "_nftAddress", 1, true)]
+        public string nftAddress { get; set; }
+
+        [Parameter("uint256", "_tokenId", 2, true)]
+        public BigInteger tokenId { get; set; }
+
+        [Parameter("uint256", "_startingPrice", 3)]
+        public BigInteger startingPrice { get; set; }
+
+        [Parameter("uint256", "_endingPrice", 4)]
+        public BigInteger endingPrice { get; set; }
+
+        [Parameter("uint256", "_duration", 5)]
+        public BigInteger duration { get; set; }
+
+        [Parameter("address", "_seller", 6)]
+        public string seller { get; set; }
+
     }
 }

@@ -7,6 +7,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Numerics;
 using Discord.Commands;
 using Discord;
 
@@ -131,18 +132,27 @@ namespace DiscordBot.Axie.SubscriptionServices
                     var axieData = await AxieData.GetAxieFromApi(axieId);
                     if (axieData.auction != null)
                     {
+                        BigInteger convertedPrice = new BigInteger (priceTrigger * Math.Pow(10, 12));
                         axieLabService.AddTrigger(new AxieTrigger(
                                                                     axieId,
                                                                     MarketPlaceTriggerTypeEnum.OnPriceTrigger, 
                                                                     axieData.auction.startingTime, 
                                                                     axieData.auction.duration,
                                                                     axieData.auction.startingPrice, 
-                                                                    axieData.auction.endingPrice));
+                                                                    axieData.auction.endingPrice,
+                                                                    convertedPrice,
+                                                                    axieData.GetImageUrl()));
                         await SetSubList();
                         await context.Message.AddReactionAsync(new Emoji("✅"));
                     }
                 }
-                else await context.Channel.SendMessageAsync("You already have a trigger for that  axie >:O");
+                else
+                {
+                    var trigger = axieLabService.GetList().Find(t => t.axieId == axieId);
+                    var axieData = await AxieData.GetAxieFromApi(axieId);
+                    BigInteger convertedPrice = new BigInteger(priceTrigger * Math.Pow(10, 12));
+                    trigger = new AxieTrigger
+                }
             }
         }
 

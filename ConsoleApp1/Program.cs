@@ -9,6 +9,7 @@ using MongoDB.Driver.Linq;
 using DiscordBot.Axie;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Numerics;
 using System.Collections.Generic;
 
 namespace DiscordBot
@@ -24,6 +25,8 @@ namespace DiscordBot
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
                     //StatDataHandler.GetData();
+                    Console.WriteLine(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
+                    //Console.WriteLine(GetTriggerTime(1000000000000000000, 2000000000000000000, 500000000000000000, 86400, 1538561950));
                     new Bot().RunAsync().GetAwaiter().GetResult();
                     //BanListHandler bl = new BanListHandler();
                     //bl.UnbanUserFromBannedList(111);
@@ -69,6 +72,11 @@ namespace DiscordBot
             };
 
             await collection.InsertOneAsync(document);
+        }
+        private static int GetTriggerTime(BigInteger triggerPrice, BigInteger startPrice, BigInteger endPrice, int duration, int auctionStartTime)
+        {
+            BigInteger time = (triggerPrice * duration) / BigInteger.Abs(startPrice - endPrice) + auctionStartTime;
+            return (int)(time);
         }
         static void Stuff()
         {

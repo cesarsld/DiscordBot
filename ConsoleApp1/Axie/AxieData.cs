@@ -163,6 +163,8 @@ namespace DiscordBot
         public static float GetMaxTNK() => 129f;
         public static float GetMinTNK() => 33;
 
+        public string GetImageUrl() => jsonData["figure"]["static"]["idle"].ToString();
+
         public static async Task<AxieData> GetAxieFromApi(int axieId)
         {
             string json = "";

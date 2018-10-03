@@ -125,23 +125,9 @@ namespace DiscordBot
         {
             if (IsMarketPlace(Context) || IsBotCommand(Context))
             {
-                string json = "";
-                using (System.Net.WebClient wc = new System.Net.WebClient())
-                {
-                    try
-                    {
-                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + axieNumber.ToString());
-                    }
-                    catch (Exception ex)
-                    {
-                        await Context.Channel.SendMessageAsync("Error. Axie could not be found.");
-                        return;
-                    }
-                }
-
-                JObject axieJson = JObject.Parse(json);
-                string owner = (string)axieJson["owner"];
-                int axieId = (int)axieJson["id"];
+                var axieData = await AxieData.GetAxieFromApi(axieNumber);
+                string owner = (string)axieData.jsonData["owner"];
+                int axieId = (int)axieData.jsonData["id"];
                 await AxieHolderListHandler.AddNonBuyableAxie(axieId, Context.Message.Author.Id, owner, Context);
             }
         }
@@ -151,22 +137,9 @@ namespace DiscordBot
         {
             if (IsMarketPlace(Context) || IsBotCommand(Context))
             {
-                string json = "";
-                using (System.Net.WebClient wc = new System.Net.WebClient())
-                {
-                    try
-                    {
-                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + axieNumber.ToString());
-                    }
-                    catch (Exception ex)
-                    {
-                        await Context.Channel.SendMessageAsync("Error. Axie could not be found.");
-                        return;
-                    }
-                }
-                JObject axieJson = JObject.Parse(json);
-                string owner = (string)axieJson["owner"];
-                int axieId = (int)axieJson["id"];
+                var axieData = await AxieData.GetAxieFromApi(axieNumber);
+                string owner = (string)axieData.jsonData["owner"];
+                int axieId = (int)axieData.jsonData["id"];
                 await AxieHolderListHandler.RemoveNonBuyableAxie(axieId, Context.Message.Author.Id, owner, Context);
             }
         }
@@ -183,22 +156,9 @@ namespace DiscordBot
         {
             if (IsMarketPlace(Context) || IsBotCommand(Context))
             {
-                string json = "";
-                using (System.Net.WebClient wc = new System.Net.WebClient())
-                {
-                    try
-                    {
-                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + axieNumber.ToString());
-                    }
-                    catch (Exception ex)
-                    {
-                        await Context.Channel.SendMessageAsync("Error. Axie could not be found.");
-                        return;
-                    }
-                }
-                JObject axieJson = JObject.Parse(json);
-                string owner = (string)axieJson["owner"];
-                int axieId = (int)axieJson["id"];
+                var axieData = await AxieData.GetAxieFromApi(axieNumber);
+                string owner = (string)axieData.jsonData["owner"];
+                int axieId = (int)axieData.jsonData["id"];
                 await AxieHolderListHandler.GetHolderId(owner, axieId, Context);
             }
         }
@@ -240,30 +200,17 @@ namespace DiscordBot
         {
             if (IsBotCommand(Context))
             {
-                string url = isBeta == "beta" ? "http://beta.axieinfinity.com/api/axies/" : "https://axieinfinity.com/api/axies/";
-                string json1 = "";
-                string json2 = "";
-                using (System.Net.WebClient wc = new System.Net.WebClient())
-                {
-                    try
-                    {
-                        json1 = await wc.DownloadStringTaskAsync(url + axie1.ToString());
-                        json2 = await wc.DownloadStringTaskAsync(url + axie2.ToString());
-                    }
-                    catch (Exception ex)
-                    {
-                        await Context.Channel.SendMessageAsync("Error. Axies could not be found.");
-                        return;
-                    }
-                }
-                JObject axieJson1 = JObject.Parse(json1);
-                JObject axieJson2 = JObject.Parse(json2);
-                //AxieData axieData1 = axieJson1.ToObject<AxieData>();
-                string genes1 = (string)axieJson1["genes"];
-                string genes2 = (string)axieJson2["genes"];
-                int id1 = (int)axieJson1["id"];
-                int id2 = (int)axieJson2["id"];
-                //AxieData axieData2 = axieJson2.ToObject<AxieData>();
+                //string url = isBeta == "beta" ? "http://beta.axieinfinity.com/api/axies/" : "https://axieinfinity.com/api/axies/";
+
+                var axieData1 = await AxieData.GetAxieFromApi(axie1);
+                var axieData2 = await AxieData.GetAxieFromApi(axie2);
+
+                string genes1 = (string)axieData1.jsonData["genes"];
+                string genes2 = (string)axieData2.jsonData["genes"];
+
+                int id1 = (int)axieData1.jsonData["id"];
+                int id2 = (int)axieData2.jsonData["id"];
+
                 float chance = PureBreeder.GetBreedingChance(genes1, genes2);
                 await Context.Channel.SendMessageAsync($"The chance to breed a pure axie with axies #{id1} and #{id2} is = {chance}%");
             }

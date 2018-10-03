@@ -45,18 +45,28 @@ namespace DiscordBot.Axie.SubscriptionServices
         public MarketPlaceTriggerTypeEnum triggerTypeEnum;
         public int auctionStartTime;
         public int duration;
-        public BigInteger startprice;
+        public int triggerTime;
+        public BigInteger startPrice;
         public BigInteger endPrice;
+        public BigInteger triggerPrice;
 
-        public AxieTrigger(int id, MarketPlaceTriggerTypeEnum type, int startTime, int _duration, BigInteger _startPrice, BigInteger _endPrice)
+        public AxieTrigger(int id, MarketPlaceTriggerTypeEnum type, int startTime, int _duration, BigInteger _startPrice, BigInteger _endPrice, BigInteger _trigger)
         {
             axieId = id;
             triggerTypeEnum = type;
             duration = _duration;
             auctionStartTime = startTime;
-            startprice = _startPrice;
+            startPrice = _startPrice;
             endPrice = _endPrice;
+            triggerPrice = _trigger;
+            triggerTime = GetTriggerTime();
 
+        }
+
+        private int GetTriggerTime()
+        {
+            BigInteger time = (triggerPrice * duration) / BigInteger.Abs(startPrice - endPrice) + auctionStartTime;
+            return (int)(time);
         }
     }
 
