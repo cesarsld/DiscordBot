@@ -13,7 +13,7 @@ namespace DiscordBot.Axie.SubscriptionServices
         public ServiceEnum name { get; set; }
         [JsonProperty]
         private bool notifyOnSale;
-
+        [JsonProperty]
         private List<AxieTrigger> triggerList;
 
         [JsonConstructor]
@@ -21,13 +21,14 @@ namespace DiscordBot.Axie.SubscriptionServices
         {
             name = _name;
             notifyOnSale = _notifyOnSale;
-            triggerList = list;
+            triggerList = list!= null? list : new List<AxieTrigger>();
         }
 
         public MarketplaceService(ServiceEnum _name)
         {
             name = _name;
             triggerList = new List<AxieTrigger>();
+            notifyOnSale = true;
         }
 
         public bool GetNotifStatus() => notifyOnSale;
@@ -51,8 +52,8 @@ namespace DiscordBot.Axie.SubscriptionServices
         public BigInteger endPrice;
         public BigInteger triggerPrice;
         public string imageUrl;
-
-        public AxieTrigger(int id, MarketPlaceTriggerTypeEnum type, int startTime, int _duration, BigInteger _startPrice, BigInteger _endPrice, BigInteger _trigger, string url)
+        //[JsonConstructor]
+        public void SetupAxieTrigger(int id, MarketPlaceTriggerTypeEnum type, int _duration, int startTime, BigInteger _startPrice, BigInteger _endPrice, BigInteger _trigger, string url)
         {
             axieId = id;
             triggerTypeEnum = type;
@@ -61,15 +62,29 @@ namespace DiscordBot.Axie.SubscriptionServices
             startPrice = _startPrice;
             endPrice = _endPrice;
             triggerPrice = _trigger;
-            triggerTime = GetTriggerTime();
-            imageUrl = imageUrl;
+            GetTriggerTime();
+            imageUrl = url;
 
         }
+        //[JsonConstructor]
+        //public AxieTrigger(int id, MarketPlaceTriggerTypeEnum type, int _duration, int startTime, string _startPrice, string _endPrice, string _trigger, string url)
+        //{
+        //    axieId = id;
+        //    triggerTypeEnum = type;
+        //    duration = _duration;
+        //    auctionStartTime = startTime;
+        //    startPrice = BigInteger.Parse(_startPrice);
+        //    endPrice = BigInteger.Parse(_endPrice);
+        //    triggerPrice = BigInteger.Parse(_trigger);
+        //    GetTriggerTime();
+        //    imageUrl = url;
 
-        private int GetTriggerTime()
+        //}
+
+        private void GetTriggerTime()
         {
             BigInteger time = (triggerPrice * duration) / BigInteger.Abs(startPrice - endPrice) + auctionStartTime;
-            return (int)(time);
+            triggerTime = (int)(time);
         }
 
         public EmbedBuilder GetTriggerMessage()
@@ -78,7 +93,7 @@ namespace DiscordBot.Axie.SubscriptionServices
             embed.WithTitle("TRIGGER ALERT!!!");
             embed.WithDescription($"Axie #{axieId} price has dropped below your threshold of {ConvertToEth().ToString("F4")} ether!");
             embed.WithUrl("https://axieinfinity.com/axie/"+ axieId.ToString() +"?r=9SG7dDe-x3sLFShtw_Sah7mUZ3M");
-            embed.AddField("", "Your price trigger will now be removed.");
+            embed.AddField("Note", "Your price trigger will now be removed.");
             embed.WithThumbnailUrl(imageUrl);
             embed.WithColor(Color.Red);
 

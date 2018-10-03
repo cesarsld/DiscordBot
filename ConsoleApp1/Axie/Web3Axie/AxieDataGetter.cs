@@ -1229,6 +1229,7 @@ namespace DiscordBot.Axie.Web3Axie
                     var auctionLogs = await auctionSuccesfulEvent.GetAllChanges<AuctionSuccessfulEvent>(auctionFilterAll);
                     var labLogs = await axieBoughtEvent.GetAllChanges<AxieBoughtEvent>(labFilterAll);
                     var auctionCreationLogs = await auctionCreatedEvent.GetAllChanges<AuctionCreatedEvent>(auctionCreationFilterAll);
+                    BigInteger latestLogBlock = 0;
                     if(auctionLogs != null && auctionLogs.Count > 0)
                     {
                         foreach (var log in auctionLogs)
@@ -1244,6 +1245,7 @@ namespace DiscordBot.Axie.Web3Axie
                     {
                         foreach (var log in labLogs)
                         {
+                            latestLogBlock = log.Log.BlockNumber.Value;
                             float priceinEth = Convert.ToSingle(Nethereum.Util.UnitConversion.Convert.FromWei(log.Event.price).ToString());
                             eggLabPrice = priceinEth * 1.07f;
                             int amount = log.Event.amount;
@@ -1253,7 +1255,8 @@ namespace DiscordBot.Axie.Web3Axie
                         Console.WriteLine("End of batch");
                     }
                     await Task.Delay(60000);
-                    firstBlock = new BlockParameter(new HexBigInteger(lastBlock.BlockNumber.Value + 1));
+                    if(latestLogBlock > lastBlock.BlockNumber.Value) firstBlock = new BlockParameter(new HexBigInteger(latestLogBlock + 1));
+                    else firstBlock = new BlockParameter(new HexBigInteger(lastBlock.BlockNumber.Value + 1));
                     lastBlock = await GetLastBlockCheckpoint(web3);
                 }
                 catch (Exception ex)
@@ -1338,7 +1341,7 @@ namespace DiscordBot.Axie.Web3Axie
                 eggLabPrice *= 0.999f;
                 int unixTime = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
                 if (eggLabPrice < 0.133f) eggLabPrice = 0.133f;
-                var subList = SubscriptionServicesHandler.GetSubList();
+                var subList = await SubscriptionServicesHandler.GetSubList();
                 if (subList != null)
                 {
                     foreach (var sub in subList)

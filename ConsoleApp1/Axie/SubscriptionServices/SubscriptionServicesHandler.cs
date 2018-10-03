@@ -18,7 +18,11 @@ namespace DiscordBot.Axie.SubscriptionServices
         private static string subFileName = "SubList.txt";
         private static readonly object SyncObj = new object();
         private static List<SubUser> subUserList;
-        public static List<SubUser> GetSubList() => subUserList;
+        public static async Task<List<SubUser>> GetSubList()
+        {
+            if (subUserList == null) subUserList =  await GetSubListFromFile();
+            return subUserList;
+        }
 
         public static async Task<List<SubUser>> GetSubListFromFile()
         {
@@ -45,7 +49,8 @@ namespace DiscordBot.Axie.SubscriptionServices
                                 user.AddService(service.ToObject<AxieLabService>());
                                 break;
                             case 1:
-                                user.AddService(service.ToObject<MarketplaceService>());
+                                var marketService = service.ToObject<MarketplaceService>();
+                                user.AddService(marketService);
                                 break;
                         }
                     }
@@ -115,58 +120,47 @@ namespace DiscordBot.Axie.SubscriptionServices
             }
             else if (!existingUser.GetServiceList().Exists(_service => _service.name == ServiceEnum.MarketPlace))
             {
-                existingUser.AddService(new MarketplaceService(ServiceEnum.AxieLab));
+                existingUser.AddService(new MarketplaceService(ServiceEnum.MarketPlace));
                 await SetSubList();
             }
         }
 
-        public static async Task SetAxieTriggerPrice(ulong userId, int axieId, double priceTrigger, ICommandContext context)
+        public static async Task SetMarketPriceTrigger(ulong userId, int axieId, double priceTrigger, ICommandContext context)
         {
             if (subUserList == null) subUserList = await GetSubListFromFile();
             var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
             if (existingUser != null)
             {
-                var axieLabService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.MarketPlace) as MarketplaceService;
-                if (!axieLabService.GetList().Exists(trigger => trigger.axieId == axieId))
+                BigInteger convertedPrice = new BigInteger(priceTrigger * Math.Pow(10, 18));
+                var axieData = await AxieData.GetAxieFromApi(axieId);
+                if (axieData.auction != null)
                 {
-                    var axieData = await AxieData.GetAxieFromApi(axieId);
-                    if (axieData.auction != null)
-                    {
-                        BigInteger convertedPrice = new BigInteger (priceTrigger * Math.Pow(10, 12));
-                        axieLabService.AddTrigger(new AxieTrigger(
-                                                                    axieId,
-                                                                    MarketPlaceTriggerTypeEnum.OnPriceTrigger, 
-                                                                    axieData.auction.startingTime, 
-                                                                    axieData.auction.duration,
-                                                                    axieData.auction.startingPrice, 
-                                                                    axieData.auction.endingPrice,
-                                                                    convertedPrice,
-                                                                    axieData.GetImageUrl()));
-                        await SetSubList();
-                        await context.Message.AddReactionAsync(new Emoji("✅"));
-                    }
-                }
-                else
-                {
-                    var trigger = axieLabService.GetList().Find(t => t.axieId == axieId);
-                    var axieData = await AxieData.GetAxieFromApi(axieId);
+                    var trigger = new AxieTrigger();
+                    trigger.SetupAxieTrigger(
+                        axieId,
+                        MarketPlaceTriggerTypeEnum.OnPriceTrigger,
+                        axieData.auction.duration,
+                        axieData.auction.startingTime,
+                        axieData.auction.startingPrice,
+                        axieData.auction.endingPrice,
+                        convertedPrice,
+                        axieData.GetImageUrl());
 
-                    BigInteger convertedPrice = new BigInteger(priceTrigger * Math.Pow(10, 12));
-                    if(axieData.auction != null)
+                    var axieLabService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.MarketPlace) as MarketplaceService;
+                    if (axieLabService != null)
                     {
-                        trigger = new AxieTrigger(
-                                                    axieId,
-                                                    MarketPlaceTriggerTypeEnum.OnPriceTrigger,
-                                                    axieData.auction.startingTime,
-                                                    axieData.auction.duration,
-                                                    axieData.auction.startingPrice,
-                                                    axieData.auction.endingPrice,
-                                                    convertedPrice,
-                                                    axieData.GetImageUrl());
+                        if (!axieLabService.GetList().Exists(t => t.axieId == axieId)) axieLabService.AddTrigger(trigger);
+                        else
+                        {
+                            var existingTrigger = axieLabService.GetList().Find(t => t.axieId == axieId);
+                            existingTrigger = trigger;
+                        }
                         await SetSubList();
                         await context.Message.AddReactionAsync(new Emoji("✅"));
                     }
+                    else await context.Channel.SendMessageAsync("Error. You are not subscribed to market service.");
                 }
+                else await context.Channel.SendMessageAsync("Error. Specified axie is not on sale :/");
             }
         }
 
@@ -180,7 +174,7 @@ namespace DiscordBot.Axie.SubscriptionServices
                 if (i != subUserList.Count - 1)
                     stringBuilder.AppendLine();
             }
-           
+
             using (StreamWriter sw = new StreamWriter(subFileName))
             {
                 await sw.WriteAsync(stringBuilder.ToString());

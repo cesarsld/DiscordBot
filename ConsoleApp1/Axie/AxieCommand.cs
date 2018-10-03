@@ -78,6 +78,7 @@ namespace DiscordBot
             if (IsBotCommand(Context))
                 await Context.Channel.SendMessageAsync("Subscriptions that you can use :\n"
                                                      + "- Axie Lab service. For more info input `>a sub lab` \n"
+                                                     + "- Marketplace service. For more info input `>a sub market` COMING SOON!\n"
                                                      + "");
         }
 
@@ -92,7 +93,12 @@ namespace DiscordBot
                     case "lab":
                         message = "Commands: \n"
                                 + "- `>a labsub` : subscribe to Axie Lab services\n"
-                                + "- `>a labtrigger trigger_price` : change trigger price so that the bot notidies you when the pod price reaches your trigger price.";
+                                + "- `>a labtrigger trigger_price` : change trigger price so that the bot notifies you when the pod price reaches your trigger price.";
+                        break;
+                    case "market":
+                        message = "Commands: \n"
+                                + "- `>a marketsub` : subscribe to Marketplace services\n"
+                                + "- `>a markettrigger/mtrigger axie_id trigger_price` : Bot will notify you when indicated axie reaches the trigger price.";
                         break;
                 }
                 await Context.Channel.SendMessageAsync(message);
@@ -181,19 +187,7 @@ namespace DiscordBot
                 else await Context.Channel.SendMessageAsync("", false, axieData.EmbedAxieData(extra));
             }
         }
-        #endregion
-        [Command("rebootSales"), Summary("show you addresses")]
-        public async Task RebootSales()
-        {
-            if (!AxieDataGetter.IsServiceOn)
-            {
-                _= AxieDataGetter.GetData();
-                await Context.Message.AddReactionAsync(new Emoji("✅"));
-            }
-        }
-            
-            
-            
+
         [Command("purechance"), Summary("show you addresses")]
         [Alias("pure", "p")]
         public async Task GetBreedingChance(int axie1, int axie2, string isBeta = null)
@@ -201,7 +195,6 @@ namespace DiscordBot
             if (IsBotCommand(Context))
             {
                 //string url = isBeta == "beta" ? "http://beta.axieinfinity.com/api/axies/" : "https://axieinfinity.com/api/axies/";
-
                 var axieData1 = await AxieData.GetAxieFromApi(axie1);
                 var axieData2 = await AxieData.GetAxieFromApi(axie2);
 
@@ -215,40 +208,8 @@ namespace DiscordBot
                 await Context.Channel.SendMessageAsync($"The chance to breed a pure axie with axies #{id1} and #{id2} is = {chance}%");
             }
         }
+        #endregion
 
-
-
-        [Command("SetRacerData"), Summary("Set racer data")]
-        public async Task SetRacerData(ulong gameId, string axieClass, int pace, int awareness, int diet)
-        {
-            RunningCommandInfo commandInfo = GetRunningCommandInfo(gameId);
-            if (commandInfo != null)
-            {
-                AxieClass _class = AxieClass.undefined;
-                Enum.TryParse(axieClass.ToLower(), out _class);
-                await commandInfo.RaceInstance.GetRacerDataFromDm(Context.Message.Author.Id, _class, pace, awareness, diet, Context);
-            }
-            else await Context.Channel.SendMessageAsync("I'm sorry I can't find the game instance. It may have ended or the ID you gave me is wrong :(");          
-        }
-        [Command("RaceGame", RunMode = RunMode.Async), Summary("Launch raceing game")]
-        public async Task AxieRacing([Summary("Max minutes to wait for players")]string strMaxMinutesToWait = null)
-        {
-            await Context.Channel.SendMessageAsync("Not finished yet :/");
-            //AxieRacingInstance gameInstance = new AxieRacingInstance(Context.Channel.Id);
-            //await StartGameInternal(gameInstance, strMaxMinutesToWait);
-
-        }
-
-        [Command("Migration", RunMode = RunMode.Async), Summary("Launch raceing game")]
-        public async Task Migration()
-        {
-            if (Context.Message.Author.Id == 195567858133106697)
-            {
-                await AxieHolderListHandler.Migration();
-                await Context.Channel.SendMessageAsync("Migration compeleted");
-            }
-
-        }
 
 
         #region Lab services
@@ -273,6 +234,37 @@ namespace DiscordBot
         }
 
         #endregion
+
+        #region Marketplace Services
+        [Command("marketsub"), Summary("subscribe to market service")]
+        public async Task SubscribeToMarketService()
+        {
+            await SubscriptionServicesHandler.SubscribeToMarketPlace(Context.Message.Author.Id);
+            await Context.Message.AddReactionAsync(new Emoji("✅"));
+        }
+
+        [Command("markettrigger"), Summary("set market trigger")]
+        [Alias("mtrigger")]
+        public async Task SetMarketplaceTrigger(int axieId, float priceTrigger)
+        {
+            await Context.Channel.SendMessageAsync("Code is half broken doooog, let the man get it right :O");
+            return;
+            await SubscriptionServicesHandler.SetMarketPriceTrigger(Context.Message.Author.Id, axieId, priceTrigger, Context);
+        }
+
+        #endregion
+
+        #region miscellaneous
+        [Command("rebootSales"), Summary("show you addresses")]
+        public async Task RebootSales()
+        {
+            if (!AxieDataGetter.IsServiceOn)
+            {
+                _ = AxieDataGetter.GetData();
+                await Context.Message.AddReactionAsync(new Emoji("✅"));
+            }
+        }
+
         [Command("GiveAway"), Summary("hi")]
         public async Task LaunchGiveAway([Summary("Max minutes to wait for players")]string strMaxSecToWait = null,
             [Summary("Target number")]string strTargetNumber = null,
@@ -284,6 +276,37 @@ namespace DiscordBot
 
         [Command("ping2")]
         public async Task pong() => await Context.Channel.SendMessageAsync("pong");
+        [Command("SetRacerData"), Summary("Set racer data")]
+        public async Task SetRacerData(ulong gameId, string axieClass, int pace, int awareness, int diet)
+        {
+            RunningCommandInfo commandInfo = GetRunningCommandInfo(gameId);
+            if (commandInfo != null)
+            {
+                AxieClass _class = AxieClass.undefined;
+                Enum.TryParse(axieClass.ToLower(), out _class);
+                await commandInfo.RaceInstance.GetRacerDataFromDm(Context.Message.Author.Id, _class, pace, awareness, diet, Context);
+            }
+            else await Context.Channel.SendMessageAsync("I'm sorry I can't find the game instance. It may have ended or the ID you gave me is wrong :(");
+        }
+        [Command("RaceGame", RunMode = RunMode.Async), Summary("Launch raceing game")]
+        public async Task AxieRacing([Summary("Max minutes to wait for players")]string strMaxMinutesToWait = null)
+        {
+            await Context.Channel.SendMessageAsync("Not finished yet :/");
+            //AxieRacingInstance gameInstance = new AxieRacingInstance(Context.Channel.Id);
+            //await StartGameInternal(gameInstance, strMaxMinutesToWait);
+
+        }
+
+        [Command("Migration", RunMode = RunMode.Async), Summary("Launch raceing game")]
+        public async Task Migration()
+        {
+            if (Context.Message.Author.Id == 195567858133106697)
+            {
+                await AxieHolderListHandler.Migration();
+                await Context.Channel.SendMessageAsync("Migration compeleted");
+            }
+
+        }
         private async Task StartGameInternal(AxieRacingInstance raceInstance, string strSecondsToWait)
         {
             bool cleanupCommandInstance = false;
@@ -336,5 +359,6 @@ namespace DiscordBot
                 }
             }
         }
+        #endregion
     }
 }
