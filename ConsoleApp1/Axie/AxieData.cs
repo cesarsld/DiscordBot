@@ -121,6 +121,38 @@ namespace DiscordBot
             embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
             return embed;
         }
+        public EmbedBuilder EmbedQQData()
+        {
+            var embed = new EmbedBuilder();
+            embed.WithTitle(name);
+
+            embed.WithThumbnailUrl(GetImageUrl());
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
+            Color color = Color.Default;
+            switch (Class)
+            {
+                case "plant":
+                    color = Color.Green;
+                    break;
+                case "beast":
+                    color = Color.Gold;
+                    break;
+                case "aquatic":
+                    color = Color.Blue;
+                    break;
+                case "bug":
+                    color = Color.Red;
+                    break;
+                case "bird":
+                    color = Color.Magenta;
+                    break;
+                case "reptile":
+                    color = Color.DarkMagenta;
+                    break;
+            }
+            embed.WithColor(color);
+            return embed;
+        }
 
         public int GetPureness()
         {

@@ -66,20 +66,6 @@ namespace DiscordBot.Axie.SubscriptionServices
             imageUrl = url;
 
         }
-        //[JsonConstructor]
-        //public AxieTrigger(int id, MarketPlaceTriggerTypeEnum type, int _duration, int startTime, string _startPrice, string _endPrice, string _trigger, string url)
-        //{
-        //    axieId = id;
-        //    triggerTypeEnum = type;
-        //    duration = _duration;
-        //    auctionStartTime = startTime;
-        //    startPrice = BigInteger.Parse(_startPrice);
-        //    endPrice = BigInteger.Parse(_endPrice);
-        //    triggerPrice = BigInteger.Parse(_trigger);
-        //    GetTriggerTime();
-        //    imageUrl = url;
-
-        //}
 
         private void GetTriggerTime()
         {

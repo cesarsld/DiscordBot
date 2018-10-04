@@ -161,7 +161,7 @@ namespace DiscordBot.Axie.SubscriptionServices
                         await SetSubList();
                         await context.Message.AddReactionAsync(new Emoji("✅"));
                     }
-                    else await context.Channel.SendMessageAsync("Error. You are not subscribed to market service.");
+                    else await context.Channel.SendMessageAsync("Error. You are not subscribed to Marketplace service.");
                 }
                 else await context.Channel.SendMessageAsync("Error. Specified axie is not on sale :/");
             }
@@ -189,7 +189,7 @@ namespace DiscordBot.Axie.SubscriptionServices
             }
         }
 
-        public static async Task CreateAuctionFilter(ulong userId, string filterInput)
+        public static async Task CreateAuctionFilter(ulong userId, string filterInput, ICommandContext context)
         {
             if (subUserList == null) subUserList = await GetSubListFromFile();
             var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
@@ -227,8 +227,12 @@ namespace DiscordBot.Axie.SubscriptionServices
                                 break;
                         }
                     }
+                    auctionService.AddFilter(auctionFilter);
+                    await SetSubList();
+                    await context.Message.AddReactionAsync(new Emoji("✅"));
                 }
             }
+            else await context.Channel.SendMessageAsync("Error. You are not subscribed to Auction watch service.");
         }
 
         #endregion
