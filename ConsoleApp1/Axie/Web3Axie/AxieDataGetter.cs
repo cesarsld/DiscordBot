@@ -1262,8 +1262,9 @@ namespace DiscordBot.Axie.Web3Axie
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.ToString());
+                    Logger.Log(ex.ToString());
                     IsServiceOn = false;
-                    await PostToMarketplace("Something went wrong... Please this service using this command `>axie rebootSales`.");
+                    await PostToMarketplace("Something went wrong... Please retart this service using this command `>axie rebootSales`.");
                     break;
                 }
             }

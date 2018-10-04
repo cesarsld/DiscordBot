@@ -185,7 +185,25 @@ namespace DiscordBot
             axieData.jsonData = axieJson;
             return axieData;
         }
+        public async Task GetTrueAuctionData()
+        {
+            string json = "";
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                try
+                {
+                    json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + id.ToString()); //https://axieinfinity.com/api/axies/
+                }
 
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    return;
+                }
+            }
+            JObject axieJson = JObject.Parse(json);
+            auction = axieJson["auction"].ToObject<AxieAuction>();
+        }
     }
     //support classes
     public class AxieParts

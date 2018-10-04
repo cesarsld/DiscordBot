@@ -136,6 +136,8 @@ namespace DiscordBot.Axie.SubscriptionServices
             {
                 BigInteger convertedPrice = new BigInteger(priceTrigger * Math.Pow(10, 18));
                 var axieData = await AxieData.GetAxieFromApi(axieId);
+                //Use this function while API v1 is down
+                await axieData.GetTrueAuctionData();
                 if (axieData.auction != null)
                 {
                     var trigger = new AxieTrigger();
