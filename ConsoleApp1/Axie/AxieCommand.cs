@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.IO;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Newtonsoft.Json.Linq;
+using System.Numerics;
 using DiscordBot.AxieRace;
 using DiscordBot.Axie;
 using DiscordBot.Axie.SubscriptionServices;
@@ -188,6 +189,18 @@ namespace DiscordBot
             }
         }
 
+        [Command("quicklookup"), Summary("find an axie from API")]
+        [Alias("qq")]
+        public async Task FindAxieQQ(int index, string extra = null)
+        {
+            if(IsGeneral(Context))
+            {
+                AxieData data = await AxieData.GetAxieFromApi(index);
+                await Context.Channel.SendMessageAsync("", false, data.EmbedQQData());
+
+            }
+        }
+
         [Command("purechance"), Summary("show you addresses")]
         [Alias("pure", "p")]
         public async Task GetBreedingChance(int axie1, int axie2, string isBeta = null)
@@ -250,6 +263,48 @@ namespace DiscordBot
             await Context.Channel.SendMessageAsync("Code is half broken doooog, let the man get it right :O");
             return;
             await SubscriptionServicesHandler.SetMarketPriceTrigger(Context.Message.Author.Id, axieId, priceTrigger, Context);
+        }
+
+        #endregion
+
+        #region Auction creation commands
+
+        [Command("auctionfilter"), Summary("Create auction filter")]
+        public async Task CreateAuctionFilter(string filterInput)
+        {
+            if (filterInput != null)
+            {
+                //move to service handler
+                filterInput = filterInput.ToLower();
+                var auctionFilter = new AuctionFilter();
+                auctionFilter.Init();
+                string[] filters = filterInput.Split(' ');
+                foreach (var element in filters)
+                {
+                    switch (element)
+                    {
+                        case string myString when new Regex(@"/mystic[1-6]?/gi").IsMatch(myString):
+                            auctionFilter.isMystic = true;
+                            if (element.Length > 6) auctionFilter.mysticCount = Convert.ToInt32(element[7]);
+                            break;
+                        case "bird":
+                        case "bug":
+                        case "aqua":
+                        case "plant":
+                        case "reptile":
+                        case "beast":
+                            auctionFilter.Class = element;
+                            break;
+                        case string myString when new Regex(@"/[0-6]").IsMatch(myString):
+                            auctionFilter.purity = Convert.ToInt32(element);
+                            break;
+                        case string myString when new Regex("/[+-] ? ([0 - 9] *[.])?[0 - 9] + e$/i").IsMatch(myString):
+                            auctionFilter.triggerPrice = new BigInteger(Math.Pow(Convert.ToDouble(
+                                myString.Remove(myString.Length - 1)), 18));
+                            break;
+                    }
+                }
+            }
         }
 
         #endregion

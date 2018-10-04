@@ -9,6 +9,7 @@ namespace DiscordBot.Axie.SubscriptionServices
     public enum ServiceEnum
     {
         AxieLab,
-        MarketPlace
+        MarketPlace,
+        AuctionWatch
     }
 }

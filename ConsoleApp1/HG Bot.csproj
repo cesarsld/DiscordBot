@@ -253,6 +253,8 @@
     <Compile Include="Axie\SubscriptionServices\ServiceEnum.cs" />
     <Compile Include="Axie\SubscriptionServices\SubUser.cs" />
     <Compile Include="Axie\SubscriptionServices\SubscriptionServicesHandler.cs" />
+    <Compile Include="Axie\SubscriptionServices\AuctionWatchService.cs" />
+    <Compile Include="Axie\SubscriptionServices\AuctionFilters.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

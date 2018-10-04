@@ -52,6 +52,9 @@ namespace DiscordBot.Axie.SubscriptionServices
                                 var marketService = service.ToObject<MarketplaceService>();
                                 user.AddService(marketService);
                                 break;
+                            case 2:
+                                user.AddService(service.ToObject<AuctionWatchService>());
+                                    break;
                         }
                     }
                     list.Add(user);
@@ -161,6 +164,70 @@ namespace DiscordBot.Axie.SubscriptionServices
                     else await context.Channel.SendMessageAsync("Error. You are not subscribed to market service.");
                 }
                 else await context.Channel.SendMessageAsync("Error. Specified axie is not on sale :/");
+            }
+        }
+
+        #endregion
+
+        #region Auction filter service
+        public static async Task SubscribeToAuctionFilter(ulong newUserId)
+        {
+            if (subUserList == null) subUserList = await GetSubListFromFile();
+            //subUserList = new List<SubUser>();
+            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == newUserId);
+            if (existingUser == null)
+            {
+                var newUser = new SubUser(newUserId);
+                newUser.AddService(new MarketplaceService(ServiceEnum.MarketPlace));
+                subUserList.Add(newUser);
+                await SetSubList();
+            }
+            else if (!existingUser.GetServiceList().Exists(_service => _service.name == ServiceEnum.MarketPlace))
+            {
+                existingUser.AddService(new MarketplaceService(ServiceEnum.MarketPlace));
+                await SetSubList();
+            }
+        }
+
+        public static async Task CreateAuctionFilter(ulong userId, string filterInput)
+        {
+            if (subUserList == null) subUserList = await GetSubListFromFile();
+            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
+            if (existingUser == null)
+            {
+                var auctionService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.AuctionWatch) as AuctionWatchService;
+                if (auctionService != null)
+                {
+                    filterInput = filterInput.ToLower();
+                    var auctionFilter = new AuctionFilter();
+                    auctionFilter.Init();
+                    string[] filters = filterInput.Split(' ');
+                    foreach (var element in filters)
+                    {
+                        switch (element)
+                        {
+                            case string myString when new Regex(@"/mystic[1-6]?/gi").IsMatch(myString):
+                                auctionFilter.isMystic = true;
+                                if (element.Length > 6) auctionFilter.mysticCount = Convert.ToInt32(element[7]);
+                                break;
+                            case "bird":
+                            case "bug":
+                            case "aqua":
+                            case "plant":
+                            case "reptile":
+                            case "beast":
+                                auctionFilter.Class = element;
+                                break;
+                            case string myString when new Regex(@"/[0-6]").IsMatch(myString):
+                                auctionFilter.purity = Convert.ToInt32(element);
+                                break;
+                            case string myString when new Regex("/[+-] ? ([0 - 9] *[.])?[0 - 9] + e$/i").IsMatch(myString):
+                                auctionFilter.triggerPrice = new BigInteger(Math.Pow(Convert.ToDouble(
+                                    myString.Remove(myString.Length - 1)), 18));
+                                break;
+                        }
+                    }
+                }
             }
         }
 
