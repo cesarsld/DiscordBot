@@ -35,9 +35,15 @@ namespace DiscordBot.Axie.SubscriptionServices
         public bool SetNotifStatus(bool status) => notifyOnSale = status;
 
         public List<AxieTrigger> GetList() => triggerList;
-        public void RemoveElements(List<AxieTrigger> listToRemove) => triggerList = triggerList.Except(listToRemove).ToList();
+        public void RemoveTriggers(List<AxieTrigger> listToRemove) => triggerList = triggerList.Except(listToRemove).ToList();
         public void AddTrigger(AxieTrigger trigger) => triggerList.Add(trigger);
         public void RemoveTrigger(AxieTrigger trigger) => triggerList.Remove(trigger);
+        public void RemoveTriggerFromId(int id) => triggerList.RemoveAll(t => t.axieId == id);
+        public void ReplaceTrigger(AxieTrigger triggerToRemove, AxieTrigger triggerToAdd)
+        {
+            triggerList.Remove(triggerToRemove);
+            triggerList.Add(triggerToAdd);
+        }
 
     }
 
@@ -69,7 +75,7 @@ namespace DiscordBot.Axie.SubscriptionServices
 
         private void GetTriggerTime()
         {
-            BigInteger time = (triggerPrice * duration) / BigInteger.Abs(startPrice - endPrice) + auctionStartTime;
+            BigInteger time = (BigInteger.Abs(triggerPrice - startPrice) * duration) / BigInteger.Abs(startPrice - endPrice) + auctionStartTime;
             triggerTime = (int)(time);
         }
 

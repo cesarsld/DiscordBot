@@ -79,7 +79,7 @@ namespace DiscordBot
             if (IsBotCommand(Context))
                 await Context.Channel.SendMessageAsync("Subscriptions that you can use :\n"
                                                      + "- Axie Lab service. For more info input `>a sub lab` \n"
-                                                     + "- Marketplace service. For more info input `>a sub market` COMING SOON!\n"
+                                                     + "- Marketplace service. For more info input `>a sub market`\n"
                                                      + "");
         }
 
@@ -94,12 +94,16 @@ namespace DiscordBot
                     case "lab":
                         message = "Commands: \n"
                                 + "- `>a labsub` : subscribe to Axie Lab services\n"
-                                + "- `>a labtrigger trigger_price` : change trigger price so that the bot notifies you when the pod price reaches your trigger price.";
+                                + "- `>a labunsub` : subscribe to Axie Lab services\n"
+                                + "- `>a labtrigger trigger_price` : change trigger price so that the bot notifies you when the pod price reaches your trigger price.\n"
+                                + "- `>a removetrigger` : remove trigger price.";
                         break;
                     case "market":
                         message = "Commands: \n"
                                 + "- `>a marketsub` : subscribe to Marketplace services\n"
-                                + "- `>a markettrigger/mtrigger axie_id trigger_price` : Bot will notify you when indicated axie reaches the trigger price.";
+                                + "- `>a marketunsub/munsub` : unsubscribe to Marketplace services\n"
+                                + "- `>a markettrigger/mtrigger axie_id trigger_price` : Bot will notify you when indicated axie reaches the trigger price.\n"
+                                + "- `>a removetrigger/rtrigger axie_id` : Remove axie trigger from list.";
                         break;
                 }
                 await Context.Channel.SendMessageAsync(message);
@@ -240,10 +244,22 @@ namespace DiscordBot
             await Context.Message.AddReactionAsync(new Emoji("✅"));
         }
 
+        [Command("labunsub"), Summary("subscribe to lab service")]
+        public async Task UnsubscribeToLabService()
+        {
+            await SubscriptionServicesHandler.UnSubToService(Context.Message.Author.Id, Context, ServiceEnum.AxieLab);
+        }
+
         [Command("labtrigger"), Summary("set pod trigger")]
         public async Task SetLabPodPriceTrigger(float priceTrigger)
         {
             await SubscriptionServicesHandler.SetLabPriceTrigger(Context.Message.Author.Id, priceTrigger, Context);
+        }
+
+        [Command("removetrigger"), Summary("set pod trigger")]
+        public async Task RemoveLabPodPriceTrigger()
+        {
+            await SubscriptionServicesHandler.RemoveLabPodPriceTrigger(Context.Message.Author.Id, Context);
         }
 
         #endregion
@@ -256,13 +272,25 @@ namespace DiscordBot
             await Context.Message.AddReactionAsync(new Emoji("✅"));
         }
 
+        [Command("marketunsub"), Summary("subscribe to market service")]
+        [Alias("munsub")]
+        public async Task UnsubscribeToMarketService()
+        {
+            await SubscriptionServicesHandler.UnSubToService(Context.Message.Author.Id, Context, ServiceEnum.MarketPlace);
+        }
+
         [Command("markettrigger"), Summary("set market trigger")]
         [Alias("mtrigger")]
         public async Task SetMarketplaceTrigger(int axieId, float priceTrigger)
         {
-            await Context.Channel.SendMessageAsync("Code is half broken doooog, let the man get it right :O");
-            return;
             await SubscriptionServicesHandler.SetMarketPriceTrigger(Context.Message.Author.Id, axieId, priceTrigger, Context);
+        }
+
+        [Command("removetrigger"), Summary("set market trigger")]
+        [Alias("rtrigger")]
+        public async Task RemoveMarketplaceTrigger(int axieId)
+        {
+            await SubscriptionServicesHandler.RemoveMarketPriceTrigger(Context.Message.Author.Id, axieId, Context);
         }
 
         #endregion
@@ -304,6 +332,7 @@ namespace DiscordBot
                             break;
                     }
                 }
+                await Context.Channel.SendMessageAsync("Under construction...");
             }
         }
 

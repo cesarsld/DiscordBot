@@ -31,7 +31,7 @@ namespace DiscordBot.Axie.SubscriptionServices
         }
 
         public void AddService(ISubscriptionService service) => subServiceList.Add(service);
-        public void RemoveService(ISubscriptionService service) => subServiceList.Remove(service);
+        public void RemoveService(ServiceEnum service) => subServiceList.RemoveAll(s => s.name == service);
 
     }
 }

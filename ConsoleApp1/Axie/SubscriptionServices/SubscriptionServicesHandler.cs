@@ -20,7 +20,7 @@ namespace DiscordBot.Axie.SubscriptionServices
         private static List<SubUser> subUserList;
         public static async Task<List<SubUser>> GetSubList()
         {
-            if (subUserList == null) subUserList =  await GetSubListFromFile();
+            if (subUserList == null) subUserList = await GetSubListFromFile();
             return subUserList;
         }
 
@@ -54,7 +54,7 @@ namespace DiscordBot.Axie.SubscriptionServices
                                 break;
                             case 2:
                                 user.AddService(service.ToObject<AuctionWatchService>());
-                                    break;
+                                break;
                         }
                     }
                     list.Add(user);
@@ -81,7 +81,6 @@ namespace DiscordBot.Axie.SubscriptionServices
             }
             await SetSubList();
         }
-
         public static async Task SetLabPriceTrigger(ulong userId, float priceTrigger, ICommandContext context)
         {
             if (subUserList == null) subUserList = await GetSubListFromFile();
@@ -103,6 +102,21 @@ namespace DiscordBot.Axie.SubscriptionServices
                     }
                 }
                 else await context.Channel.SendMessageAsync("User is not not subscribed to service. Please subscribe using command `>axie axieLabSub` .");
+            }
+        }
+        public static async Task RemoveLabPodPriceTrigger(ulong userId, ICommandContext context)
+        {
+            if (subUserList == null) subUserList = await GetSubListFromFile();
+            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
+            if (existingUser != null)
+            {
+                var axieLabService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.AxieLab) as AxieLabService;
+                if (axieLabService != null)
+                {
+                    axieLabService.SetPrice(0);
+                    await SetSubList();
+                    await context.Message.AddReactionAsync(new Emoji("✅"));
+                }
             }
         }
         #endregion
@@ -140,8 +154,8 @@ namespace DiscordBot.Axie.SubscriptionServices
                 await axieData.GetTrueAuctionData();
                 if (axieData.auction != null)
                 {
-                    var trigger = new AxieTrigger();
-                    trigger.SetupAxieTrigger(
+                    var newTrigger = new AxieTrigger();
+                    newTrigger.SetupAxieTrigger(
                         axieId,
                         MarketPlaceTriggerTypeEnum.OnPriceTrigger,
                         axieData.auction.duration,
@@ -151,14 +165,14 @@ namespace DiscordBot.Axie.SubscriptionServices
                         convertedPrice,
                         axieData.GetImageUrl());
 
-                    var axieLabService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.MarketPlace) as MarketplaceService;
-                    if (axieLabService != null)
+                    var marketplaceService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.MarketPlace) as MarketplaceService;
+                    if (marketplaceService != null)
                     {
-                        if (!axieLabService.GetList().Exists(t => t.axieId == axieId)) axieLabService.AddTrigger(trigger);
+                        if (!marketplaceService.GetList().Exists(t => t.axieId == axieId)) marketplaceService.AddTrigger(newTrigger);
                         else
                         {
-                            var existingTrigger = axieLabService.GetList().Find(t => t.axieId == axieId);
-                            existingTrigger = trigger;
+                            var existingTrigger = marketplaceService.GetList().FirstOrDefault(t => t.axieId == axieId);
+                            marketplaceService.ReplaceTrigger(existingTrigger, newTrigger);
                         }
                         await SetSubList();
                         await context.Message.AddReactionAsync(new Emoji("✅"));
@@ -166,6 +180,25 @@ namespace DiscordBot.Axie.SubscriptionServices
                     else await context.Channel.SendMessageAsync("Error. You are not subscribed to Marketplace service.");
                 }
                 else await context.Channel.SendMessageAsync("Error. Specified axie is not on sale :/");
+            }
+        }
+
+        public static async Task RemoveMarketPriceTrigger(ulong userId, int axieId, ICommandContext context)
+        {
+            if (subUserList == null) subUserList = await GetSubListFromFile();
+            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
+            if (existingUser != null)
+            {
+                var marketplaceService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.MarketPlace) as MarketplaceService;
+                if (marketplaceService != null)
+                {
+                    if (marketplaceService.GetList().Exists(t => t.axieId == axieId))
+                    {
+                        marketplaceService.RemoveTriggerFromId(axieId);
+                        await SetSubList();
+                        await context.Message.AddReactionAsync(new Emoji("✅"));
+                    }
+                }
             }
         }
 
@@ -253,6 +286,16 @@ namespace DiscordBot.Axie.SubscriptionServices
                 await sw.WriteAsync(stringBuilder.ToString());
             }
         }
-
+        public static async Task UnSubToService(ulong userId, ICommandContext context, ServiceEnum service)
+        {
+            if (subUserList == null) subUserList = await GetSubListFromFile();
+            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
+            if (existingUser != null)
+            {
+                if (existingUser.GetServiceList().Exists(s => s.name == service)) existingUser.RemoveService(service);
+                await SetSubList();
+                await context.Message.AddReactionAsync(new Emoji("✅"));
+            }
+        }
     }
 }

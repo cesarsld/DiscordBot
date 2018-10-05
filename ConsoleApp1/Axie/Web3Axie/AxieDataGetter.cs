@@ -1372,7 +1372,7 @@ namespace DiscordBot.Axie.Web3Axie
                                     triggersToRemove.Add(trigger);
                                 }
                             }
-                            marketplaceSub.RemoveElements(triggersToRemove);
+                            marketplaceSub.RemoveTriggers(triggersToRemove);
                         }
                     }
                     if (hasTriggered)

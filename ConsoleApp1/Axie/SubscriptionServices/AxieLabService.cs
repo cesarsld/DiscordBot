@@ -17,7 +17,7 @@ namespace DiscordBot.Axie.SubscriptionServices
         public AxieLabService(ServiceEnum _service)
         {
             name = _service;
-            priceTrigger = 0.5f;
+            priceTrigger = 0;
         }
 
         public float GetPrice() => priceTrigger;
