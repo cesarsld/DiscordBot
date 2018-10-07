@@ -355,6 +355,16 @@ namespace DiscordBot
             }
         }
 
+        [Command("ShutDownSales"), Summary("show you addresses")]
+        public async Task ShutDownSales()
+        {
+            if (AxieDataGetter.IsServiceOn)
+            {
+                AxieDataGetter.IsServiceOn = false;
+                await Context.Message.AddReactionAsync(new Emoji("✅"));
+            }
+        }
+
         [Command("GiveAway", RunMode = RunMode.Async), Summary("hi")]
         public async Task LaunchGiveAway([Summary("Max minutes to wait for players")]string strMaxSecToWait = null,
             [Summary("Target number")]string strTargetNumber = null,
@@ -451,9 +461,14 @@ namespace DiscordBot
             }
         }
 
-
-        #endregion
-    }
+        [Command("cleanup", RunMode = RunMode.Async), Summary("Provides Help with commands.")]
+        [Alias("clean", "delete", "remove")]
+        public async Task CleanUpAxie()
+        {
+            await CleanUp();
+        }
+            #endregion
+        }
    
 }
 

@@ -18,14 +18,14 @@ namespace DiscordBot
         public string genes;
         public string Class;
         public string title;
-        public AxiePart[] Parts;
-        public AxieParts BetterParts;
+        public AxiePart[] OldParts;
+        public AxieParts parts;
         
         public bool hasMystic
         {
             get
             {
-                return BetterParts.ears.mystic || BetterParts.mouth.mystic || BetterParts.horn.mystic || BetterParts.tail.mystic || BetterParts.eyes.mystic || BetterParts.back.mystic;
+                return parts.ears.mystic || parts.mouth.mystic || parts.horn.mystic || parts.tail.mystic || parts.eyes.mystic || parts.back.mystic;
             }
         }
         public int mysticCount
@@ -33,12 +33,12 @@ namespace DiscordBot
             get
             {
                 int count = 0;
-                if (BetterParts.ears.mystic) count++;
-                if (BetterParts.mouth.mystic) count++;
-                if (BetterParts.tail.mystic) count++;
-                if (BetterParts.eyes.mystic) count++;
-                if (BetterParts.back.mystic) count++;
-                if (BetterParts.horn.mystic) count++;
+                if (parts.ears.mystic) count++;
+                if (parts.mouth.mystic) count++;
+                if (parts.tail.mystic) count++;
+                if (parts.eyes.mystic) count++;
+                if (parts.back.mystic) count++;
+                if (parts.horn.mystic) count++;
                 return count;
             }
         }
@@ -105,7 +105,7 @@ namespace DiscordBot
         }
         public EmbedBuilder EmbedAxieSaleData(float price)
         {
-            string imageUrl = jsonData["figure"]["static"]["idle"].ToString();
+            
             var embed = new EmbedBuilder();
             embed.WithTitle(name);
             embed.WithDescription("Has been sold!");
@@ -133,7 +133,7 @@ namespace DiscordBot
                     break;
             }
             embed.WithColor(color);
-            embed.WithThumbnailUrl(imageUrl);
+            embed.WithThumbnailUrl(GetImageUrl());
             embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
             return embed;
         }
@@ -173,30 +173,30 @@ namespace DiscordBot
         public int GetPureness()
         {
             int pureness = 0;
-            if (BetterParts.ears.Class == Class) pureness++;
-            if (BetterParts.tail.Class == Class) pureness++;
-            if (BetterParts.horn.Class == Class) pureness++;
-            if (BetterParts.back.Class == Class) pureness++;
-            if (BetterParts.eyes.Class == Class) pureness++;
-            if (BetterParts.mouth.Class == Class) pureness++;
+            if (parts.ears.Class == Class) pureness++;
+            if (parts.tail.Class == Class) pureness++;
+            if (parts.horn.Class == Class) pureness++;
+            if (parts.back.Class == Class) pureness++;
+            if (parts.eyes.Class == Class) pureness++;
+            if (parts.mouth.Class == Class) pureness++;
             return pureness;
         }
         public int GetDPR()
         {
             int dpr = 0;
-            dpr += BetterParts.back.moves[0].attack * BetterParts.back.moves[0].accuracy / 100;
-            dpr += BetterParts.mouth.moves[0].attack * BetterParts.mouth.moves[0].accuracy / 100;
-            dpr += BetterParts.horn.moves[0].attack * BetterParts.horn.moves[0].accuracy / 100;
-            dpr += BetterParts.tail.moves[0].attack * BetterParts.tail.moves[0].accuracy / 100;
+            dpr += parts.back.moves[0].attack * parts.back.moves[0].accuracy / 100;
+            dpr += parts.mouth.moves[0].attack * parts.mouth.moves[0].accuracy / 100;
+            dpr += parts.horn.moves[0].attack * parts.horn.moves[0].accuracy / 100;
+            dpr += parts.tail.moves[0].attack * parts.tail.moves[0].accuracy / 100;
             return dpr;
         }
         public float GetTNK()
         {
             float tnk = stats.hp;
-            tnk += BetterParts.back.moves[0].defense;
-            tnk += BetterParts.mouth.moves[0].defense;
-            tnk += BetterParts.horn.moves[0].defense;
-            tnk += BetterParts.tail.moves[0].defense;
+            tnk += parts.back.moves[0].defense;
+            tnk += parts.mouth.moves[0].defense;
+            tnk += parts.horn.moves[0].defense;
+            tnk += parts.tail.moves[0].defense;
             return tnk;
         }
         public int GetTNKScore()
@@ -210,29 +210,46 @@ namespace DiscordBot
         public static float GetMaxTNK() => 129f;
         public static float GetMinTNK() => 33;
 
-        public string GetImageUrl() => "";//jsonData["figure"]["static"]["idle"].ToString();
-
+        public string GetImageUrl()
+        {
+            try
+            {
+                return jsonData["figure"]["static"]["idle"].ToString();
+            }
+            catch (Exception e)
+            {
+                return "";
+            }
+        }
         public static async Task<AxieData> GetAxieFromApi(int axieId)
         {
             string json = "";
             int downloadTries = 0;
             bool hasFetched = false;
-            while (downloadTries < 10 && !hasFetched)
+            while (downloadTries < 5 && !hasFetched)
             {
                 using (System.Net.WebClient wc = new System.Net.WebClient())
                 {
                     try
                     {
-                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/ || https://api.axieinfinity.com/v1/axies/
+                        json = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/ || https://api.axieinfinity.com/v1/axies/
                         hasFetched = true;
                     }
 
                     catch (Exception ex)
                     {
-                        if (downloadTries == 10)
+                        if (downloadTries == 5)
                         {
-                            Console.WriteLine(ex.ToString());
-                            return null;
+                            try
+                            {
+                                json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + axieId.ToString());
+                                hasFetched = true;
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(ex.ToString());
+                                return null;
+                            }
                         }
                         downloadTries++;
                         hasFetched = false;
@@ -243,33 +260,33 @@ namespace DiscordBot
             JObject axieJson = JObject.Parse(json);
             AxieData axieData = axieJson.ToObject<AxieData>();
             axieData.jsonData = axieJson;
-            axieData.FillBetterParts();
+            //axieData.FillBetterParts();
             return axieData;
         }
         private void FillBetterParts()
         {
-            BetterParts = new AxieParts();
-            foreach (var parts in Parts)
+            parts = new AxieParts();
+            foreach (var parts in OldParts)
             {
                 switch (parts.type)
                 {
                     case "eyes":
-                        BetterParts.eyes = parts;
+                        this.parts.eyes = parts;
                         break;
                     case "horn":
-                        BetterParts.horn = parts;
+                        this.parts.horn = parts;
                         break;
                     case "back":
-                        BetterParts.back = parts;
+                        this.parts.back = parts;
                         break;
                     case "tail":
-                        BetterParts.tail = parts;
+                        this.parts.tail = parts;
                         break;
                     case "mouth":
-                        BetterParts.mouth = parts;
+                        this.parts.mouth = parts;
                         break;
                     case "ears":
-                        BetterParts.ears = parts;
+                        this.parts.ears = parts;
                         break;
                 }
             }

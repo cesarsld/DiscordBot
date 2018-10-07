@@ -1228,7 +1228,7 @@ namespace DiscordBot.Axie.Web3Axie
             //set block range search
             var lastBlock = await GetLastBlockCheckpoint(web3);
             var firstBlock = GetInitialBlockCheckpoint(lastBlock.BlockNumber);
-            while (true)
+            while (IsServiceOn)
             {
                 try
                 {
@@ -1248,17 +1248,17 @@ namespace DiscordBot.Axie.Web3Axie
                     //read logs
                     if (auctionCancelledLogs != null && auctionCancelledLogs.Count > 0) _= HandleAuctionCancelTriggers(auctionCancelledLogs);
 
-                    if (auctionCreationLogs != null && auctionCreationLogs.Count > 0)
-                    {
+                    //if (auctionCreationLogs != null && auctionCreationLogs.Count > 0)
+                    //{
 
-                        foreach (var log in auctionCreationLogs)
-                        {
-                            var axie = await AxieData.GetAxieFromApi(Convert.ToInt32(log.Event.tokenId.ToString()));
-                            var price = log.Event.startingPrice;
-                            await axie.GetTrueAuctionData();
-                            _ = CheckForAuctionFilters(axie, price);
-                        }
-                    }
+                    //    foreach (var log in auctionCreationLogs)
+                    //    {
+                    //        var axie = await AxieData.GetAxieFromApi(Convert.ToInt32(log.Event.tokenId.ToString()));
+                    //        var price = log.Event.startingPrice;
+                    //        await axie.GetTrueAuctionData();
+                    //        _ = CheckForAuctionFilters(axie, price);
+                    //    }
+                    //}
 
                     if (auctionLogs != null && auctionLogs.Count > 0)
                     {
@@ -1312,29 +1312,7 @@ namespace DiscordBot.Axie.Web3Axie
         {
             SocketChannel channel = Bot.GetChannelContext(marketPlaceChannelId);  //479664564061995019
             IMessageChannel msgChannel = channel as IMessageChannel;
-            string json = "";
-            int safetyNet = 0;
-            while (safetyNet < 10)
-            {
-                using (System.Net.WebClient wc = new System.Net.WebClient())
-                {
-                    try
-                    {
-                        json = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/axies/" + index.ToString()); //https://axieinfinity.com/api/axies/
-                        break;
-                    }
-
-                    catch (Exception ex)
-                    {
-                        safetyNet++;
-                        Console.WriteLine(ex.ToString());
-                    }
-                }
-            }
-            if (safetyNet == 10) await msgChannel.SendMessageAsync("Error. Axie data could not be retrieved.");
-            JObject axieJson = JObject.Parse(json);
-            AxieData axieData = axieJson.ToObject<AxieData>();
-            axieData.jsonData = axieJson;
+            var axieData = await AxieData.GetAxieFromApi(index);
             if (price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
 
         }
