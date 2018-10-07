@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -10,6 +11,7 @@ using Newtonsoft.Json.Linq;
 using System.Numerics;
 using DiscordBot.AxieRace;
 using DiscordBot.Axie;
+using DiscordBot.Axie.SubscriptionServices.PremiumServices;
 using DiscordBot.Axie.SubscriptionServices;
 using DiscordBot.Axie.Web3Axie;
 namespace DiscordBot
@@ -27,15 +29,15 @@ namespace DiscordBot
         private bool IsBotCommand(ICommandContext context)
         {
             CommandContext ctxt = new CommandContext(context.Client, context.Message);
-            return ctxt.IsPrivate || context.Channel.Id == 487932149354463232 || context.Guild.Id == 329959863545364480; //487932149354463232
+            return ctxt.IsPrivate || context.Channel.Id == 487932149354463232 || context.Guild.Id == 329959863545364480 || context.Guild.Id != 410537146672349205; //487932149354463232
         }
 
 
         private bool IsGeneral(ICommandContext context)
         {
             CommandContext ctxt = new CommandContext(context.Client, context.Message);
-            return ctxt.IsPrivate|| context.Channel.Id == 410537147116814348 || context.Channel.Id == 414794784448970752 || context.Guild.Id == 329959863545364480;
-        } 
+            return ctxt.IsPrivate || context.Channel.Id == 410537147116814348 || context.Channel.Id == 414794784448970752 || context.Guild.Id == 329959863545364480;
+        }
 
         public static bool CreateChannelCommandInstance(string commandName, ulong userId, ulong channelId, ulong guildId, AxieRacingInstance gameInstance, out RunningCommandInfo instance)
         {
@@ -56,20 +58,20 @@ namespace DiscordBot
         [Command("help"), Summary("register ETH wallet address to user ID")]
         public async Task PostHelp()
         {
-            if(IsBotCommand(Context))
-            await Context.Channel.SendMessageAsync("Commands that you can use :\n"
-                                                 + "- `>axie addaddress input_address` : register an ETH wallet address to user ID. You can add several addresses if you own more than 1 . \n"
-                                                 + "- `>axie removeaddress input_address` : remove an ETH wallet address from user.\n"
-                                                 + "- `>axie removeuser` : remove all data from user.\n"
-                                                 + "- `>axie ping` : Enable/disable ping status of user.\n"
-                                                 + "- `>axie nonbuyable axie_id` : Remove an axie from being buyable.\n"
-                                                 + "- `>axie buyable axie_id` : Add an axie to be buyable again.\n"
-                                                 + "- `>axie buy input_id` : Ping the owner of this axie.\n"
-                                                 + "- `>axie show` : Show user's addresses.\n"
-                                                 + "- `>axie find/f axie_id` : Show axie data.\n"
-                                                 + "- `>axie purechance/pure/p axie_id_1 axie_id_2 (optional)beta` : Show user's chance to breed a pure axie from 2 preset axies. Write beta at the end if you want to access axies in beta.\n"
-                                                 + "- `>axie subs` : Show services user can subscribe to.\n"
-                                                 + "NOTE : You may use the prefix `>a` instead of >axie");
+            if (IsBotCommand(Context))
+                await Context.Channel.SendMessageAsync("Commands that you can use :\n"
+                                                     + "- `>axie addaddress input_address` : register an ETH wallet address to user ID. You can add several addresses if you own more than 1 . \n"
+                                                     + "- `>axie removeaddress input_address` : remove an ETH wallet address from user.\n"
+                                                     + "- `>axie removeuser` : remove all data from user.\n"
+                                                     + "- `>axie ping` : Enable/disable ping status of user.\n"
+                                                     + "- `>axie nonbuyable axie_id` : Remove an axie from being buyable.\n"
+                                                     + "- `>axie buyable axie_id` : Add an axie to be buyable again.\n"
+                                                     + "- `>axie buy input_id` : Ping the owner of this axie.\n"
+                                                     + "- `>axie show` : Show user's addresses.\n"
+                                                     + "- `>axie find/f axie_id` : Show axie data.\n"
+                                                     + "- `>axie purechance/pure/p axie_id_1 axie_id_2 (optional)beta` : Show user's chance to breed a pure axie from 2 preset axies. Write beta at the end if you want to access axies in beta.\n"
+                                                     + "- `>axie subs` : Show services user can subscribe to.\n"
+                                                     + "NOTE : You may use the prefix `>a` instead of >axie");
         }
 
         [Command("subscription"), Summary("register ETH wallet address to user ID")]
@@ -80,6 +82,7 @@ namespace DiscordBot
                 await Context.Channel.SendMessageAsync("Subscriptions that you can use :\n"
                                                      + "- Axie Lab service. For more info input `>a sub lab` \n"
                                                      + "- Marketplace service. For more info input `>a sub market`\n"
+                                                     + "- Auction Watch service. For more info input `>a sub market` [PREMIUM]\n"
                                                      + "");
         }
 
@@ -97,6 +100,13 @@ namespace DiscordBot
                                 + "- `>a labunsub` : subscribe to Axie Lab services\n"
                                 + "- `>a labtrigger trigger_price` : change trigger price so that the bot notifies you when the pod price reaches your trigger price.\n"
                                 + "- `>a removetrigger` : remove trigger price.";
+                        break;
+                    case "watch":
+                        message = "Commands: \n"
+                                + "- `>a watchsub` : subscribe to Market Watch services\n"
+                                + "- `>a watchunsub` : subscribe to Market Watch services\n"
+                                + "- `>a watchfilter/wf filter_Input` : Add an axie filter. Example :\n `>a wf mystic2 beast bug pure4 tail-the-last-one horn-strawberry-shortcake 2.345e `\n"
+                                + "";
                         break;
                     case "market":
                         message = "Commands: \n"
@@ -182,10 +192,10 @@ namespace DiscordBot
         }
         [Command("find"), Summary("find an axie from API")]
         [Alias("f")]
-        public async Task FindAxie(int index , string extra = null)
+        public async Task FindAxie(int index, string extra = null)
         {
             if (IsBotCommand(Context))
-            { 
+            {
                 AxieData axieData = await AxieData.GetAxieFromApi(index);
 
                 if (axieData.stage <= 2) await Context.Channel.SendMessageAsync("Axie is still an egg! I can't check what it's going to be >:O ");
@@ -197,7 +207,7 @@ namespace DiscordBot
         [Alias("qq")]
         public async Task FindAxieQQ(int index, string extra = null)
         {
-            if(IsGeneral(Context))
+            if (IsGeneral(Context))
             {
                 AxieData data = await AxieData.GetAxieFromApi(index);
                 await Context.Channel.SendMessageAsync("", false, data.EmbedQQData());
@@ -231,7 +241,7 @@ namespace DiscordBot
 
         #region Lab services
         [Command("labprice"), Summary("Launch raceing game")]
-        public async Task ChangeLapPrice(float newPrice)
+        public async Task ChangeLapPrice(double newPrice)
         {
             AxieDataGetter.eggLabPrice = newPrice;
             await Context.Message.AddReactionAsync(new Emoji("✅"));
@@ -240,8 +250,7 @@ namespace DiscordBot
         [Command("labsub"), Summary("subscribe to lab service")]
         public async Task SubscribeToLabService()
         {
-            await SubscriptionServicesHandler.SubscribeToLabNotif(Context.Message.Author.Id);
-            await Context.Message.AddReactionAsync(new Emoji("✅"));
+            await SubscriptionServicesHandler.SubscribeToService(Context.Message.Author.Id, Context, ServiceEnum.AxieLab);
         }
 
         [Command("labunsub"), Summary("subscribe to lab service")]
@@ -268,8 +277,7 @@ namespace DiscordBot
         [Command("marketsub"), Summary("subscribe to market service")]
         public async Task SubscribeToMarketService()
         {
-            await SubscriptionServicesHandler.SubscribeToMarketPlace(Context.Message.Author.Id);
-            await Context.Message.AddReactionAsync(new Emoji("✅"));
+            await SubscriptionServicesHandler.SubscribeToService(Context.Message.Author.Id, Context, ServiceEnum.MarketPlace);
         }
 
         [Command("marketunsub"), Summary("subscribe to market service")]
@@ -297,43 +305,41 @@ namespace DiscordBot
 
         #region Auction creation commands
 
-        [Command("auctionfilter"), Summary("Create auction filter")]
-        public async Task CreateAuctionFilter(string filterInput)
+        [Command("watchsub"), Summary("Create auction filter")]
+        [Alias("as")]
+        public async Task SubscribeToAuctionWatcher()
         {
+            await SubscriptionServicesHandler.SubscribeToService(Context.Message.Author.Id, Context, ServiceEnum.AuctionWatch);
+        }
+
+        [Command("watchfilter"), Summary("Create auction filter")]
+        [Alias("wf")]
+        public async Task CreateAuctionFilter([Remainder]string filterInput)
+        {
+            await Context.Channel.SendMessageAsync("Under construction...");
+            return;
             if (filterInput != null)
             {
-                //move to service handler
-                filterInput = filterInput.ToLower();
-                var auctionFilter = new AuctionFilter();
-                auctionFilter.Init();
-                string[] filters = filterInput.Split(' ');
-                foreach (var element in filters)
-                {
-                    switch (element)
-                    {
-                        case string myString when new Regex(@"/mystic[1-6]?/gi").IsMatch(myString):
-                            auctionFilter.isMystic = true;
-                            if (element.Length > 6) auctionFilter.mysticCount = Convert.ToInt32(element[7]);
-                            break;
-                        case "bird":
-                        case "bug":
-                        case "aqua":
-                        case "plant":
-                        case "reptile":
-                        case "beast":
-                            auctionFilter.Class = element;
-                            break;
-                        case string myString when new Regex(@"/[0-6]").IsMatch(myString):
-                            auctionFilter.purity = Convert.ToInt32(element);
-                            break;
-                        case string myString when new Regex("/[+-] ? ([0 - 9] *[.])?[0 - 9] + e$/i").IsMatch(myString):
-                            auctionFilter.triggerPrice = new BigInteger(Math.Pow(Convert.ToDouble(
-                                myString.Remove(myString.Length - 1)), 18));
-                            break;
-                    }
-                }
-                await Context.Channel.SendMessageAsync("Under construction...");
+                await SubscriptionServicesHandler.CreateAuctionFilter(Context.Message.Author.Id, filterInput, Context);
+                //await Context.Channel.SendMessageAsync("Under construction...");
             }
+        }
+
+        [Command("testF"), Summary("Create auction filter")]
+        [Alias("tf")]
+        public async Task TestFilter(int axieId)
+        {
+            await SubscriptionServicesHandler.GetSubList();
+            var existingUser = SubscriptionServicesHandler.GetUserFromId(Context.Message.Author.Id);
+            var auctionService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.AuctionWatch) as AuctionWatchService;
+            foreach (var filter in auctionService.GetList())
+            {
+                if (filter.Match(await AxieData.GetAxieFromApi(axieId), 50))
+                {
+                    await Context.Channel.SendMessageAsync("", embed: await filter.GetTriggerMessage(axieId));
+                }
+            }
+
         }
 
         #endregion
@@ -349,13 +355,14 @@ namespace DiscordBot
             }
         }
 
-        [Command("GiveAway"), Summary("hi")]
+        [Command("GiveAway", RunMode = RunMode.Async), Summary("hi")]
         public async Task LaunchGiveAway([Summary("Max minutes to wait for players")]string strMaxSecToWait = null,
             [Summary("Target number")]string strTargetNumber = null,
             [Summary("Number of Winners")]string strNumWinners = null,
             [Summary("Number of Winners")]string strTestUsers = null)
         {
-            await GiveAway(strMaxSecToWait, strTargetNumber, strNumWinners, strTestUsers);
+            GiveawayInstance gameInstance = new GiveawayInstance();
+            await StartGiveAway(gameInstance, strMaxSecToWait, strTargetNumber, strNumWinners, strTestUsers);
         }
 
         [Command("ping2")]
@@ -443,6 +450,10 @@ namespace DiscordBot
                 }
             }
         }
+
+
         #endregion
     }
+   
 }
+

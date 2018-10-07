@@ -12,7 +12,7 @@ namespace DiscordBot.Axie.SubscriptionServices
     {
         public ServiceEnum name { get; set; }
         [JsonProperty]
-        private float priceTrigger;
+        private double priceTrigger;
 
         public AxieLabService(ServiceEnum _service)
         {
@@ -20,8 +20,8 @@ namespace DiscordBot.Axie.SubscriptionServices
             priceTrigger = 0;
         }
 
-        public float GetPrice() => priceTrigger;
-        public void SetPrice(float price) => priceTrigger = price;
+        public double GetPrice() => priceTrigger;
+        public void SetPrice(double price) => priceTrigger = price;
 
         public EmbedBuilder GetTriggerEmbedMessage()
         {

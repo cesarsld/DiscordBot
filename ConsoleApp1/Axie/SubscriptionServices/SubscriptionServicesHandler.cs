@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System.Numerics;
 using Discord.Commands;
 using Discord;
+using DiscordBot.Axie.SubscriptionServices.PremiumServices;
 
 namespace DiscordBot.Axie.SubscriptionServices
 {
@@ -23,14 +24,16 @@ namespace DiscordBot.Axie.SubscriptionServices
             if (subUserList == null) subUserList = await GetSubListFromFile();
             return subUserList;
         }
+        public static SubUser GetUserFromId(ulong userId) => subUserList.FirstOrDefault(u => u.GetId() == userId);
+
 
         public static async Task<List<SubUser>> GetSubListFromFile()
         {
             List<SubUser> list = new List<SubUser>();
             if (File.Exists(subFileName))
             {
-                var settings = new JsonSerializerSettings();
-                settings.Converters.Add(new SubServiceConverter());
+                //var settings = new JsonSerializerSettings();
+                //settings.Converters.Add(new SubServiceConverter());
                 string fileData = "";
                 using (StreamReader sr = new StreamReader(subFileName))
                 {
@@ -66,9 +69,9 @@ namespace DiscordBot.Axie.SubscriptionServices
         #region Axie Lab
         public static async Task SubscribeToLabNotif(ulong newUserId)
         {
-            if (subUserList == null) subUserList = await GetSubListFromFile();
+            subUserList = await GetSubListFromFile();
             //subUserList = new List<SubUser>();
-            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == newUserId);
+            var existingUser = GetUserFromId(newUserId);
             if (existingUser == null)
             {
                 var newUser = new SubUser(newUserId);
@@ -83,8 +86,8 @@ namespace DiscordBot.Axie.SubscriptionServices
         }
         public static async Task SetLabPriceTrigger(ulong userId, float priceTrigger, ICommandContext context)
         {
-            if (subUserList == null) subUserList = await GetSubListFromFile();
-            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
+            subUserList = await GetSubListFromFile();
+            var existingUser = GetUserFromId(userId);
             if (existingUser != null)
             {
                 var axieLabService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.AxieLab) as AxieLabService;
@@ -107,7 +110,7 @@ namespace DiscordBot.Axie.SubscriptionServices
         public static async Task RemoveLabPodPriceTrigger(ulong userId, ICommandContext context)
         {
             if (subUserList == null) subUserList = await GetSubListFromFile();
-            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
+            var existingUser = GetUserFromId(userId);
             if (existingUser != null)
             {
                 var axieLabService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.AxieLab) as AxieLabService;
@@ -125,9 +128,9 @@ namespace DiscordBot.Axie.SubscriptionServices
 
         public static async Task SubscribeToMarketPlace(ulong newUserId)
         {
-            if (subUserList == null) subUserList = await GetSubListFromFile();
+            subUserList = await GetSubList();
             //subUserList = new List<SubUser>();
-            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == newUserId);
+            var existingUser = GetUserFromId(newUserId);
             if (existingUser == null)
             {
                 var newUser = new SubUser(newUserId);
@@ -144,8 +147,8 @@ namespace DiscordBot.Axie.SubscriptionServices
 
         public static async Task SetMarketPriceTrigger(ulong userId, int axieId, double priceTrigger, ICommandContext context)
         {
-            if (subUserList == null) subUserList = await GetSubListFromFile();
-            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
+            subUserList = await GetSubList();
+            var existingUser = GetUserFromId(userId);
             if (existingUser != null)
             {
                 BigInteger convertedPrice = new BigInteger(priceTrigger * Math.Pow(10, 18));
@@ -168,10 +171,10 @@ namespace DiscordBot.Axie.SubscriptionServices
                     var marketplaceService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.MarketPlace) as MarketplaceService;
                     if (marketplaceService != null)
                     {
-                        if (!marketplaceService.GetList().Exists(t => t.axieId == axieId)) marketplaceService.AddTrigger(newTrigger);
+                        if (!marketplaceService.GetTriggerList().Exists(t => t.axieId == axieId)) marketplaceService.AddTrigger(newTrigger);
                         else
                         {
-                            var existingTrigger = marketplaceService.GetList().FirstOrDefault(t => t.axieId == axieId);
+                            var existingTrigger = marketplaceService.GetTriggerList().FirstOrDefault(t => t.axieId == axieId);
                             marketplaceService.ReplaceTrigger(existingTrigger, newTrigger);
                         }
                         await SetSubList();
@@ -186,13 +189,13 @@ namespace DiscordBot.Axie.SubscriptionServices
         public static async Task RemoveMarketPriceTrigger(ulong userId, int axieId, ICommandContext context)
         {
             if (subUserList == null) subUserList = await GetSubListFromFile();
-            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
+            var existingUser = GetUserFromId(userId);
             if (existingUser != null)
             {
                 var marketplaceService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.MarketPlace) as MarketplaceService;
                 if (marketplaceService != null)
                 {
-                    if (marketplaceService.GetList().Exists(t => t.axieId == axieId))
+                    if (marketplaceService.GetTriggerList().Exists(t => t.axieId == axieId))
                     {
                         marketplaceService.RemoveTriggerFromId(axieId);
                         await SetSubList();
@@ -205,66 +208,45 @@ namespace DiscordBot.Axie.SubscriptionServices
         #endregion
 
         #region Auction filter service
-        public static async Task SubscribeToAuctionFilter(ulong newUserId)
-        {
-            if (subUserList == null) subUserList = await GetSubListFromFile();
+        public static async Task SubscribeToAuctionWatcher(ulong newUserId, ICommandContext context)
+        { 
+            subUserList = await GetSubList();
             //subUserList = new List<SubUser>();
-            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == newUserId);
+            var existingUser = GetUserFromId(newUserId);
             if (existingUser == null)
             {
                 var newUser = new SubUser(newUserId);
                 newUser.AddService(new MarketplaceService(ServiceEnum.MarketPlace));
                 subUserList.Add(newUser);
                 await SetSubList();
+                await context.Message.AddReactionAsync(new Emoji("✅"));
             }
-            else if (!existingUser.GetServiceList().Exists(_service => _service.name == ServiceEnum.MarketPlace))
+            else if (!existingUser.GetServiceList().Exists(_service => _service.name == ServiceEnum.AuctionWatch))
             {
                 existingUser.AddService(new MarketplaceService(ServiceEnum.MarketPlace));
                 await SetSubList();
+                await context.Message.AddReactionAsync(new Emoji("✅"));
             }
         }
 
         public static async Task CreateAuctionFilter(ulong userId, string filterInput, ICommandContext context)
         {
-            if (subUserList == null) subUserList = await GetSubListFromFile();
-            var existingUser = subUserList.FirstOrDefault(user => user.GetId() == userId);
-            if (existingUser == null)
+            var existingUser = GetUserFromId(userId);
+            if (existingUser != null)
             {
                 var auctionService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.AuctionWatch) as AuctionWatchService;
                 if (auctionService != null)
                 {
                     filterInput = filterInput.ToLower();
-                    var auctionFilter = new AuctionFilter();
-                    auctionFilter.Init();
-                    string[] filters = filterInput.Split(' ');
-                    foreach (var element in filters)
+                    var auctionFilter = AuctionFilter.ReturnNewAuctionFilter(filterInput);
+                    if (auctionFilter != null)
                     {
-                        switch (element)
-                        {
-                            case string myString when new Regex(@"/mystic[1-6]?/gi").IsMatch(myString):
-                                auctionFilter.isMystic = true;
-                                if (element.Length > 6) auctionFilter.mysticCount = Convert.ToInt32(element[7]);
-                                break;
-                            case "bird":
-                            case "bug":
-                            case "aqua":
-                            case "plant":
-                            case "reptile":
-                            case "beast":
-                                auctionFilter.Class = element;
-                                break;
-                            case string myString when new Regex(@"/[0-6]").IsMatch(myString):
-                                auctionFilter.purity = Convert.ToInt32(element);
-                                break;
-                            case string myString when new Regex("/[+-] ? ([0 - 9] *[.])?[0 - 9] + e$/i").IsMatch(myString):
-                                auctionFilter.triggerPrice = new BigInteger(Math.Pow(Convert.ToDouble(
-                                    myString.Remove(myString.Length - 1)), 18));
-                                break;
-                        }
+                        if (auctionService.GetList().Count > 0) auctionFilter.triggerId = auctionService.GetList().Max(f => f.triggerId) + 1;
+                        else auctionFilter.triggerId = 0;
+                        auctionService.AddFilter(auctionFilter);
+                        await SetSubList();
+                        await context.Message.AddReactionAsync(new Emoji("✅"));
                     }
-                    auctionService.AddFilter(auctionFilter);
-                    await SetSubList();
-                    await context.Message.AddReactionAsync(new Emoji("✅"));
                 }
             }
             else await context.Channel.SendMessageAsync("Error. You are not subscribed to Auction watch service.");
@@ -285,6 +267,49 @@ namespace DiscordBot.Axie.SubscriptionServices
             {
                 await sw.WriteAsync(stringBuilder.ToString());
             }
+        }
+        public static async Task SubscribeToService(ulong newUserId, ICommandContext context, ServiceEnum service)
+        {
+            subUserList = await GetSubList();
+
+            var existingUser = GetUserFromId(newUserId);
+            if (existingUser == null)
+            {
+                var newUser = new SubUser(newUserId);
+                switch (service)
+                {
+                    case ServiceEnum.AuctionWatch:
+                        newUser.AddService(new AuctionWatchService(service));
+                        break;
+                    case ServiceEnum.MarketPlace:
+                        newUser.AddService(new MarketplaceService(service));
+                        break;
+                    case ServiceEnum.AxieLab:
+                        newUser.AddService(new AxieLabService(service));
+                        break;
+                }
+                subUserList.Add(newUser);
+                await SetSubList();
+                await context.Message.AddReactionAsync(new Emoji("✅"));
+            }
+            else if (!existingUser.GetServiceList().Exists(_service => _service.name == service))
+            {
+                switch (service)
+                {
+                    case ServiceEnum.AuctionWatch:
+                        existingUser.AddService(new AuctionWatchService(service));
+                        break;
+                    case ServiceEnum.MarketPlace:
+                        existingUser.AddService(new MarketplaceService(service));
+                        break;
+                    case ServiceEnum.AxieLab:
+                        existingUser.AddService(new AxieLabService(service));
+                        break;
+                }
+                await SetSubList();
+                await context.Message.AddReactionAsync(new Emoji("✅"));
+            }
+            
         }
         public static async Task UnSubToService(ulong userId, ICommandContext context, ServiceEnum service)
         {

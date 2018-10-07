@@ -21,8 +21,8 @@ namespace DiscordBot
     [Group("bh")]
     public class BaseCommands : ModuleBase
     {
-        protected static readonly object SyncObj;
-        protected static readonly Dictionary<ulong, RunningCommandInfo> ChannelCommandInstances;
+        public static readonly object SyncObj;
+        public static readonly Dictionary<ulong, RunningCommandInfo> ChannelCommandInstances;
 
         static BaseCommands()
         {

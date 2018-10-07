@@ -72,6 +72,7 @@ namespace DiscordBot
                 }
 
                 Bot.DiscordClient.ReactionAdded += HandleReactionAdded;
+                await gameMessage.AddReactionAsync(new Emoji("😃"));
                 removeHandler = true;
 
                 Dictionary<Player, Player> newPlayersUserNameLookup;

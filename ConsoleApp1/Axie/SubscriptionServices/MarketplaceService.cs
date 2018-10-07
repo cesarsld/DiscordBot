@@ -33,8 +33,8 @@ namespace DiscordBot.Axie.SubscriptionServices
 
         public bool GetNotifStatus() => notifyOnSale;
         public bool SetNotifStatus(bool status) => notifyOnSale = status;
-
-        public List<AxieTrigger> GetList() => triggerList;
+        public List<AxieTrigger> GetTriggerList() => triggerList;
+        public AxieTrigger GetTriggerFromId(int axieId) => triggerList.FirstOrDefault(t => t.axieId == axieId);
         public void RemoveTriggers(List<AxieTrigger> listToRemove) => triggerList = triggerList.Except(listToRemove).ToList();
         public void AddTrigger(AxieTrigger trigger) => triggerList.Add(trigger);
         public void RemoveTrigger(AxieTrigger trigger) => triggerList.Remove(trigger);
@@ -44,7 +44,6 @@ namespace DiscordBot.Axie.SubscriptionServices
             triggerList.Remove(triggerToRemove);
             triggerList.Add(triggerToAdd);
         }
-
     }
 
     public class AxieTrigger
@@ -88,6 +87,19 @@ namespace DiscordBot.Axie.SubscriptionServices
             embed.AddField("Note", "Your price trigger will now be removed.");
             embed.WithThumbnailUrl(imageUrl);
             embed.WithColor(Color.Red);
+
+            return embed;
+        }
+
+        public EmbedBuilder GetMissedTriggerMessage()
+        {
+            var embed = new EmbedBuilder();
+            embed.WithTitle("TRIGGER MISSED :(");
+            embed.WithDescription($"Axie #{axieId} has been bought before it could reach your price trigger :/");
+            embed.WithUrl("https://axieinfinity.com/axie/" + axieId.ToString() + "?r=9SG7dDe-x3sLFShtw_Sah7mUZ3M");
+            embed.AddField("Note", "Your price trigger will now be removed.");
+            embed.WithThumbnailUrl(imageUrl);
+            embed.WithColor(Color.Gold);
 
             return embed;
         }

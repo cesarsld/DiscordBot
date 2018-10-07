@@ -6,10 +6,12 @@ using Nethereum.Hex.HexConvertors.Extensions;
 using Nethereum.RPC.Eth.DTOs;
 using System.Threading.Tasks;
 using System.Numerics;
+using Nethereum.Contracts;
 using Nethereum.Hex.HexTypes;
 using Discord;
 using Discord.WebSocket;
 using DiscordBot.Axie.SubscriptionServices;
+using DiscordBot.Axie.SubscriptionServices.PremiumServices;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 namespace DiscordBot.Axie.Web3Axie
@@ -1200,8 +1202,11 @@ namespace DiscordBot.Axie.Web3Axie
         private static ulong marketPlaceChannelId = 423343101428498435;
         private static ulong botCommandChannelId = 487932149354463232;
         private static BigInteger lastBlockChecked = 6379721;
-        public static float eggLabPrice = 0.6f; //change to double
-        public static bool IsServiceOn= true;
+        public static double eggLabPrice = 0.6f; //change to double
+
+        //public static Queue<Task<IUserMessage>> messageQueue = new Queue<Task<IUserMessage>>();
+
+        public static bool IsServiceOn = true;
         public AxieDataGetter()
         {
         }
@@ -1209,33 +1214,59 @@ namespace DiscordBot.Axie.Web3Axie
         public static async Task GetData()
         {
             IsServiceOn = true;
-            _= UpdateServiceCheckLoop();
+            _ = UpdateServiceCheckLoop();
             var web3 = new Web3("https://mainnet.infura.io");
+            //get contracts
             var auctionContract = web3.Eth.GetContract(auctionABI, AxieCoreContractAddress);
             var labContract = web3.Eth.GetContract(labABI, AxieLabContractAddress);
+            //get events
             var auctionSuccesfulEvent = auctionContract.GetEvent("AuctionSuccessful");
             var auctionCreatedEvent = auctionContract.GetEvent("AuctionCreated");
             var axieBoughtEvent = labContract.GetEvent("AxieBought");
+            var auctionCancelled = auctionContract.GetEvent("AuctionCancelled");
+
+            //set block range search
             var lastBlock = await GetLastBlockCheckpoint(web3);
             var firstBlock = GetInitialBlockCheckpoint(lastBlock.BlockNumber);
             while (true)
             {
                 try
                 {
+                    //prepare filters
                     var auctionFilterAll = auctionSuccesfulEvent.CreateFilterInput(firstBlock, lastBlock);
+                    var auctionCancelledFilterAll = auctionCancelled.CreateFilterInput(firstBlock, lastBlock);
                     var auctionCreationFilterAll = auctionCreatedEvent.CreateFilterInput(firstBlock, lastBlock);
                     var labFilterAll = axieBoughtEvent.CreateFilterInput(firstBlock, lastBlock);
 
+                    //get logs from blockchain
                     var auctionLogs = await auctionSuccesfulEvent.GetAllChanges<AuctionSuccessfulEvent>(auctionFilterAll);
+                    var auctionCancelledLogs = await auctionSuccesfulEvent.GetAllChanges<AuctionCancelledEvent>(auctionFilterAll);
                     var labLogs = await axieBoughtEvent.GetAllChanges<AxieBoughtEvent>(labFilterAll);
                     var auctionCreationLogs = await auctionCreatedEvent.GetAllChanges<AuctionCreatedEvent>(auctionCreationFilterAll);
+
                     BigInteger latestLogBlock = 0;
-                    if(auctionLogs != null && auctionLogs.Count > 0)
+                    //read logs
+                    if (auctionCancelledLogs != null && auctionCancelledLogs.Count > 0) _= HandleAuctionCancelTriggers(auctionCancelledLogs);
+
+                    if (auctionCreationLogs != null && auctionCreationLogs.Count > 0)
+                    {
+
+                        foreach (var log in auctionCreationLogs)
+                        {
+                            var axie = await AxieData.GetAxieFromApi(Convert.ToInt32(log.Event.tokenId.ToString()));
+                            var price = log.Event.startingPrice;
+                            await axie.GetTrueAuctionData();
+                            _ = CheckForAuctionFilters(axie, price);
+                        }
+                    }
+
+                    if (auctionLogs != null && auctionLogs.Count > 0)
                     {
                         foreach (var log in auctionLogs)
                         {
                             int axieId = Convert.ToInt32(log.Event.tokenId.ToString());
                             float priceinEth = Convert.ToSingle(Nethereum.Util.UnitConversion.Convert.FromWei(log.Event.totalPrice).ToString());
+                            _ = CheckForExistingMarketTriggers(axieId);
                             await PostAxieToMarketplace(axieId, priceinEth);
                             await Task.Delay(5000);
                         };
@@ -1247,7 +1278,7 @@ namespace DiscordBot.Axie.Web3Axie
                         {
                             latestLogBlock = log.Log.BlockNumber.Value;
                             float priceinEth = Convert.ToSingle(Nethereum.Util.UnitConversion.Convert.FromWei(log.Event.price).ToString());
-                            eggLabPrice = priceinEth * 1.07f;
+                            eggLabPrice = priceinEth * 1.07;
                             int amount = log.Event.amount;
                             await PostLabSaleToBotCommand(amount, priceinEth);
                             await Task.Delay(5000);
@@ -1255,7 +1286,7 @@ namespace DiscordBot.Axie.Web3Axie
                         Console.WriteLine("End of batch");
                     }
                     await Task.Delay(60000);
-                    if(latestLogBlock > lastBlock.BlockNumber.Value) firstBlock = new BlockParameter(new HexBigInteger(latestLogBlock + 1));
+                    if (latestLogBlock > lastBlock.BlockNumber.Value) firstBlock = new BlockParameter(new HexBigInteger(latestLogBlock + 1));
                     else firstBlock = new BlockParameter(new HexBigInteger(lastBlock.BlockNumber.Value + 1));
                     lastBlock = await GetLastBlockCheckpoint(web3);
                 }
@@ -1264,7 +1295,7 @@ namespace DiscordBot.Axie.Web3Axie
                     Console.WriteLine(ex.ToString());
                     Logger.Log(ex.ToString());
                     IsServiceOn = false;
-                    await PostToMarketplace("Something went wrong... Please retart this service using this command `>axie rebootSales`.");
+                    await PostToMarketplace("Something went wrong while fetching data from the blockchain... Please retart this service using this command `>axie rebootSales`.");
                     break;
                 }
             }
@@ -1304,7 +1335,7 @@ namespace DiscordBot.Axie.Web3Axie
             JObject axieJson = JObject.Parse(json);
             AxieData axieData = axieJson.ToObject<AxieData>();
             axieData.jsonData = axieJson;
-            if(price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData( price));
+            if (price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
 
         }
 
@@ -1315,9 +1346,9 @@ namespace DiscordBot.Axie.Web3Axie
             EmbedBuilder embed = new EmbedBuilder();
             embed.WithTitle("Lab alert!!!");
             embed.WithUrl("https://axieinfinity.com/axie-lab");
-            embed.WithDescription($"{count} " + (count > 1? "pods have" : "pod has") + $" been bought for {price.ToString("F4")} ether"+ (count > 1 ? " each" : "") + "!");
+            embed.WithDescription($"{count} " + (count > 1 ? "pods have" : "pod has") + $" been bought for {price.ToString("F4")} ether" + (count > 1 ? " each" : "") + "!");
             embed.WithColor(Color.Orange);
-            await msgChannel.SendMessageAsync("", false , embed.Build());
+            await msgChannel.SendMessageAsync("", false, embed.Build());
 
         }
 
@@ -1339,52 +1370,114 @@ namespace DiscordBot.Axie.Web3Axie
             while (IsServiceOn)
             {
                 bool hasTriggered = false;
-                eggLabPrice *= 0.999f;
+                eggLabPrice *= 0.999;
                 int unixTime = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
-                if (eggLabPrice < 0.133f) eggLabPrice = 0.133f;
+                if (eggLabPrice < 0.133) eggLabPrice = 0.133;
                 var subList = await SubscriptionServicesHandler.GetSubList();
-                if (subList != null)
+
+                foreach (var sub in subList)
                 {
-                    foreach (var sub in subList)
+                    //Axie lab service check
+                    var axieLabSub = sub.GetServiceList().FirstOrDefault(service => service.name == ServiceEnum.AxieLab) as AxieLabService;
+                    if (axieLabSub != null)
                     {
-                        //Axie lab service check
-                        var axieLabSub = sub.GetServiceList().FirstOrDefault(service => service.name == ServiceEnum.AxieLab) as AxieLabService;
-                        if (axieLabSub != null)
+                        if (axieLabSub.GetPrice() >= eggLabPrice)
                         {
-                            if (axieLabSub.GetPrice() >= eggLabPrice)
+                            hasTriggered = true;
+                            _ = Bot.GetUser(sub.GetId()).SendMessageAsync("", false, axieLabSub.GetTriggerEmbedMessage());
+                            axieLabSub.SetPrice(0);
+                        }
+                    }
+                    //MarketPlace trigger check
+                    var marketplaceSub = sub.GetServiceList().FirstOrDefault(service => service.name == ServiceEnum.MarketPlace) as MarketplaceService;
+                    if (marketplaceSub != null)
+                    {
+                        var triggersToRemove = new List<AxieTrigger>();
+                        foreach (var trigger in marketplaceSub.GetTriggerList())
+                        {
+                            if (unixTime > trigger.triggerTime)
                             {
                                 hasTriggered = true;
-                                _ = Bot.GetUser(sub.GetId()).SendMessageAsync("", false, axieLabSub.GetTriggerEmbedMessage());
-                                axieLabSub.SetPrice(0);
+                                _ = Bot.GetUser(sub.GetId()).SendMessageAsync("", false, trigger.GetTriggerMessage());
+                                triggersToRemove.Add(trigger);
                             }
                         }
-                        //MarketPlace trigger check
-                        var marketplaceSub = sub.GetServiceList().FirstOrDefault(service => service.name == ServiceEnum.MarketPlace) as MarketplaceService;
-                        if(marketplaceSub != null)
-                        {
-                            var triggersToRemove = new List<AxieTrigger>();
-                            foreach(var trigger in marketplaceSub.GetList())
-                            {
-                                if(unixTime > trigger.triggerTime)
-                                {
-                                    hasTriggered = true;
-                                    _ = Bot.GetUser(sub.GetId()).SendMessageAsync("", false, trigger.GetTriggerMessage());
-                                    triggersToRemove.Add(trigger);
-                                }
-                            }
-                            marketplaceSub.RemoveTriggers(triggersToRemove);
-                        }
-                    }
-                    if (hasTriggered)
-                    {
-                        _= SubscriptionServicesHandler.SetSubList();
-                        hasTriggered = false;
+                        marketplaceSub.RemoveTriggers(triggersToRemove);
                     }
                 }
+                if (hasTriggered)
+                {
+                    _ = SubscriptionServicesHandler.SetSubList();
+                    hasTriggered = false;
+                }
+
                 Console.WriteLine(eggLabPrice);
                 await Task.Delay(60000);
             }
         }
+
+        private static async Task CheckForExistingMarketTriggers(int axieID)
+        {
+            var subList = await SubscriptionServicesHandler.GetSubList();
+            bool hasTriggered = false;
+            if (subList != null)
+            {
+                foreach (var user in subList)
+                {
+                    var marketService = user.GetServiceList().FirstOrDefault(s => s.name == ServiceEnum.MarketPlace) as MarketplaceService;
+                    if (marketService != null)
+                    {
+                        var trigger = marketService.GetTriggerFromId(axieID);
+                        if (trigger != null)
+                        {
+                            hasTriggered = true;
+                            await Bot.GetUser(user.GetId()).SendMessageAsync("", false, trigger.GetMissedTriggerMessage());
+                            marketService.RemoveTrigger(trigger);
+                            await Task.Delay(5000);
+                        }
+                    }
+                }
+            }
+            if (hasTriggered)
+            {
+                _ = SubscriptionServicesHandler.SetSubList();
+                hasTriggered = false;
+            }
+        }
+
+        private static async Task CheckForAuctionFilters(AxieData axie, BigInteger price)
+        {
+            var subList = await SubscriptionServicesHandler.GetSubList();
+            foreach (var user in subList)
+            {
+                var marketService = user.GetServiceList().FirstOrDefault(s => s.name == ServiceEnum.AuctionWatch) as AuctionWatchService;
+                if (marketService != null)
+                {
+                    marketService.IsFilterMatch(axie, price);
+                }
+            }
+        }
+
+        private static async Task HandleAuctionCancelTriggers(List<EventLog<AuctionCancelledEvent>> auctionCancelledLogs)
+        {
+            if (auctionCancelledLogs != null && auctionCancelledLogs.Count > 0)
+            {
+                foreach (var log in auctionCancelledLogs)
+                {
+                    int axieId = Convert.ToInt32(log.Event.tokenId.ToString());
+                    await CheckForExistingMarketTriggers(axieId);
+                }
+            }
+        }
+
+        //private static async Task SendEnqueuedMessages()
+        //{
+            //if (messageQueue.Count > 0)
+            //{
+            //    await messageQueue.Dequeue();
+            //    await Task.Delay(5000);
+            //}
+        //}
     }
 
     public class AuctionSuccessfulEvent
@@ -1441,4 +1534,14 @@ namespace DiscordBot.Axie.Web3Axie
         public string seller { get; set; }
 
     }
+
+    public class AuctionCancelledEvent
+    {
+        [Parameter("address", "_nftAddress", 1, true)]
+        public string nftAddress { get; set; }
+
+        [Parameter("uint256", "_tokenId", 2, true)]
+        public BigInteger tokenId { get; set; }
+    }
+
 }

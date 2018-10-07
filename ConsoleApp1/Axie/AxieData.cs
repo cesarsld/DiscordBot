@@ -18,12 +18,28 @@ namespace DiscordBot
         public string genes;
         public string Class;
         public string title;
-        public AxieParts parts;
+        public AxiePart[] Parts;
+        public AxieParts BetterParts;
+        
         public bool hasMystic
         {
             get
             {
-                return parts.ears.mystic || parts.mouth.mystic || parts.horn.mystic || parts.tail.mystic || parts.eyes.mystic || parts.back.mystic;
+                return BetterParts.ears.mystic || BetterParts.mouth.mystic || BetterParts.horn.mystic || BetterParts.tail.mystic || BetterParts.eyes.mystic || BetterParts.back.mystic;
+            }
+        }
+        public int mysticCount
+        {
+            get
+            {
+                int count = 0;
+                if (BetterParts.ears.mystic) count++;
+                if (BetterParts.mouth.mystic) count++;
+                if (BetterParts.tail.mystic) count++;
+                if (BetterParts.eyes.mystic) count++;
+                if (BetterParts.back.mystic) count++;
+                if (BetterParts.horn.mystic) count++;
+                return count;
             }
         }
         public int exp;
@@ -33,28 +49,28 @@ namespace DiscordBot
         public AxieAuction auction;
         public JObject jsonData;
 
-        public  EmbedBuilder EmbedAxieData(string extra)
+        public EmbedBuilder EmbedAxieData(string extra)
         {
             string imageUrl = jsonData["figure"]["static"]["idle"].ToString();
             int pureness = GetPureness();
-            
+
 
 
             var embed = new EmbedBuilder();
             embed.WithTitle(name);
-            
+
             embed.AddInlineField("Class", Class.First().ToString().ToUpper() + Class.Substring(1) + $" ({pureness}/6)");
             embed.AddInlineField("Title", title == null ? "None" : title);
             embed.AddInlineField("Exp", exp);
             embed.AddInlineField("Level", level);
             //embed.AddField("Owner", axieData.owner);
-            embed.AddInlineField("HP", $" ({stats.hp})".PadLeft( 5 + stats.hp/2, '|'));
-            embed.AddInlineField("Skill", $" ({stats.skill})".PadLeft(5 + stats.skill/2, '|'));
-            embed.AddInlineField("Speed", $" ({stats.speed})".PadLeft(5 + stats.speed/2, '|'));
-            
-            embed.AddInlineField("Morale", $" ({stats.morale})".PadLeft(5 + stats.morale/2, '|'));
+            embed.AddInlineField("HP", $" ({stats.hp})".PadLeft(5 + stats.hp / 2, '|'));
+            embed.AddInlineField("Skill", $" ({stats.skill})".PadLeft(5 + stats.skill / 2, '|'));
+            embed.AddInlineField("Speed", $" ({stats.speed})".PadLeft(5 + stats.speed / 2, '|'));
+
+            embed.AddInlineField("Morale", $" ({stats.morale})".PadLeft(5 + stats.morale / 2, '|'));
             if (extra != null && extra == "m")
-            { 
+            {
                 embed.WithDescription("Disclaimer : DPS and Tank ratings are not official nor endorsed by the Axie team.");
                 embed.AddInlineField("DPS Score", (int)Math.Floor(GetDPR() / GetMaxDPR() * 100));
                 embed.AddInlineField("Tank Score", GetTNKScore());
@@ -157,30 +173,30 @@ namespace DiscordBot
         public int GetPureness()
         {
             int pureness = 0;
-            if (parts.ears.Class == Class) pureness++;
-            if (parts.tail.Class == Class) pureness++;
-            if (parts.horn.Class == Class) pureness++;
-            if (parts.back.Class == Class) pureness++;
-            if (parts.eyes.Class == Class) pureness++;
-            if (parts.mouth.Class == Class) pureness++;
-            return pureness++;
+            if (BetterParts.ears.Class == Class) pureness++;
+            if (BetterParts.tail.Class == Class) pureness++;
+            if (BetterParts.horn.Class == Class) pureness++;
+            if (BetterParts.back.Class == Class) pureness++;
+            if (BetterParts.eyes.Class == Class) pureness++;
+            if (BetterParts.mouth.Class == Class) pureness++;
+            return pureness;
         }
         public int GetDPR()
         {
             int dpr = 0;
-            dpr += parts.back.moves[0].attack * parts.back.moves[0].accuracy / 100;
-            dpr += parts.mouth.moves[0].attack * parts.mouth.moves[0].accuracy / 100;
-            dpr += parts.horn.moves[0].attack * parts.horn.moves[0].accuracy / 100;
-            dpr += parts.tail.moves[0].attack * parts.tail.moves[0].accuracy / 100;
+            dpr += BetterParts.back.moves[0].attack * BetterParts.back.moves[0].accuracy / 100;
+            dpr += BetterParts.mouth.moves[0].attack * BetterParts.mouth.moves[0].accuracy / 100;
+            dpr += BetterParts.horn.moves[0].attack * BetterParts.horn.moves[0].accuracy / 100;
+            dpr += BetterParts.tail.moves[0].attack * BetterParts.tail.moves[0].accuracy / 100;
             return dpr;
         }
         public float GetTNK()
         {
             float tnk = stats.hp;
-            tnk += parts.back.moves[0].defense;
-            tnk += parts.mouth.moves[0].defense;
-            tnk += parts.horn.moves[0].defense;
-            tnk += parts.tail.moves[0].defense;
+            tnk += BetterParts.back.moves[0].defense;
+            tnk += BetterParts.mouth.moves[0].defense;
+            tnk += BetterParts.horn.moves[0].defense;
+            tnk += BetterParts.tail.moves[0].defense;
             return tnk;
         }
         public int GetTNKScore()
@@ -194,28 +210,69 @@ namespace DiscordBot
         public static float GetMaxTNK() => 129f;
         public static float GetMinTNK() => 33;
 
-        public string GetImageUrl() => jsonData["figure"]["static"]["idle"].ToString();
+        public string GetImageUrl() => "";//jsonData["figure"]["static"]["idle"].ToString();
 
         public static async Task<AxieData> GetAxieFromApi(int axieId)
         {
             string json = "";
-            using (System.Net.WebClient wc = new System.Net.WebClient())
+            int downloadTries = 0;
+            bool hasFetched = false;
+            while (downloadTries < 10 && !hasFetched)
             {
-                try
+                using (System.Net.WebClient wc = new System.Net.WebClient())
                 {
-                    json = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/
-                }
+                    try
+                    {
+                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/ || https://api.axieinfinity.com/v1/axies/
+                        hasFetched = true;
+                    }
 
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                    return null;
+                    catch (Exception ex)
+                    {
+                        if (downloadTries == 10)
+                        {
+                            Console.WriteLine(ex.ToString());
+                            return null;
+                        }
+                        downloadTries++;
+                        hasFetched = false;
+                        continue;
+                    }
                 }
             }
             JObject axieJson = JObject.Parse(json);
             AxieData axieData = axieJson.ToObject<AxieData>();
             axieData.jsonData = axieJson;
+            axieData.FillBetterParts();
             return axieData;
+        }
+        private void FillBetterParts()
+        {
+            BetterParts = new AxieParts();
+            foreach (var parts in Parts)
+            {
+                switch (parts.type)
+                {
+                    case "eyes":
+                        BetterParts.eyes = parts;
+                        break;
+                    case "horn":
+                        BetterParts.horn = parts;
+                        break;
+                    case "back":
+                        BetterParts.back = parts;
+                        break;
+                    case "tail":
+                        BetterParts.tail = parts;
+                        break;
+                    case "mouth":
+                        BetterParts.mouth = parts;
+                        break;
+                    case "ears":
+                        BetterParts.ears = parts;
+                        break;
+                }
+            }
         }
         public async Task GetTrueAuctionData()
         {
@@ -292,6 +349,6 @@ namespace DiscordBot
     public class AxieImage
     {
         [JsonProperty(PropertyName = "")]
-        public string png ;
+        public string png;
     }
 }
