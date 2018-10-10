@@ -205,6 +205,11 @@ namespace DiscordBot
             float minTnk = GetMinTNK();
             return (int)Math.Floor((tnk - minTnk) / (GetMaxTNK() - minTnk) * 100);
         }
+        public int GetDPRScore()
+        {
+            int dpr = GetDPR();
+            return (int)Math.Floor(GetDPR() / GetMaxDPR() * 100);
+        }
 
         public static float GetMaxDPR() => 91.5f;
         public static float GetMaxTNK() => 129f;

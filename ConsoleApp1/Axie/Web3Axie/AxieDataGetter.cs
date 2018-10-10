@@ -1333,7 +1333,7 @@ namespace DiscordBot.Axie.Web3Axie
         private static async Task<BlockParameter> GetLastBlockCheckpoint(Web3 web3)
         {
             var lastBlock = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-            var blockNumber = lastBlock.Value - 7;
+            var blockNumber = lastBlock.Value - 12;
             return new BlockParameter(new HexBigInteger(blockNumber));
         }
 
