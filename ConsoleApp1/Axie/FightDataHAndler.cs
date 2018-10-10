@@ -220,6 +220,133 @@ namespace DiscordBot.Axie
         }
     }
 
+    public class CollectionStatDataHandler
+    {
+        public void GetData(string address)
+        {
+            Rank[] dpsRankingList = new Rank[100];
+            Rank[] tankRankingList = new Rank[100];
+            for (int i = 0; i < dpsRankingList.Length; i++)
+            {
+                dpsRankingList[i] = new Rank(i + 1);
+                tankRankingList[i] = new Rank(i + 1);
+            }
+            bool dataAvailable = true;
+            bool setupDone = false;
+            int axiePages = 9999;
+            int axieIndex = 0;
+            int safetyNet = 0;
+            int perc = axiePages / 100;
+            int currentPerc = 0;
+            while (axieIndex < axiePages && dataAvailable)
+            {
+                axieIndex++;
+                if (axieIndex % perc == 0)
+                {
+                    currentPerc++;
+                    Console.WriteLine(currentPerc.ToString() + "%");
+                }
+                string json = null;
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    try
+                    {
+                        json = wc.DownloadString("https://axieinfinity.com/api/addresses/"+ address +"/axies?offset=" + (12 * axieIndex).ToString());
+                        safetyNet = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        safetyNet++;
+                        if (safetyNet > 25)
+                        {
+                            //dataAvailable = false;
+                            axieIndex++;
+                        }
+                        axieIndex--;
+                        //Console.WriteLine(ex.Message);
+                    }
+                }
+                if (json != null)
+                {
+                    JObject addressJson = JObject.Parse(json);
+                    if(!setupDone)
+                    {
+                        axiePages = (int)addressJson["totalAxies"];
+
+                    }
+                    foreach(var axie in addressJson["axies"])
+                    {
+                        AxieData axieData = axie.ToObject<AxieData>();
+                        axieData.jsonData = JObject.Parse(axie.ToString());
+                        if (axieData.stage <= 2)
+                        {
+                            Console.WriteLine("Axie still egg, moving on.");
+                            continue;
+                        }
+                        int dpsScore = axieData.GetDPRScore();
+                        int tankScore = axieData.GetTNKScore();
+                        if (dpsScore == 0) dpsScore++;
+                        if (tankScore == 0) tankScore++;
+                        if(dpsScore > tankScore)
+                        {
+                            dpsRankingList[100 - dpsScore].axies.Add(axieData.id);
+                        }
+                        else
+                        {
+                            tankRankingList[100 - tankScore].axies.Add(axieData.id);
+                        }
+                        //try
+                        //{
+                        //    dpsRankingList[100 - dpsScore].axies.Add(axieData.id);
+                        //}
+                        //catch (Exception e)
+                        //{
+                        //    Console.WriteLine("oops " + e.Message);
+                        //}
+                    }
+                }
+            }
+            string dpsData = JsonConvert.SerializeObject(dpsRankingList, Formatting.Indented); 
+            string tankData = JsonConvert.SerializeObject(tankRankingList, Formatting.Indented);
+
+
+            string dpsPath = "DpsRankingList.txt";
+            string tankPath = "tankRankingList.txt";
+            if (!File.Exists(dpsPath))
+            {
+                File.Create(dpsPath);
+                using (var tw = new StreamWriter(dpsPath))
+                {
+                    tw.Write(dpsData);
+                }
+            }
+            else if (File.Exists(dpsPath))
+            {
+                using (var tw = new StreamWriter(dpsPath))
+                {
+                    tw.Write(dpsData);
+                }
+            }
+            if (!File.Exists(tankPath))
+            {
+                File.Create(tankPath);
+                using (var tw = new StreamWriter(tankPath))
+                {
+                    tw.Write(tankData);
+                }
+            }
+            else if (File.Exists(tankPath))
+            {
+                using (var tw = new StreamWriter(tankPath))
+                {
+                    tw.Write(tankData);
+                }
+            }
+        }
+    }
+
+
+
     public class Rank
     {
         public int rank;
