@@ -1248,17 +1248,17 @@ namespace DiscordBot.Axie.Web3Axie
                     //read logs
                     if (auctionCancelledLogs != null && auctionCancelledLogs.Count > 0) _= HandleAuctionCancelTriggers(auctionCancelledLogs);
 
-                    //if (auctionCreationLogs != null && auctionCreationLogs.Count > 0)
-                    //{
+                    if (auctionCreationLogs != null && auctionCreationLogs.Count > 0)
+                    {
 
-                    //    foreach (var log in auctionCreationLogs)
-                    //    {
-                    //        var axie = await AxieData.GetAxieFromApi(Convert.ToInt32(log.Event.tokenId.ToString()));
-                    //        var price = log.Event.startingPrice;
-                    //        await axie.GetTrueAuctionData();
-                    //        _ = CheckForAuctionFilters(axie, price);
-                    //    }
-                    //}
+                        foreach (var log in auctionCreationLogs)
+                        {
+                            var axie = await AxieData.GetAxieFromApi(Convert.ToInt32(log.Event.tokenId.ToString()));
+                            var price = log.Event.startingPrice;
+                            await axie.GetTrueAuctionData();
+                            _ = CheckForAuctionFilters(axie, price);
+                        }
+                    }
 
                     if (auctionLogs != null && auctionLogs.Count > 0)
                     {

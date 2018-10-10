@@ -11,7 +11,7 @@ namespace DiscordBot
     {
         //private static readonly string keyPath = "..\\..\\..\\ShadBotKey.txt"; // server
         private static readonly string keyPath = "BotKey/ShadBotKey.txt"; // server
-        private static readonly string testKeyPath = "TestKey/ShadBotKey.txt"; //home
+        private static readonly string testKeyPath = "TestKey/TestKey.txt"; //home
         public static string GetKey()
         {
             if (File.Exists(keyPath))

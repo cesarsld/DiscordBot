@@ -207,7 +207,7 @@ namespace DiscordBot
         [Alias("qq")]
         public async Task FindAxieQQ(int index, string extra = null)
         {
-            if (IsGeneral(Context))
+            if (IsGeneral(Context) || IsBotCommand(Context))
             {
                 AxieData data = await AxieData.GetAxieFromApi(index);
                 await Context.Channel.SendMessageAsync("", false, data.EmbedQQData());
