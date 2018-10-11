@@ -255,6 +255,7 @@
     <Compile Include="Axie\SubscriptionServices\SubscriptionServicesHandler.cs" />
     <Compile Include="Axie\SubscriptionServices\PremiumServices\AuctionWatchService.cs" />
     <Compile Include="Axie\SubscriptionServices\PremiumServices\AuctionFilters.cs" />
+    <Compile Include="Axie\QoLListHandler\QolListHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -277,5 +278,8 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Axie\QoLListHandler\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

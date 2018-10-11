@@ -12,6 +12,7 @@ using System.Numerics;
 using DiscordBot.AxieRace;
 using DiscordBot.Axie;
 using DiscordBot.Axie.SubscriptionServices.PremiumServices;
+using DiscordBot.Axie.QoLListHandler;
 using DiscordBot.Axie.SubscriptionServices;
 using DiscordBot.Axie.Web3Axie;
 namespace DiscordBot
@@ -343,6 +344,18 @@ namespace DiscordBot
         }
 
         #endregion
+
+        #region QoL
+
+        [Command("qol"), Summary("GetQoLList")]
+        public async Task GetQoLData(int axieId)
+        {
+            var qol = new QolListHandler("QoLList.txt");
+            await Context.Channel.SendMessageAsync("", embed: await qol.GetEmbedQoLData());
+        }
+
+        #endregion
+
 
         #region miscellaneous
         [Command("rebootSales"), Summary("show you addresses")]
