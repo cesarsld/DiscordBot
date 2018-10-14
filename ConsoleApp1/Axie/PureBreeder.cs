@@ -6,11 +6,12 @@ using System.IO;
 using System.Numerics;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Discord.Commands;
+using Discord;
 namespace DiscordBot.Axie
 {
     class PureBreeder
     {
-        //static BigInteger value = BigInteger.Parse("8594385836028242049444494044180692155268569324804469339946759268613786701828");
         public static float GetBreedingChance(string gene1, string gene2)
         {
             gene1 = calcBinary(gene1);
@@ -24,9 +25,9 @@ namespace DiscordBot.Axie
             return GetChance(axieGeneData1, axieGeneData2);
         }
 
-        public static void GetPureBreedingChancesFromAddress(string address)
+        public static async Task GetPureBreedingChancesFromAddress(string address, ICommandContext context)
         {
-            var listFromApi = CollectionStatDataHandler.GetAxieListFromAddress(address);
+            var listFromApi = await CollectionStatDataHandler.GetAxieListFromAddress(address);
 
 
             var predisposedAxieList = new Dictionary<int, AxieDataOld>();
@@ -79,17 +80,18 @@ namespace DiscordBot.Axie
                 File.Create(breedPath);
                 using (var tw = new StreamWriter(breedPath))
                 {
-                    tw.Write(breedData);
+                    await tw.WriteAsync(breedData);
                 }
             }
             else if (File.Exists(breedPath))
             {
                 using (var tw = new StreamWriter(breedPath))
                 {
-                    tw.Write(breedData);
+                    await tw.WriteAsync(breedData);
                 }
             }
-
+            var message = await context.Message.Author.SendMessageAsync("Breeding List complete.");
+            await message.Channel.SendFileAsync("PureBreedList.txt");
         }
 
         private static AxieDataOld FindBestMatch(ref AxieDataOld axie, List<AxieDataOld> axieList, AxieDataOld axieToCompare = null)
@@ -111,13 +113,7 @@ namespace DiscordBot.Axie
             if (axieToCompare != null && axieToCompare == bestAxie) return bestAxie;
             else
             {
-                if (bestChance == 0)
-                {
-                    //axieList.Remove(axie);
-                    //axie = axieList[0];
-                    //return FindBestMatch(ref axie, axieList);
-                    return null;
-                }
+                if (bestChance == 0) return null;
                 else
                 {
                     axieToCompare = axie;

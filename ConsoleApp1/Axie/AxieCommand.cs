@@ -468,6 +468,17 @@ namespace DiscordBot
             }
         }
 
+        [Command("breedlist"), Summary("show you addresses")]
+        [Alias("bl")]
+        public async Task GetBreedList(string address)
+        {
+            if (Context.Message.Author.Id == 195567858133106697)
+            {
+                await Context.Message.AddReactionAsync(new Emoji("✅"));
+                await PureBreeder.GetPureBreedingChancesFromAddress(address, Context);
+            }
+        }
+
         [Command("burn"), Summary("buuuuuuurn that axie >:D")]
         public async Task BurnJoke(int index)
         {

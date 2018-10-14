@@ -334,7 +334,7 @@ namespace DiscordBot.Axie
         }
 
 
-        public static List<AxieDataOld> GetAxieListFromAddress(string address)
+        public static async Task<List<AxieDataOld>> GetAxieListFromAddress(string address)
         {
             var axieList = new List<AxieDataOld>();
             bool dataAvailable = true;
@@ -353,7 +353,8 @@ namespace DiscordBot.Axie
                 {
                     try
                     {
-                        json = wc.DownloadString("https://axieinfinity.com/api/addresses/" + address + "/axies?offset=" + (12 * axieIndex).ToString());
+                        //var uri = new Uri("https://axieinfinity.com/api/addresses/" + address + "/axies?offset=" + (12 * axieIndex).ToString());
+                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/addresses/" + address + "/axies?offset=" + (12 * axieIndex).ToString());
                         safetyNet = 0;
                     }
                     catch (Exception ex)
