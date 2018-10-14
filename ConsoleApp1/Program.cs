@@ -24,8 +24,8 @@ namespace DiscordBot
                 try
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
-                    //StatDataHandler.GetData();
-                    //Console.WriteLine(GetTriggerTime(1000000000000000000, 2000000000000000000, 500000000000000000, 86400, 1538561950));
+                    //new CollectionStatDataHandler().GetData("0x721931508df2764fd4f70c53da646cb8aed16ace");
+                    //PureBreeder.GetPureBreedingChancesFromAddress("0x721931508DF2764fD4F70C53Da646Cb8aEd16acE");
                     new Bot().RunAsync().GetAwaiter().GetResult();
                     //BanListHandler bl = new BanListHandler();
                     //bl.UnbanUserFromBannedList(111);

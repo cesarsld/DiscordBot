@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Newtonsoft.Json.Linq;
-using System.Numerics;
 using DiscordBot.AxieRace;
 using DiscordBot.Axie;
 using DiscordBot.Axie.SubscriptionServices.PremiumServices;
@@ -21,10 +18,23 @@ namespace DiscordBot
     [Alias("a")]
     public class AxieCommand : BaseCommands
     {
+        #region Modifier methods
         private bool IsMarketPlace(ICommandContext context)
         {
             CommandContext ctxt = new CommandContext(context.Client, context.Message);
             return ctxt.IsPrivate || context.Channel.Id == 423343101428498435 || context.Guild.Id == 329959863545364480;
+        }
+
+        private bool IsSuggestion(ICommandContext context)
+        {
+            CommandContext ctxt = new CommandContext(context.Client, context.Message);
+            return ctxt.IsPrivate || context.Channel.Id == 416268771510976513 || context.Guild.Id == 329959863545364480;
+        }
+
+        private bool IsArena(ICommandContext context)
+        {
+            CommandContext ctxt = new CommandContext(context.Client, context.Message);
+            return ctxt.IsPrivate || context.Channel.Id == 498508595206422543 || context.Guild.Id == 329959863545364480;
         }
 
         private bool IsBotCommand(ICommandContext context)
@@ -33,6 +43,35 @@ namespace DiscordBot
             return ctxt.IsPrivate || context.Channel.Id == 487932149354463232 || context.Guild.Id == 329959863545364480 || context.Guild.Id != 410537146672349205; //487932149354463232
         }
 
+        private bool IsCouncilOrHigherMember()
+        {
+            if (Context.Message.Author.Id == 195567858133106697) return true; //testing purposes
+            var roleList = new List<ulong>();
+            foreach (var role in Context.Guild.Roles)
+            {
+                if (role.Name == "Core" || role.Name == "Staff" || role.Name == "Moderator" || role.Name == "Player Council") roleList.Add(role.Id);
+            }
+            foreach (var role in ((IGuildUser)Context.Message.Author).RoleIds)
+            {
+                if (roleList.Contains(role)) return true;
+            }
+            return false;
+        }
+
+        private bool IsCoreOrStaffMember()
+        {
+            if (Context.Message.Author.Id == 195567858133106697) return true; //testing purposes
+            var roleList = new List<ulong>();
+            foreach (var role in Context.Guild.Roles)
+            {
+                if (role.Name == "Core" || role.Name == "Staff") roleList.Add(role.Id);
+            }
+            foreach (var role in ((IGuildUser)Context.Message.Author).RoleIds)
+            {
+                if (roleList.Contains(role)) return true;
+            }
+            return false;
+        }
 
         private bool IsGeneral(ICommandContext context)
         {
@@ -54,8 +93,9 @@ namespace DiscordBot
             }
             return false;
         }
+        #endregion
 
-
+        #region Help Commands
         [Command("help"), Summary("register ETH wallet address to user ID")]
         public async Task PostHelp()
         {
@@ -72,6 +112,20 @@ namespace DiscordBot
                                                      + "- `>axie find/f axie_id` : Show axie data.\n"
                                                      + "- `>axie purechance/pure/p axie_id_1 axie_id_2 (optional)beta` : Show user's chance to breed a pure axie from 2 preset axies. Write beta at the end if you want to access axies in beta.\n"
                                                      + "- `>axie subs` : Show services user can subscribe to.\n"
+                                                     + "- `>axie qolhelp/qhelp` : Show QoL list help.\n"
+                                                     + "NOTE : You may use the prefix `>a` instead of >axie");
+        }
+
+        [Command("qolhelp"), Summary("register ETH wallet address to user ID")]
+        [Alias("qhelp")]
+        public async Task PostQoLHelp()
+        {
+            if (IsBotCommand(Context))
+                await Context.Channel.SendMessageAsync("Commands that you can use :\n"
+                                                     + "- `>axie qol` : Show suggestion list. \n"
+                                                     + "- `>axie qoltype` : Show what suggestion types you can submit.\n"
+                                                     + "- `>axie qoladd/qadd _type description` : Submit a suggestion of type `_type`. (Player council or higher)\n"
+                                                     + "- `>axie qolremove/qrem`_index : Remove suggestion at index `_iindex`. (Core or staff member)\n"
                                                      + "NOTE : You may use the prefix `>a` instead of >axie");
         }
 
@@ -120,6 +174,7 @@ namespace DiscordBot
                 await Context.Channel.SendMessageAsync(message);
             }
         }
+        #endregion
 
         #region Generic commands
         [Command("addaddress"), Summary("register ETH wallet address to user ID")]
@@ -204,17 +259,30 @@ namespace DiscordBot
             }
         }
 
-        [Command("quicklookup"), Summary("find an axie from API")]
-        [Alias("qq")]
+        [Command("peekexp"), Summary("find an axie from API")]
+        [Alias("pxp")]
+        public async Task FindAxieQQexp(int index, string extra = null)
+        {
+            if (IsArena(Context) || IsBotCommand(Context))
+            {
+                AxieData data = await AxieData.GetAxieFromApi(index);
+                await Context.Channel.SendMessageAsync("", false, data.EmbedQQData(true));
+
+            }
+        }
+
+        [Command("peek"), Summary("find an axie from API")]
+        [Alias("pk")]
         public async Task FindAxieQQ(int index, string extra = null)
         {
             if (IsGeneral(Context) || IsBotCommand(Context))
             {
                 AxieData data = await AxieData.GetAxieFromApi(index);
-                await Context.Channel.SendMessageAsync("", false, data.EmbedQQData());
+                await Context.Channel.SendMessageAsync("", false, data.EmbedQQData(false));
 
             }
         }
+
 
         [Command("purechance"), Summary("show you addresses")]
         [Alias("pure", "p")]
@@ -237,8 +305,6 @@ namespace DiscordBot
             }
         }
         #endregion
-
-
 
         #region Lab services
         [Command("labprice"), Summary("Launch raceing game")]
@@ -345,17 +411,51 @@ namespace DiscordBot
 
         #endregion
 
-        #region QoL
+        #region QoL commands
 
-        [Command("qol"), Summary("GetQoLList")]
-        public async Task GetQoLData(int axieId)
+        [Command("qol"), Summary("Get QoLList")]
+        public async Task GetQoLData()
         {
-            var qol = new QolListHandler("QoLList.txt");
-            await Context.Channel.SendMessageAsync("", embed: await qol.GetEmbedQoLData());
+            if (IsSuggestion(Context) || IsBotCommand(Context))
+            {
+                var qol = new QolListHandler("QoLList.txt");
+                await Context.Channel.SendMessageAsync("", embed: await qol.GetEmbedQoLData());
+            }
         }
 
-        #endregion
+        [Command("qolType"), Summary("GetQoLList")]
+        public async Task GetQoLTypes()
+        {
+            if ((IsSuggestion(Context) || IsBotCommand(Context)) && IsCouncilOrHigherMember())
+            {
+                await Context.Channel.SendMessageAsync("", embed: QolListHandler.GetTypeEmbed());
+            }
+        }
 
+        [Command("qolAdd"), Summary("GetQoLList")]
+        [Alias("qadd")]
+        public async Task AddQoLData(string type, [Remainder]string description)
+        {
+            if (IsCouncilOrHigherMember())
+            {
+                var qol = new QolListHandler("QoLList.txt");
+                await qol.AddSuggestion(type, description, Context);
+            }
+        }
+
+        [Command("qolremove"), Summary("GetQoLList")]
+        [Alias("qrem")]
+        public async Task AddQoLData(int index)
+        {
+            if (IsCoreOrStaffMember())
+            {
+                var qol = new QolListHandler("QoLList.txt");
+                await qol.RemoveSuggestion(index - 1, Context);
+            }
+        }
+
+
+        #endregion
 
         #region miscellaneous
         [Command("rebootSales"), Summary("show you addresses")]
@@ -368,6 +468,11 @@ namespace DiscordBot
             }
         }
 
+        [Command("burn"), Summary("buuuuuuurn that axie >:D")]
+        public async Task BurnJoke(int index)
+        {
+            await Context.Message.AddReactionAsync(new Emoji("🔥"));
+        }
         [Command("ShutDownSales"), Summary("show you addresses")]
         public async Task ShutDownSales()
         {
@@ -480,8 +585,7 @@ namespace DiscordBot
         {
             await CleanUp();
         }
-            #endregion
-        }
-   
+        #endregion
+    }
 }
 

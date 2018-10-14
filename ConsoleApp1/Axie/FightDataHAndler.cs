@@ -131,7 +131,6 @@ namespace DiscordBot.Axie
             }
         }
 
-
     }
 
     public class StatDataHandler
@@ -240,12 +239,9 @@ namespace DiscordBot.Axie
             int currentPerc = 0;
             while (axieIndex < axiePages && dataAvailable)
             {
-                axieIndex++;
-                if (axieIndex % perc == 0)
-                {
-                    currentPerc++;
-                    Console.WriteLine(currentPerc.ToString() + "%");
-                }
+
+                    Console.WriteLine($"Page {axieIndex} out of {axiePages}");
+
                 string json = null;
                 using (System.Net.WebClient wc = new System.Net.WebClient())
                 {
@@ -266,17 +262,18 @@ namespace DiscordBot.Axie
                         //Console.WriteLine(ex.Message);
                     }
                 }
+                axieIndex++;
                 if (json != null)
                 {
                     JObject addressJson = JObject.Parse(json);
                     if(!setupDone)
                     {
-                        axiePages = (int)addressJson["totalAxies"];
-
+                        axiePages = (int)addressJson["totalPages"];
+                        setupDone = true;
                     }
                     foreach(var axie in addressJson["axies"])
                     {
-                        AxieData axieData = axie.ToObject<AxieData>();
+                        AxieDataOld axieData = axie.ToObject<AxieDataOld>();
                         axieData.jsonData = JObject.Parse(axie.ToString());
                         if (axieData.stage <= 2)
                         {
@@ -295,14 +292,6 @@ namespace DiscordBot.Axie
                         {
                             tankRankingList[100 - tankScore].axies.Add(axieData.id);
                         }
-                        //try
-                        //{
-                        //    dpsRankingList[100 - dpsScore].axies.Add(axieData.id);
-                        //}
-                        //catch (Exception e)
-                        //{
-                        //    Console.WriteLine("oops " + e.Message);
-                        //}
                     }
                 }
             }
@@ -310,8 +299,8 @@ namespace DiscordBot.Axie
             string tankData = JsonConvert.SerializeObject(tankRankingList, Formatting.Indented);
 
 
-            string dpsPath = "DpsRankingList.txt";
-            string tankPath = "tankRankingList.txt";
+            string dpsPath = "CocoDpsRankingList.txt";
+            string tankPath = "CocoTankRankingList.txt";
             if (!File.Exists(dpsPath))
             {
                 File.Create(dpsPath);
@@ -343,6 +332,62 @@ namespace DiscordBot.Axie
                 }
             }
         }
+
+
+        public static List<AxieDataOld> GetAxieListFromAddress(string address)
+        {
+            var axieList = new List<AxieDataOld>();
+            bool dataAvailable = true;
+            bool setupDone = false;
+            int axiePages = 9999;
+            int axieIndex = 0;
+            int safetyNet = 0;
+            int perc = axiePages / 100;
+            while (axieIndex < axiePages && dataAvailable)
+            {
+
+                Console.WriteLine($"Page {axieIndex} out of {axiePages}");
+
+                string json = null;
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    try
+                    {
+                        json = wc.DownloadString("https://axieinfinity.com/api/addresses/" + address + "/axies?offset=" + (12 * axieIndex).ToString());
+                        safetyNet = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        safetyNet++;
+                        if (safetyNet > 25) axieIndex++;
+                        axieIndex--;
+                    }
+                }
+                axieIndex++;
+                if (json != null)
+                {
+                    JObject addressJson = JObject.Parse(json);
+                    if (!setupDone)
+                    {
+                        axiePages = (int)addressJson["totalPages"];
+                        setupDone = true;
+                    }
+                    foreach (var axie in addressJson["axies"])
+                    {
+                        AxieDataOld axieData = axie.ToObject<AxieDataOld>();
+                        axieData.jsonData = JObject.Parse(axie.ToString());
+                        if (axieData.stage <= 2)
+                        {
+                            Console.WriteLine("Axie still egg, moving on.");
+                            continue;
+                        }
+                        axieList.Add(axieData);
+                    }
+                }
+            }
+            return axieList;
+        }
+
     }
 
 

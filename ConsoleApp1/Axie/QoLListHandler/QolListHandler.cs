@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
 using Discord;
+using Discord.Commands;
 namespace DiscordBot.Axie.QoLListHandler
 {
     public class QolListHandler
@@ -27,11 +28,14 @@ namespace DiscordBot.Axie.QoLListHandler
                 {
                     fileData = await sr.ReadToEndAsync();
                 }
-                string[] jsonFiles = Regex.Split(fileData, "\r\n|\r|\n");
-                foreach (var json in jsonFiles)
+                if (fileData.Length != 0)
                 {
-                    Suggestion obj = JObject.Parse(json).ToObject<Suggestion>();
-                    if (obj != null) list.Add(obj);
+                    string[] jsonFiles = Regex.Split(fileData, "\r\n|\r|\n");
+                    foreach (var json in jsonFiles)
+                    {
+                        Suggestion obj = JObject.Parse(json).ToObject<Suggestion>();
+                        if (obj != null) list.Add(obj);
+                    }
                 }
             }
             return list;
@@ -53,21 +57,23 @@ namespace DiscordBot.Axie.QoLListHandler
             }
         }
 
-        public async Task AddSuggestion(string type, string description)
+        public async Task AddSuggestion(string type, string description, ICommandContext context)
         {
             var list = await GetQoLList();
             var newSuggestion = new Suggestion(GetQoLType(type), description);
             list.Add(newSuggestion);
             await SetQoLList(list);
+            await context.Message.AddReactionAsync(new Emoji("✅"));
         }
 
-        public async Task RemoveSuggestion(int index)
+        public async Task RemoveSuggestion(int index, ICommandContext context)
         {
             var list = await GetQoLList();
             if (index >= 0 && index < list.Count)
             {
                 list.RemoveAt(index);
                 await SetQoLList(list);
+                await context.Message.AddReactionAsync(new Emoji("✅"));
             }
         }
 
@@ -80,7 +86,7 @@ namespace DiscordBot.Axie.QoLListHandler
             foreach(var qol in list)
             {
                 index++;
-                embed.AddField($"#{index} - {qol.type}", qol.description);
+                embed.AddField($"{qol.type}",$"#{index} - " + qol.description);
             }
             embed.WithColor(Color.Purple);
             return embed;
@@ -102,6 +108,15 @@ namespace DiscordBot.Axie.QoLListHandler
                 default:
                     return QoLType.General;
             }
+        }
+
+        public static EmbedBuilder GetTypeEmbed()
+        {
+            var embed = new EmbedBuilder();
+            embed.WithTitle("Suggestion types");
+            embed.WithDescription($"{QoLType.Animation} | {QoLType.Core} | {QoLType.UI} | {QoLType.Gameplay} | {QoLType.General}");
+            embed.WithColor(Color.DarkBlue);
+            return embed;
         }
 
     }

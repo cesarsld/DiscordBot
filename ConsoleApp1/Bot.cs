@@ -93,7 +93,7 @@ namespace DiscordBot
                 if (msg == null) return;
 
                 int argPos = 0;
-
+                //if(msg.Content.StartsWith(""))
                 if (msg.HasCharPrefix(CommandPrefix, ref argPos)) /* || msg.HasMentionPrefix(_client.CurrentUser, ref pos) */
                 {
                     userName = GetUserName(msg.Author);
