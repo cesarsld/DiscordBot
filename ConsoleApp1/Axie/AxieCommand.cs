@@ -18,6 +18,9 @@ namespace DiscordBot
     [Alias("a")]
     public class AxieCommand : BaseCommands
     {
+
+        private static Queue<Tuple<ICommandContext, string>> taskList = new Queue<Tuple<ICommandContext, string>>();
+
         #region Modifier methods
         private bool IsMarketPlace(ICommandContext context)
         {
@@ -470,12 +473,21 @@ namespace DiscordBot
 
         [Command("breedlist"), Summary("show you addresses")]
         [Alias("bl")]
-        public async Task GetBreedList(string address)
+        public async Task GetBreedList(string address, bool test = false)
         {
-            if (Context.Message.Author.Id == 195567858133106697)
+            taskList.Enqueue(new Tuple<ICommandContext, string>(Context, address));
+            if (test)
+            {
+                while (taskList.Count != 0)
+                {
+                    var query = taskList.Dequeue();
+                    await PureBreeder.GetPureBreedingChancesFromAddress(query.Item2, query.Item1);
+                }
+            }
+            if (Context.Message.Author.Id == 195567858133106697 || Context.Message.Author.Id == 396792950870245386)
             {
                 await Context.Message.AddReactionAsync(new Emoji("✅"));
-                await PureBreeder.GetPureBreedingChancesFromAddress(address, Context);
+                //await PureBreeder.GetPureBreedingChancesFromAddress(address, Context);
             }
         }
 

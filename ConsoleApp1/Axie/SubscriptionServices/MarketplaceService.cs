@@ -50,15 +50,15 @@ namespace DiscordBot.Axie.SubscriptionServices
     {
         public int axieId;
         public MarketPlaceTriggerTypeEnum triggerTypeEnum;
-        public int auctionStartTime;
-        public int duration;
-        public int triggerTime;
+        public long auctionStartTime;
+        public long duration;
+        public long triggerTime;
         public BigInteger startPrice;
         public BigInteger endPrice;
         public BigInteger triggerPrice;
         public string imageUrl;
         //[JsonConstructor]
-        public void SetupAxieTrigger(int id, MarketPlaceTriggerTypeEnum type, int _duration, int startTime, BigInteger _startPrice, BigInteger _endPrice, BigInteger _trigger, string url)
+        public void SetupAxieTrigger(int id, MarketPlaceTriggerTypeEnum type, long _duration, long startTime, BigInteger _startPrice, BigInteger _endPrice, BigInteger _trigger, string url)
         {
             axieId = id;
             triggerTypeEnum = type;

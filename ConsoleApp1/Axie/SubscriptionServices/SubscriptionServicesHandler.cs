@@ -161,8 +161,8 @@ namespace DiscordBot.Axie.SubscriptionServices
                     newTrigger.SetupAxieTrigger(
                         axieId,
                         MarketPlaceTriggerTypeEnum.OnPriceTrigger,
-                        axieData.auction.duration,
-                        axieData.auction.startingTime,
+                        (long)axieData.auction.duration,
+                        (long)axieData.auction.startingTime,
                         axieData.auction.startingPrice,
                         axieData.auction.endingPrice,
                         convertedPrice,

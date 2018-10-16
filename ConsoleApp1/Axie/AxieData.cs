@@ -539,9 +539,9 @@ namespace DiscordBot
         public BigInteger endingPrice;
         public BigInteger buyNowPrice;
         public BigInteger suggestedPrice;
-        public int startingTime;
-        public int duration;
-        public int timeLeft;
+        public long startingTime;
+        public long duration;
+        public long timeLeft;
     }
     public class AxieImage
     {
