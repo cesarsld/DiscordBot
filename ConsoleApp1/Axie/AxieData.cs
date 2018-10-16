@@ -518,6 +518,15 @@ namespace DiscordBot
         public int attack;
         public int defense;
         public int accuracy;
+        public PartEffect[] effects;
+
+    }
+    public class PartEffect
+    {
+        public string name;
+        public eff type;
+        public string description;
+
     }
     public class AxieStats
     {
