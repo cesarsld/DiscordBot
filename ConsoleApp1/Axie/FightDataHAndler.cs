@@ -53,7 +53,7 @@ namespace DiscordBot.Axie
                 {
                     try
                     {
-                        json = wc.DownloadString("http://axie.axieinfinity.co/api/v1/battle-2/matches/" + axieIndex.ToString() );
+                        json = wc.DownloadString("https://api.axieinfinity.com/v1/battle/history/matches/" + axieIndex.ToString() );
                         safetyNet = 0;
                     }
                     catch (Exception ex)
