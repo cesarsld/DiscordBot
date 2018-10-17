@@ -524,7 +524,7 @@ namespace DiscordBot
     public class PartEffect
     {
         public string name;
-        public eff type;
+        public string type;
         public string description;
 
     }

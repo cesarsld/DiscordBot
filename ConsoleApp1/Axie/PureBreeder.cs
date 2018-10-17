@@ -12,6 +12,34 @@ namespace DiscordBot.Axie
 {
     class PureBreeder
     {
+        public static readonly object SyncObj = new object();
+        public static bool FetchingDataFromApi = false;
+        private static Queue<Tuple<IUserMessage, string>> taskList = new Queue<Tuple<IUserMessage, string>>();
+
+        public static async Task RunTasks()
+        {
+            while (taskList.Count != 0)
+            {
+                Tuple<IUserMessage, string> query;
+                lock (SyncObj)
+                {
+                    query = taskList.Dequeue();
+                }
+                await GetPureBreedingChancesFromAddress(query.Item2, query.Item1);
+            }
+            FetchingDataFromApi = false;
+        }
+
+        public static async Task AddTask(ICommandContext context, string address)
+        {
+            var message = await context.Message.Author.SendMessageAsync($"Added to queue at position #{taskList.Count + 1}. Please wait.");
+            lock (SyncObj)
+            {
+                taskList.Enqueue(new Tuple<IUserMessage, string>(message, address));
+            }
+        }
+
+
         public static float GetBreedingChance(string gene1, string gene2)
         {
             gene1 = calcBinary(gene1);
@@ -25,7 +53,7 @@ namespace DiscordBot.Axie
             return GetChance(axieGeneData1, axieGeneData2);
         }
 
-        public static async Task GetPureBreedingChancesFromAddress(string address, ICommandContext context)
+        public static async Task GetPureBreedingChancesFromAddress(string address, IUserMessage message)
         {
             var listFromApi = await CollectionStatDataHandler.GetAxieListFromAddress(address);
 
@@ -75,22 +103,13 @@ namespace DiscordBot.Axie
 
 
             string breedPath = "PureBreedList.txt";
-            if (!File.Exists(breedPath))
-            {
-                File.Create(breedPath);
-                using (var tw = new StreamWriter(breedPath))
-                {
-                    await tw.WriteAsync(breedData);
-                }
-            }
-            else if (File.Exists(breedPath))
+            if (File.Exists(breedPath))
             {
                 using (var tw = new StreamWriter(breedPath))
                 {
                     await tw.WriteAsync(breedData);
                 }
             }
-            var message = await context.Message.Author.SendMessageAsync("Breeding List complete.");
             await message.Channel.SendFileAsync("PureBreedList.txt");
         }
 

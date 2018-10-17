@@ -19,8 +19,6 @@ namespace DiscordBot
     public class AxieCommand : BaseCommands
     {
 
-        private static Queue<Tuple<ICommandContext, string>> taskList = new Queue<Tuple<ICommandContext, string>>();
-
         #region Modifier methods
         private bool IsMarketPlace(ICommandContext context)
         {
@@ -116,6 +114,7 @@ namespace DiscordBot
                                                      + "- `>axie purechance/pure/p axie_id_1 axie_id_2 (optional)beta` : Show user's chance to breed a pure axie from 2 preset axies. Write beta at the end if you want to access axies in beta.\n"
                                                      + "- `>axie subs` : Show services user can subscribe to.\n"
                                                      + "- `>axie qolhelp/qhelp` : Show QoL list help.\n"
+                                                     + "- `>axie breedList 0xADRE55` : Returns a list of the best axie pairs to breed to obtain a pure axie.\n"
                                                      + "NOTE : You may use the prefix `>a` instead of >axie");
         }
 
@@ -391,7 +390,6 @@ namespace DiscordBot
             if (filterInput != null)
             {
                 await SubscriptionServicesHandler.CreateAuctionFilter(Context.Message.Author.Id, filterInput, Context);
-                //await Context.Channel.SendMessageAsync("Under construction...");
             }
         }
 
@@ -471,23 +469,16 @@ namespace DiscordBot
             }
         }
 
-        [Command("breedlist"), Summary("show you addresses")]
+        [Command("breedlist"), Summary("Returns best breed pairs for pure axie")]
         [Alias("bl")]
         public async Task GetBreedList(string address, bool test = false)
         {
-            taskList.Enqueue(new Tuple<ICommandContext, string>(Context, address));
-            if (test)
+            await PureBreeder.AddTask(Context, address);
+            await Context.Message.AddReactionAsync(new Emoji("✅"));
+            if (!PureBreeder.FetchingDataFromApi)
             {
-                while (taskList.Count != 0)
-                {
-                    var query = taskList.Dequeue();
-                    await PureBreeder.GetPureBreedingChancesFromAddress(query.Item2, query.Item1);
-                }
-            }
-            if (Context.Message.Author.Id == 195567858133106697 || Context.Message.Author.Id == 396792950870245386)
-            {
-                await Context.Message.AddReactionAsync(new Emoji("✅"));
-                //await PureBreeder.GetPureBreedingChancesFromAddress(address, Context);
+                PureBreeder.FetchingDataFromApi = true;
+                _ = PureBreeder.RunTasks();
             }
         }
 

@@ -1222,7 +1222,7 @@ namespace DiscordBot.Axie.Web3Axie
             //get events
             var auctionSuccesfulEvent = auctionContract.GetEvent("AuctionSuccessful");
             var auctionCreatedEvent = auctionContract.GetEvent("AuctionCreated");
-            var axieBoughtEvent = labContract.GetEvent("AxieBought");
+            //var axieBoughtEvent = labContract.GetEvent("AxieBought");
             var auctionCancelled = auctionContract.GetEvent("AuctionCancelled");
 
             //set block range search
@@ -1236,12 +1236,12 @@ namespace DiscordBot.Axie.Web3Axie
                     var auctionFilterAll = auctionSuccesfulEvent.CreateFilterInput(firstBlock, lastBlock);
                     var auctionCancelledFilterAll = auctionCancelled.CreateFilterInput(firstBlock, lastBlock);
                     var auctionCreationFilterAll = auctionCreatedEvent.CreateFilterInput(firstBlock, lastBlock);
-                    var labFilterAll = axieBoughtEvent.CreateFilterInput(firstBlock, lastBlock);
+                    //var labFilterAll = axieBoughtEvent.CreateFilterInput(firstBlock, lastBlock);
 
                     //get logs from blockchain
                     var auctionLogs = await auctionSuccesfulEvent.GetAllChanges<AuctionSuccessfulEvent>(auctionFilterAll);
                     var auctionCancelledLogs = await auctionSuccesfulEvent.GetAllChanges<AuctionCancelledEvent>(auctionFilterAll);
-                    var labLogs = await axieBoughtEvent.GetAllChanges<AxieBoughtEvent>(labFilterAll);
+                    //var labLogs = await axieBoughtEvent.GetAllChanges<AxieBoughtEvent>(labFilterAll);
                     var auctionCreationLogs = await auctionCreatedEvent.GetAllChanges<AuctionCreatedEvent>(auctionCreationFilterAll);
 
                     BigInteger latestLogBlock = 0;
@@ -1264,6 +1264,7 @@ namespace DiscordBot.Axie.Web3Axie
                     {
                         foreach (var log in auctionLogs)
                         {
+                            latestLogBlock = log.Log.BlockNumber.Value;
                             int axieId = Convert.ToInt32(log.Event.tokenId.ToString());
                             float priceinEth = Convert.ToSingle(Nethereum.Util.UnitConversion.Convert.FromWei(log.Event.totalPrice).ToString());
                             _ = CheckForExistingMarketTriggers(axieId);
@@ -1272,19 +1273,19 @@ namespace DiscordBot.Axie.Web3Axie
                         };
                         Console.WriteLine("End of batch");
                     }
-                    if (labLogs != null && labLogs.Count > 0)
-                    {
-                        foreach (var log in labLogs)
-                        {
-                            latestLogBlock = log.Log.BlockNumber.Value;
-                            float priceinEth = Convert.ToSingle(Nethereum.Util.UnitConversion.Convert.FromWei(log.Event.price).ToString());
-                            eggLabPrice = priceinEth * 1.07;
-                            int amount = log.Event.amount;
-                            await PostLabSaleToBotCommand(amount, priceinEth);
-                            await Task.Delay(5000);
-                        };
-                        Console.WriteLine("End of batch");
-                    }
+                    //if (labLogs != null && labLogs.Count > 0)
+                    //{
+                    //    foreach (var log in labLogs)
+                    //    {
+                    //        latestLogBlock = log.Log.BlockNumber.Value;
+                    //        float priceinEth = Convert.ToSingle(Nethereum.Util.UnitConversion.Convert.FromWei(log.Event.price).ToString());
+                    //        eggLabPrice = priceinEth * 1.07;
+                    //        int amount = log.Event.amount;
+                    //        await PostLabSaleToBotCommand(amount, priceinEth);
+                    //        await Task.Delay(5000);
+                    //    };
+                    //    Console.WriteLine("End of batch");
+                    //}
                     await Task.Delay(60000);
                     if (latestLogBlock > lastBlock.BlockNumber.Value) firstBlock = new BlockParameter(new HexBigInteger(latestLogBlock + 1));
                     else firstBlock = new BlockParameter(new HexBigInteger(lastBlock.BlockNumber.Value + 1));
@@ -1348,9 +1349,9 @@ namespace DiscordBot.Axie.Web3Axie
             while (IsServiceOn)
             {
                 bool hasTriggered = false;
-                eggLabPrice *= 0.999;
+                //eggLabPrice *= 0.999;
                 int unixTime = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
-                if (eggLabPrice < 0.133) eggLabPrice = 0.133;
+                //if (eggLabPrice < 0.133) eggLabPrice = 0.133;
                 var subList = await SubscriptionServicesHandler.GetSubList();
 
                 foreach (var sub in subList)
@@ -1388,8 +1389,6 @@ namespace DiscordBot.Axie.Web3Axie
                     _ = SubscriptionServicesHandler.SetSubList();
                     hasTriggered = false;
                 }
-
-                Console.WriteLine(eggLabPrice);
                 await Task.Delay(60000);
             }
         }
@@ -1447,15 +1446,6 @@ namespace DiscordBot.Axie.Web3Axie
                 }
             }
         }
-
-        //private static async Task SendEnqueuedMessages()
-        //{
-            //if (messageQueue.Count > 0)
-            //{
-            //    await messageQueue.Dequeue();
-            //    await Task.Delay(5000);
-            //}
-        //}
     }
 
     public class AuctionSuccessfulEvent
