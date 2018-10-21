@@ -208,8 +208,8 @@ namespace DiscordBot.Axie
             }
             for (int i = 0; i < probabilityTable.Length; i++)
             {
-                probability1 *= (axie1.GetTraitTransmissionProbability(desiredClass1, i) + axie2.GetTraitTransmissionProbability(desiredClass1, i));
-                probability2 *= (axie1.GetTraitTransmissionProbability(desiredClass2, i) + axie2.GetTraitTransmissionProbability(desiredClass2, i));
+                probability1 *= (axie1.GetTraitProbability(desiredClass1, i) + axie2.GetTraitProbability(desiredClass1, i));
+                probability2 *= (axie1.GetTraitProbability(desiredClass2, i) + axie2.GetTraitProbability(desiredClass2, i));
             }
             return probability1 > probability2? probability1 * 100 : probability2 * 100;
         }

@@ -50,7 +50,7 @@ namespace DiscordBot
 
             public async Task RegisterToMountGame()
         {
-            DatabaseConnection dbConenction = new DatabaseConnection();
+            DatabaseConnection1 dbConenction = new DatabaseConnection1();
             dbConenction.SetupConnection();
 
             IMongoDatabase discordDb = dbConenction.GetDb();
@@ -109,7 +109,7 @@ namespace DiscordBot
 
         public User LookupUser(IUser user)
         {
-            DatabaseConnection dbConenction = new DatabaseConnection();
+            DatabaseConnection1 dbConenction = new DatabaseConnection1();
             dbConenction.SetupConnection();
 
             IMongoDatabase discrdDB = dbConenction.GetDb();

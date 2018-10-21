@@ -7,6 +7,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver.Linq;
 using DiscordBot.Axie;
+using DiscordBot.Axie.Battles;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Numerics;
@@ -24,8 +25,10 @@ namespace DiscordBot
                 try
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
-                    //new CollectionStatDataHandler().GetData("0x6b357E2CbAE33cfB53aE9c136829d98DEF4A9561");
+                    //new CollectionStatDataHandler().GetData("0xe0c71f6C2FeA87F2155DE000E090B09f65D361dF");
+                    //WinrateCollector.GetAllData();
                     //PureBreeder.GetPureBreedingChancesFromAddress("0x721931508DF2764fD4F70C53Da646Cb8aEd16acE");
+                    //BreedingData.GetData().GetAwaiter().GetResult();
                     new Bot().RunAsync().GetAwaiter().GetResult();
                     //BanListHandler bl = new BanListHandler();
                     //bl.UnbanUserFromBannedList(111);

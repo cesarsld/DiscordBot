@@ -12,6 +12,11 @@ using DiscordBot.Axie.SubscriptionServices.PremiumServices;
 using DiscordBot.Axie.QoLListHandler;
 using DiscordBot.Axie.SubscriptionServices;
 using DiscordBot.Axie.Web3Axie;
+using DiscordBot.Axie.Battles;
+using DiscordBot.Mongo;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using MongoDB.Bson.Serialization;
 namespace DiscordBot
 {
     [Group("axie")]
@@ -255,6 +260,7 @@ namespace DiscordBot
             if (IsBotCommand(Context))
             {
                 AxieData axieData = await AxieData.GetAxieFromApi(index);
+                axieData.id = index;
 
                 if (axieData.stage <= 2) await Context.Channel.SendMessageAsync("Axie is still an egg! I can't check what it's going to be >:O ");
                 else await Context.Channel.SendMessageAsync("", false, axieData.EmbedAxieData(extra));
@@ -268,6 +274,7 @@ namespace DiscordBot
             if (IsArena(Context) || IsBotCommand(Context))
             {
                 AxieData data = await AxieData.GetAxieFromApi(index);
+                data.id = index;
                 await Context.Channel.SendMessageAsync("", false, data.EmbedQQData(true));
 
             }
@@ -280,6 +287,7 @@ namespace DiscordBot
             if (IsGeneral(Context) || IsBotCommand(Context))
             {
                 AxieData data = await AxieData.GetAxieFromApi(index);
+                data.id = index;
                 await Context.Channel.SendMessageAsync("", false, data.EmbedQQData(false));
 
             }
@@ -456,6 +464,21 @@ namespace DiscordBot
         }
 
 
+        #endregion
+
+        #region DB Calls
+
+        [Command("winrate"), Summary("GetAxieWinrate")]
+        public async Task GetAxieWinrate(int id)
+        {
+            var db = DatabaseConnection.GetDb();
+            var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+            var filterId = Builders<BsonDocument>.Filter.Eq("_id",id);
+            var doc = (await collection.FindAsync(filterId)).FirstOrDefault();
+            var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
+            var axieData = await AxieData.GetAxieFromApi(id);
+            await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
+        }
         #endregion
 
         #region miscellaneous

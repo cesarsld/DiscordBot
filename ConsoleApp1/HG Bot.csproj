@@ -192,6 +192,8 @@
     <Compile Include="Axie\AxieData.cs" />
     <Compile Include="Axie\AxieGeneData.cs" />
     <Compile Include="Axie\AxieHolder.cs" />
+    <Compile Include="Axie\Battles\Winrate.cs" />
+    <Compile Include="Axie\Battles\WinrateCollector.cs" />
     <Compile Include="Axie\FightDataHandler.cs" />
     <Compile Include="Axie\PureBreeder.cs" />
     <Compile Include="Axie\SubscriptionServices\MarketplaceService.cs" />
@@ -229,6 +231,7 @@
     <Compile Include="Logger.cs" />
     <Compile Include="HG3\LootQuality.cs" />
     <Compile Include="Map.cs" />
+    <Compile Include="Mongo\DatabaseConnection.cs" />
     <Compile Include="MountCommands.cs" />
     <Compile Include="PlayerFacotry.cs" />
     <Compile Include="Trainer.cs" />
@@ -279,9 +282,6 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="Axie\QoLListHandler\" />
-    <Folder Include="Axie\AxieBattleSimulator\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -27,6 +27,22 @@ namespace DiscordBot.Axie
         }
     }
 
+    public class Winrate
+    {
+        public int win;
+        public int loss;
+        public float winrate;
+        public Winrate(int _win, int _loss)
+        {
+            win = _win;
+            loss = _loss;
+        }
+        public void GetWinrate()
+        {
+            winrate = (float)win / (win + loss) * 100;
+        }
+    }
+
     class FightDataHandler
     {
 
@@ -34,8 +50,9 @@ namespace DiscordBot.Axie
         public static void GetData()
         {
             Dictionary<string, TraitInfo> traitData = new Dictionary<string, TraitInfo>();
+            Dictionary<int, Winrate> winrateData = new Dictionary<int, Winrate>();
             bool dataAvailable = true;
-            int battleCount = 12500;
+            int battleCount = 24875;
             int axieIndex = 0;
             int safetyNet = 0;
             int perc = battleCount / 100;
@@ -87,8 +104,17 @@ namespace DiscordBot.Axie
                         losingTeam = team1;
                         winningTeam = team2;
                     }
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (winrateData.ContainsKey(winningTeam[i])) winrateData[winningTeam[i]].win++;
+                        else winrateData.Add(winningTeam[i], new Winrate(1, 0));
+
+                        if (winrateData.ContainsKey(losingTeam[i])) winrateData[losingTeam[i]].loss++;
+                        else winrateData.Add(losingTeam[i], new Winrate(0, 1));
+                    }
                     for (int j = 0; j < 6; j++)
                     {
+                        break;
                         int id = (int)script["metadata"]["fighters"][j]["id"];
                         int gain = 0;
                         if (winningTeam.Contains(id)) gain = 1;
@@ -109,24 +135,40 @@ namespace DiscordBot.Axie
                     }
                 }
             }
+            foreach (var axie in winrateData) axie.Value.GetWinrate();
+            
             List<KeyValuePair<string, TraitInfo>> transferList = traitData.ToList();
             transferList.Sort((pair1, pair2) => pair2.Value.Usage.CompareTo(pair1.Value.Usage));
             traitData = transferList.ToDictionary(name => name.Key, _data => _data.Value);
+
+            List <KeyValuePair< int, Winrate >> winrateTransfer = winrateData.ToList();
+            //winrateTransfer.Sort((pair1, pair2) => pair2.Value.winrate.CompareTo(pair1.Value.winrate));
+            winrateTransfer = winrateTransfer.OrderByDescending(wr => wr.Value.winrate).ThenByDescending(wr => wr.Value.win).ThenBy(wr => wr.Key).ToList();
+            winrateData = winrateTransfer.ToDictionary(name => name.Key, _data => _data.Value);
             string data = JsonConvert.SerializeObject(traitData, Formatting.Indented);
+            string winrateJson = JsonConvert.SerializeObject(winrateData, Formatting.Indented);
             string path = "TraitData.txt";
+            string winratePath = "WinrateData.txt";
             if (!File.Exists(path))
             {
                 File.Create(path);
                 using (var tw = new StreamWriter(path))
                 {
-                    tw.Write(data);
+                    //tw.Write(data);
                 }
             }
             else if (File.Exists(path))
             {
                 using (var tw = new StreamWriter(path))
                 {
-                    tw.Write(data);
+                    //tw.Write(data);
+                }
+            }
+            if (File.Exists(winratePath))
+            {
+                using (var tw = new StreamWriter(winratePath))
+                {
+                    tw.Write(winrateJson);
                 }
             }
         }
@@ -236,7 +278,6 @@ namespace DiscordBot.Axie
             int axieIndex = 0;
             int safetyNet = 0;
             int perc = axiePages / 100;
-            int currentPerc = 0;
             while (axieIndex < axiePages && dataAvailable)
             {
 
@@ -301,30 +342,14 @@ namespace DiscordBot.Axie
 
             string dpsPath = "CocoDpsRankingList.txt";
             string tankPath = "CocoTankRankingList.txt";
-            if (!File.Exists(dpsPath))
-            {
-                File.Create(dpsPath);
-                using (var tw = new StreamWriter(dpsPath))
-                {
-                    tw.Write(dpsData);
-                }
-            }
-            else if (File.Exists(dpsPath))
+            if (File.Exists(dpsPath))
             {
                 using (var tw = new StreamWriter(dpsPath))
                 {
                     tw.Write(dpsData);
                 }
             }
-            if (!File.Exists(tankPath))
-            {
-                File.Create(tankPath);
-                using (var tw = new StreamWriter(tankPath))
-                {
-                    tw.Write(tankData);
-                }
-            }
-            else if (File.Exists(tankPath))
+            if (File.Exists(tankPath))
             {
                 using (var tw = new StreamWriter(tankPath))
                 {
@@ -391,6 +416,65 @@ namespace DiscordBot.Axie
 
     }
 
+    public class BreedingData
+    {
+        public static async Task GetData()
+        {
+            int mixMatronClass = 0;
+            int mixSireClass = 0;
+            int pureMatronClass = 0;
+            int pureSireClass = 0;
+            int pureBreeding = 0;
+            int mixBreeding = 0;
+
+            bool dataAvailable = true;
+            int axieCount = 7040;
+            int axieIndex = 3530;
+            int perc = axieCount / 100;
+            int currentPerc = axieIndex / perc;
+            while (axieIndex < axieCount && dataAvailable)
+            {
+                axieIndex++;
+                if (axieIndex % perc == 0)
+                {
+                    currentPerc++;
+                    Console.WriteLine(currentPerc.ToString() + "%");
+                }
+                var axieData = await AxieData.GetAxieFromApi(axieIndex);
+                if (axieData != null && axieData.sireId != 0)
+                {
+                    var matronData = await AxieData.GetAxieFromApi(axieData.matronId);
+                    var sireData = await AxieData.GetAxieFromApi(axieData.sireId);
+                    if (matronData != null)
+                    {
+                        if (sireData.Class == matronData.Class)
+                        {
+                            pureBreeding++;
+                            if (axieData.Class == matronData.Class) pureMatronClass++;
+                            else pureSireClass++;
+                        }
+                        else
+                        {
+                            mixBreeding++;
+                            if (axieData.Class == matronData.Class) mixMatronClass++;
+                            else mixSireClass++;
+                        }
+                    }
+
+                }
+            }
+            float matronPerc = (float)mixMatronClass / mixBreeding;
+            string data = $"Out of all {mixBreeding} mix breeds, {matronPerc * 100}% took the class of the matron and {(1f - matronPerc) * 100}% toold the class of the sire.";
+            string path = "BreedData.txt";
+            if (File.Exists(path))
+            {
+                using (var tw = new StreamWriter(path))
+                {
+                    tw.Write(data);
+                }
+            }
+        }
+    }
 
 
     public class Rank

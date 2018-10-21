@@ -107,7 +107,7 @@ namespace DiscordBot
         }
     }
 
-    public class DatabaseConnection
+    public class DatabaseConnection1
     {
         private MongoClient Client;
         private IMongoDatabase DiscordDatabase;

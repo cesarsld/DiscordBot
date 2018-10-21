@@ -19,7 +19,7 @@ namespace DiscordBot
     {
         public static Trainer GetTrainerFromDb(ulong _id)
         {
-            DatabaseConnection dbConenction = new DatabaseConnection();
+            DatabaseConnection1 dbConenction = new DatabaseConnection1();
             dbConenction.SetupConnection();
 
             IMongoDatabase discrdDB = dbConenction.GetDb();
@@ -42,7 +42,7 @@ namespace DiscordBot
 
         public static void UpdateExpToDb(Trainer trainer)
         {
-            DatabaseConnection dbConenction = new DatabaseConnection();
+            DatabaseConnection1 dbConenction = new DatabaseConnection1();
             dbConenction.SetupConnection();
 
             IMongoDatabase discrdDB = dbConenction.GetDb();

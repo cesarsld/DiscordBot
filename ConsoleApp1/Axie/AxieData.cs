@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using DiscordBot.Axie.Battles;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -18,6 +18,8 @@ namespace DiscordBot
         public string genes;
         public string Class;
         public string title;
+        public int sireId;
+        public int matronId;
         public AxiePart[] OldParts;
         public AxieParts parts;
         
@@ -141,7 +143,7 @@ namespace DiscordBot
         public EmbedBuilder EmbedQQData(bool expAllowed)
         {
             var embed = new EmbedBuilder();
-            embed.WithTitle(name);
+            embed.WithTitle($"Axie #{id}");
             if (expAllowed)
                 embed.WithDescription($"Exp : {exp} | Pending exp : {pendingExp}");
             embed.WithThumbnailUrl(GetImageUrl());
@@ -171,6 +173,39 @@ namespace DiscordBot
             embed.WithColor(color);
             return embed;
         }
+        public EmbedBuilder EmbedWinrate(AxieWinrate winRate)
+        {
+            var embed = new EmbedBuilder();
+            embed.WithTitle($"Axie #{id}");
+            embed.WithDescription($"Total battles : {winRate.win + winRate.loss} | Win rate : {winRate.winrate}%");
+            embed.WithThumbnailUrl(GetImageUrl());
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
+            Color color = Color.Default;
+            switch (Class)
+            {
+                case "plant":
+                    color = Color.Green;
+                    break;
+                case "beast":
+                    color = Color.Gold;
+                    break;
+                case "aquatic":
+                    color = Color.Blue;
+                    break;
+                case "bug":
+                    color = Color.Red;
+                    break;
+                case "bird":
+                    color = Color.Magenta;
+                    break;
+                case "reptile":
+                    color = Color.DarkMagenta;
+                    break;
+            }
+            embed.WithColor(color);
+            return embed;
+        }
+
 
         public int GetPureness()
         {
@@ -267,37 +302,9 @@ namespace DiscordBot
             JObject axieJson = JObject.Parse(json);
             AxieData axieData = axieJson.ToObject<AxieData>();
             axieData.jsonData = axieJson;
-            //axieData.FillBetterParts();
             return axieData;
         }
-        private void FillBetterParts()
-        {
-            parts = new AxieParts();
-            foreach (var parts in OldParts)
-            {
-                switch (parts.type)
-                {
-                    case "eyes":
-                        this.parts.eyes = parts;
-                        break;
-                    case "horn":
-                        this.parts.horn = parts;
-                        break;
-                    case "back":
-                        this.parts.back = parts;
-                        break;
-                    case "tail":
-                        this.parts.tail = parts;
-                        break;
-                    case "mouth":
-                        this.parts.mouth = parts;
-                        break;
-                    case "ears":
-                        this.parts.ears = parts;
-                        break;
-                }
-            }
-        }
+      
         public async Task GetTrueAuctionData()
         {
             string json = "";
@@ -464,27 +471,7 @@ namespace DiscordBot
             JObject axieJson = JObject.Parse(json);
             AxieData axieData = axieJson.ToObject<AxieData>();
             axieData.jsonData = axieJson;
-            //axieData.FillBetterParts();
             return axieData;
-        }
-        public async Task GetTrueAuctionData()
-        {
-            string json = "";
-            using (System.Net.WebClient wc = new System.Net.WebClient())
-            {
-                try
-                {
-                    json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + id.ToString()); //https://axieinfinity.com/api/axies/
-                }
-
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                    return;
-                }
-            }
-            JObject axieJson = JObject.Parse(json);
-            auction = axieJson["auction"].ToObject<AxieAuction>();
         }
     }
 

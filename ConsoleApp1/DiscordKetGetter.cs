@@ -12,6 +12,7 @@ namespace DiscordBot
         //private static readonly string keyPath = "..\\..\\..\\ShadBotKey.txt"; // server
         private static readonly string keyPath = "BotKey/ShadBotKey.txt"; // server
         private static readonly string testKeyPath = "TestKey/TestKey.txt"; //home
+        private static readonly string dbUrlPath = "DbKey/DbKey.txt";
         public static string GetKey()
         {
             if (File.Exists(keyPath))
@@ -30,6 +31,19 @@ namespace DiscordBot
                     return key;
                 }
             }
+        }
+
+        public static string GetDBUrl()
+        {
+            if (File.Exists(dbUrlPath))
+            {
+                using (StreamReader sr = new StreamReader(dbUrlPath, Encoding.UTF8))
+                {
+                    string key = sr.ReadToEnd();
+                    return key;
+                }
+            }
+            else return "";
         }
     }
 }

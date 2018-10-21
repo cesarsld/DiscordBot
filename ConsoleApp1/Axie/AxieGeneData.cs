@@ -48,7 +48,7 @@ namespace DiscordBot
             }
             return "";
         }
-        public float GetTraitTransmissionProbability(string desiredClass, int index)
+        public float GetTraitProbability(string desiredClass, int index)
         {
             float probability = 0;
             probability += TraitData[index].DominantClass == desiredClass ? 0.375f : 0; //0.35
