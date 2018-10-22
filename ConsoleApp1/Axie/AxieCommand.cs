@@ -498,14 +498,27 @@ namespace DiscordBot
 
         [Command("breedlist"), Summary("Returns best breed pairs for pure axie")]
         [Alias("bl")]
-        public async Task GetBreedList(string address, bool test = false)
+        public async Task GetBreedList(string address)
         {
-            await PureBreeder.AddTask(Context, address);
+            await TaskHandler.AddTask(Context, address, TaskType.BreedQuery);
             await Context.Message.AddReactionAsync(new Emoji("✅"));
-            if (!PureBreeder.FetchingDataFromApi)
+            if (!TaskHandler.FetchingDataFromApi)
             {
-                PureBreeder.FetchingDataFromApi = true;
-                _ = PureBreeder.RunTasks();
+                TaskHandler.FetchingDataFromApi = true;
+                _ = TaskHandler.RunTasks();
+            }
+        }
+
+        [Command("winratelist"), Summary("Returns winrates of an address")]
+        [Alias("winlist")]
+        public async Task GetWinrateList(string address)
+        {
+            await TaskHandler.AddTask(Context, address, TaskType.WinrateQuery);
+            await Context.Message.AddReactionAsync(new Emoji("✅"));
+            if (!TaskHandler.FetchingDataFromApi)
+            {
+                TaskHandler.FetchingDataFromApi = true;
+                _ = TaskHandler.RunTasks();
             }
         }
 

@@ -101,6 +101,31 @@ namespace DiscordBot.Axie.Battles
             }
         }
 
+        public static async Task FetchDataFromAddress(string address, IUserMessage message)
+        {
+            var listFromApi = await CollectionStatDataHandler.GetAxieListFromAddress(address);
+            var db = DatabaseConnection.GetDb();
+            var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+            string winrateAddressPath = "WinrateFromAddress.txt";
+            var winrateList = new List<AxieWinrate>();
+            foreach(var axie in listFromApi)
+            {
+                var filterId = Builders<BsonDocument>.Filter.Eq("_id", axie.id);
+                var doc = collection.Find(filterId).FirstOrDefault();
+                if (doc != null)
+                {
+                    winrateList.Add(BsonSerializer.Deserialize<AxieWinrate>(doc));
+                }
+            }
+            winrateList = winrateList.OrderBy(ax => ax.id).ToList();
+            string winrateData = JsonConvert.SerializeObject(winrateList, Formatting.Indented);  
+            using (var tw = new StreamWriter(winrateAddressPath))
+            {
+                await tw.WriteAsync(winrateData);
+            }
+            await message.Channel.SendFileAsync(winrateAddressPath);
+        }
+
         public static void GetDataSinceLastChack()
         {
             string dataCountUrl = "https://api.axieinfinity.com/v1/battle/history/matches-count";

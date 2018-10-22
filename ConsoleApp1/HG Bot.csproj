@@ -201,22 +201,11 @@
     <Compile Include="Axie\SubscriptionServices\SubServiceConverter.cs" />
     <Compile Include="BH\BhCommands.cs" />
     <Compile Include="BH\DataFetcher.cs" />
-    <Compile Include="DiscordKetGetter.cs" />
     <Compile Include="GiveAway\GiveawayInstance.cs" />
     <Compile Include="GiveAway\GiveawayRunner.cs" />
-    <Compile Include="BaseCommands.cs" />
-    <Compile Include="BGDecisions.cs" />
-    <Compile Include="Bot.cs" />
-    <Compile Include="Logger.cs" />
-    <Compile Include="Map.cs" />
     <Compile Include="Mongo\DatabaseConnection.cs" />
-    <Compile Include="MountCommands.cs" />
-    <Compile Include="PlayerFacotry.cs" />
-    <Compile Include="Trainer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RunningCommandInfo.cs" />
-    <Compile Include="ThreadSafeFileBuffer.cs" />
     <Compile Include="Axie\AxieHolderListHandler.cs" />
     <Compile Include="AxieConquer\AxieConquerGame.cs" />
     <Compile Include="AxieConquer\AxiePlayer.cs" />
@@ -260,6 +249,18 @@
     <Compile Include="BH\HG3\ScenarioRPG.cs" />
     <Compile Include="BH\HG3\ScenarioType.cs" />
     <Compile Include="BH\Player.cs" />
+    <Compile Include="Experimental\Map.cs" />
+    <Compile Include="Experimental\MountCommands.cs" />
+    <Compile Include="Experimental\Trainer.cs" />
+    <Compile Include="Experimental\PlayerFacotry.cs" />
+    <Compile Include="Experimental\BGDecisions.cs" />
+    <Compile Include="Axie\TaskHandler.cs" />
+    <Compile Include="Core\Bot.cs" />
+    <Compile Include="BH\BaseCommands.cs" />
+    <Compile Include="Core\DiscordKetGetter.cs" />
+    <Compile Include="Core\Logger.cs" />
+    <Compile Include="Core\RunningCommandInfo.cs" />
+    <Compile Include="Core\ThreadSafeFileBuffer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -286,6 +287,8 @@
   <ItemGroup>
     <Folder Include="BH\HG2\" />
     <Folder Include="BH\HG3\" />
+    <Folder Include="Experimental\" />
+    <Folder Include="Core\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
