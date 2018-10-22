@@ -21,7 +21,7 @@ namespace DiscordBot.Axie.Battles
 {
     class WinrateCollector
     {
-
+        public static int lastUnixTimeCheck = 0;
         public static void GetAllData()
         {
             Dictionary<int, Winrate> winrateData = new Dictionary<int, Winrate>();
@@ -171,10 +171,18 @@ namespace DiscordBot.Axie.Battles
             {
                 var filterId = Builders<BsonDocument>.Filter.Eq("_id", axie.id);
                 var doc = collection.Find(filterId).FirstOrDefault();
-                var axieData = BsonSerializer.Deserialize<AxieWinrate>(doc);
-                axieData.AddLatestResults(axie);
-                var update = Builders<BsonDocument>.Update.Set("win", axieData.win).Set("loss", axieData.loss).Set("winrate", axieData.winrate);
-                collection.UpdateOne(filterId, update);
+                if (doc != null)
+                {
+                    var axieData = BsonSerializer.Deserialize<AxieWinrate>(doc);
+                    axieData.AddLatestResults(axie);
+                    var update = Builders<BsonDocument>.Update.Set("win", axieData.win).Set("loss", axieData.loss).Set("winrate", axieData.winrate);
+                    collection.UpdateOne(filterId, update);
+                }
+                else collection.InsertOne(axie.ToBsonDocument());             
+            }
+            using (var tw = new StreamWriter(battleNumberPath))
+            {
+                tw.Write((lastBattle - 1).ToString());
             }
         }
     }

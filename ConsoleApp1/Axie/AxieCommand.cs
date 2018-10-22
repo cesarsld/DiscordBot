@@ -471,13 +471,17 @@ namespace DiscordBot
         [Command("winrate"), Summary("GetAxieWinrate")]
         public async Task GetAxieWinrate(int id)
         {
-            var db = DatabaseConnection.GetDb();
-            var collection = db.GetCollection<BsonDocument>("AxieWinrate");
-            var filterId = Builders<BsonDocument>.Filter.Eq("_id",id);
-            var doc = (await collection.FindAsync(filterId)).FirstOrDefault();
-            var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
-            var axieData = await AxieData.GetAxieFromApi(id);
-            await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
+            if (IsArena(Context)||IsBotCommand(Context))
+            {
+                var db = DatabaseConnection.GetDb();
+                var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+                var filterId = Builders<BsonDocument>.Filter.Eq("_id", id);
+                var doc = (await collection.FindAsync(filterId)).FirstOrDefault();
+                var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
+                var axieData = await AxieData.GetAxieFromApi(id);
+                axieData.id = id;
+                await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
+            }
         }
         #endregion
 
