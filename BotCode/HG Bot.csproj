@@ -254,10 +254,10 @@
     <Compile Include="Experimental\Trainer.cs" />
     <Compile Include="Experimental\PlayerFacotry.cs" />
     <Compile Include="Experimental\BGDecisions.cs" />
-    <Compile Include="Axie\TaskHandler.cs" />
+    <Compile Include="Core\TaskHandler.cs" />
     <Compile Include="Core\Bot.cs" />
     <Compile Include="BH\BaseCommands.cs" />
-    <Compile Include="Core\DiscordKetGetter.cs" />
+    <Compile Include="Core\DiscordKeyGetter.cs" />
     <Compile Include="Core\Logger.cs" />
     <Compile Include="Core\RunningCommandInfo.cs" />
     <Compile Include="Core\ThreadSafeFileBuffer.cs" />
@@ -284,11 +284,6 @@
   <ItemGroup />
   <ItemGroup />
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="BH\HG2\" />
-    <Folder Include="BH\HG3\" />
-    <Folder Include="Experimental\" />
-    <Folder Include="Core\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

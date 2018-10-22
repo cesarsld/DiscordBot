@@ -22,6 +22,7 @@ namespace DiscordBot.Axie.Battles
     class WinrateCollector
     {
         public static int lastUnixTimeCheck = 0;
+        public static readonly int unixTimeBetweenUpdates = 21600;
         public static void GetAllData()
         {
             Dictionary<int, Winrate> winrateData = new Dictionary<int, Winrate>();
@@ -125,16 +126,27 @@ namespace DiscordBot.Axie.Battles
             }
             await message.Channel.SendFileAsync(winrateAddressPath);
         }
-
-        public static void GetDataSinceLastChack()
+        public static void UpdateUnixLastCheck()
         {
+            using (StreamReader sr = new StreamReader("AxieData/LastTimeCheck.txt", Encoding.UTF8))
+            {
+                lastUnixTimeCheck = Convert.ToInt32(sr.ReadToEnd());
+            }
+        }
+        public static async Task GetDataSinceLastChack()
+        {
+            lastUnixTimeCheck = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
+            using (var tw = new StreamWriter("AxieData/LastTimeCheck.txt"))
+            {
+                tw.Write(lastUnixTimeCheck.ToString());
+            }
             string dataCountUrl = "https://api.axieinfinity.com/v1/battle/history/matches-count";
-            string battleNumberPath = "AxieData/LastBattleNumberCheck.text";
+            string battleNumberPath = "AxieData/LastCheck.txt";
             int lastChecked = 0;
             int lastBattle = 0;
             using (System.Net.WebClient wc = new System.Net.WebClient())
             {
-                lastBattle = Convert.ToInt32(wc.DownloadString(dataCountUrl));
+                lastBattle = Convert.ToInt32((await wc.DownloadStringTaskAsync(dataCountUrl)));
             }
             using (StreamReader sr = new StreamReader(battleNumberPath, Encoding.UTF8))
             {

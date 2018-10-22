@@ -1214,7 +1214,7 @@ namespace DiscordBot.Axie.Web3Axie
         public static async Task GetData()
         {
             IsServiceOn = true;
-            _ = UpdateServiceCheckLoop();
+            _ = TaskHandler.UpdateServiceCheckLoop();
             var web3 = new Web3("https://mainnet.infura.io");
             //get contracts
             var auctionContract = web3.Eth.GetContract(auctionABI, AxieCoreContractAddress);
@@ -1342,55 +1342,6 @@ namespace DiscordBot.Axie.Web3Axie
         {
             var firstBlock = blockNumber.Value - 10;
             return new BlockParameter(new HexBigInteger(firstBlock));
-        }
-
-        public static async Task UpdateServiceCheckLoop()
-        {
-            while (IsServiceOn)
-            {
-                bool hasTriggered = false;
-                //eggLabPrice *= 0.999;
-                int unixTime = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
-                //if (eggLabPrice < 0.133) eggLabPrice = 0.133;
-                var subList = await SubscriptionServicesHandler.GetSubList();
-
-                foreach (var sub in subList)
-                {
-                    //Axie lab service check
-                    var axieLabSub = sub.GetServiceList().FirstOrDefault(service => service.name == ServiceEnum.AxieLab) as AxieLabService;
-                    if (axieLabSub != null)
-                    {
-                        if (axieLabSub.GetPrice() >= eggLabPrice)
-                        {
-                            hasTriggered = true;
-                            _ = Bot.GetUser(sub.GetId()).SendMessageAsync("", false, axieLabSub.GetTriggerEmbedMessage());
-                            axieLabSub.SetPrice(0);
-                        }
-                    }
-                    //MarketPlace trigger check
-                    var marketplaceSub = sub.GetServiceList().FirstOrDefault(service => service.name == ServiceEnum.MarketPlace) as MarketplaceService;
-                    if (marketplaceSub != null)
-                    {
-                        var triggersToRemove = new List<AxieTrigger>();
-                        foreach (var trigger in marketplaceSub.GetTriggerList())
-                        {
-                            if (unixTime > trigger.triggerTime)
-                            {
-                                hasTriggered = true;
-                                _ = Bot.GetUser(sub.GetId()).SendMessageAsync("", false, trigger.GetTriggerMessage());
-                                triggersToRemove.Add(trigger);
-                            }
-                        }
-                        marketplaceSub.RemoveTriggers(triggersToRemove);
-                    }
-                }
-                if (hasTriggered)
-                {
-                    _ = SubscriptionServicesHandler.SetSubList();
-                    hasTriggered = false;
-                }
-                await Task.Delay(60000);
-            }
         }
 
         private static async Task CheckForExistingMarketTriggers(int axieID)
