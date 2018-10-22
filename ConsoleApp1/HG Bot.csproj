@@ -199,52 +199,23 @@
     <Compile Include="Axie\SubscriptionServices\MarketplaceService.cs" />
     <Compile Include="Axie\SubscriptionServices\MarketPlaceTriggerTypeEnum.cs" />
     <Compile Include="Axie\SubscriptionServices\SubServiceConverter.cs" />
-    <Compile Include="BanListHandler.cs" />
     <Compile Include="BH\BhCommands.cs" />
     <Compile Include="BH\DataFetcher.cs" />
     <Compile Include="DiscordKetGetter.cs" />
     <Compile Include="GiveAway\GiveawayInstance.cs" />
     <Compile Include="GiveAway\GiveawayRunner.cs" />
-    <Compile Include="HG3\Adventure.cs" />
     <Compile Include="BaseCommands.cs" />
     <Compile Include="BGDecisions.cs" />
-    <Compile Include="BHungerGames.cs" />
-    <Compile Include="BHungerGamesV2.cs" />
-    <Compile Include="HG3\BHungerGamesV3.cs" />
     <Compile Include="Bot.cs" />
-    <Compile Include="BotGameInstance.cs" />
-    <Compile Include="BotV2GameInstance.cs" />
-    <Compile Include="HG3\BotV3GameInstance.cs" />
-    <Compile Include="HG3\ClassPicker.cs" />
-    <Compile Include="HG3\Debuff.cs" />
-    <Compile Include="EnhancedDecision.cs" />
-    <Compile Include="Familiar.cs" />
-    <Compile Include="HG3\FamiliarNameList.cs" />
-    <Compile Include="HG3\GamblingOptions.cs" />
-    <Compile Include="HG3\HeroClass.cs" />
-    <Compile Include="InteractiveDecision.cs" />
-    <Compile Include="InteractivePlayer.cs" />
-    <Compile Include="Item.cs" />
-    <Compile Include="HG3\ItemDistribution.cs" />
-    <Compile Include="HG3\ItemRPG.cs" />
-    <Compile Include="ItemType.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="HG3\LootQuality.cs" />
     <Compile Include="Map.cs" />
     <Compile Include="Mongo\DatabaseConnection.cs" />
     <Compile Include="MountCommands.cs" />
     <Compile Include="PlayerFacotry.cs" />
     <Compile Include="Trainer.cs" />
-    <Compile Include="Player.cs" />
-    <Compile Include="HG3\playerRPG.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rarity.cs" />
-    <Compile Include="HG3\RarityRPG.cs" />
     <Compile Include="RunningCommandInfo.cs" />
-    <Compile Include="HG3\ScenarioRPG.cs" />
-    <Compile Include="ScenarioType.cs" />
-    <Compile Include="TerraForm.cs" />
     <Compile Include="ThreadSafeFileBuffer.cs" />
     <Compile Include="Axie\AxieHolderListHandler.cs" />
     <Compile Include="AxieConquer\AxieConquerGame.cs" />
@@ -260,6 +231,35 @@
     <Compile Include="Axie\SubscriptionServices\PremiumServices\AuctionFilters.cs" />
     <Compile Include="Axie\QoLListHandler\QolListHandler.cs" />
     <Compile Include="Axie\AxieBattleSimulator\AxieFigher.cs" />
+    <Compile Include="BH\BanListHandler.cs" />
+    <Compile Include="BH\BotGameInstance.cs" />
+    <Compile Include="BH\BHungerGames.cs" />
+    <Compile Include="BH\HG2\BHungerGamesV2.cs" />
+    <Compile Include="BH\HG2\BotV2GameInstance.cs" />
+    <Compile Include="BH\HG2\EnhancedDecision.cs" />
+    <Compile Include="BH\HG2\Familiar.cs" />
+    <Compile Include="BH\HG2\InteractiveDecision.cs" />
+    <Compile Include="BH\HG2\InteractivePlayer.cs" />
+    <Compile Include="BH\HG2\Item.cs" />
+    <Compile Include="BH\HG2\ItemType.cs" />
+    <Compile Include="BH\HG2\Rarity.cs" />
+    <Compile Include="BH\HG2\TerraForm.cs" />
+    <Compile Include="BH\HG3\Adventure.cs" />
+    <Compile Include="BH\HG3\BHungerGamesV3.cs" />
+    <Compile Include="BH\HG3\BotV3GameInstance.cs" />
+    <Compile Include="BH\HG3\ClassPicker.cs" />
+    <Compile Include="BH\HG3\Debuff.cs" />
+    <Compile Include="BH\HG3\FamiliarNameList.cs" />
+    <Compile Include="BH\HG3\GamblingOptions.cs" />
+    <Compile Include="BH\HG3\HeroClass.cs" />
+    <Compile Include="BH\HG3\ItemDistribution.cs" />
+    <Compile Include="BH\HG3\ItemRPG.cs" />
+    <Compile Include="BH\HG3\LootQuality.cs" />
+    <Compile Include="BH\HG3\playerRPG.cs" />
+    <Compile Include="BH\HG3\RarityRPG.cs" />
+    <Compile Include="BH\HG3\ScenarioRPG.cs" />
+    <Compile Include="BH\HG3\ScenarioType.cs" />
+    <Compile Include="BH\Player.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -283,5 +283,9 @@
   <ItemGroup />
   <ItemGroup />
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="BH\HG2\" />
+    <Folder Include="BH\HG3\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
