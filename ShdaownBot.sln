@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HG Bot", "ConsoleApp1\HG Bot.csproj", "{EE21FF64-069C-48E7-AE1F-6113C4776418}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HG Bot", "Bots\HG Bot.csproj", "{EE21FF64-069C-48E7-AE1F-6113C4776418}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

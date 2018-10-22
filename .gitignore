@@ -24,16 +24,16 @@ $RECYCLE.BIN/
 
 
 old_code
-ConsoleApp1/bin
-ConsoleApp1/obj
+Bots/bin
+Bots/obj
 /.vs/
 .dll
 
 packages
 *.dll
-ConsoleApp1/bin/Debug/MongoDB.Bson.dll
+Bots/bin/Debug/MongoDB.Bson.dll
 
 /BotKey/
 /Logger/
 /TestKey/
-/ConsoleApp1/Axie/SubscriptionServices/PremiumServices/
+/Bots/Axie/SubscriptionServices/PremiumServices/
