@@ -27,7 +27,7 @@ namespace DiscordBot.Axie.Battles
         {
             Dictionary<int, Winrate> winrateData = new Dictionary<int, Winrate>();
             List<AxieWinrate> winrateList = new List<AxieWinrate>();
-            int battleCount = 25000;
+            int battleCount = 28535;
             int axieIndex = 0;
             int safetyNet = 0;
             int perc = battleCount / 100;
@@ -223,7 +223,7 @@ namespace DiscordBot.Axie.Battles
                 {
                     var axieData = BsonSerializer.Deserialize<AxieWinrate>(doc);
                     axieData.AddLatestResults(axie);
-                    var update = Builders<BsonDocument>.Update.Set("win", axieData.win).Set("loss", axieData.loss).Set("winrate", axieData.winrate);
+                    var update = Builders<BsonDocument>.Update.Set("win", axieData.win).Set("loss", axieData.loss).Set("winrate", axieData.winrate).Set("battleHistory", axieData.battleHistory);
                     collection.UpdateOne(filterId, update);
                 }
                 else collection.InsertOne(axie.ToBsonDocument());             
