@@ -150,6 +150,10 @@ namespace DiscordBot.Axie.Battles
             string battleNumberPath = "AxieData/LastCheck.txt";
             int lastChecked = 0;
             int lastBattle = 0;
+            int total = lastBattle - lastChecked;
+            float perc = (float)total / 100;
+            int counter = 0;
+            int currentperc = 0;
             using (System.Net.WebClient wc = new System.Net.WebClient())
             {
                 lastBattle = Convert.ToInt32((await wc.DownloadStringTaskAsync(dataCountUrl)));
@@ -163,6 +167,13 @@ namespace DiscordBot.Axie.Battles
             while (lastChecked < lastBattle)
             {
                 lastChecked++;
+                counter++;
+                if(counter > perc)
+                {
+                    currentperc++;
+                    perc += perc;
+                    Console.WriteLine($"{currentperc}%");
+                }
                 string json = null;
                 using (System.Net.WebClient wc = new System.Net.WebClient())
                 {
@@ -215,8 +226,19 @@ namespace DiscordBot.Axie.Battles
             foreach (var axie in winrateList) axie.GetWinrate();
             var db = DatabaseConnection.GetDb();
             var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+            Console.WriteLine("Initialising DB write phase");
+            currentperc = 0;
+            perc = (float)winrateList.Count / 100;
+            counter = 0;
             foreach (var axie in winrateList)
             {
+                counter++;
+                if (counter > perc)
+                {
+                    currentperc++;
+                    perc += perc;
+                    Console.WriteLine($"{currentperc}%");
+                }
                 var filterId = Builders<BsonDocument>.Filter.Eq("_id", axie.id);
                 var doc = collection.Find(filterId).FirstOrDefault();
                 if (doc != null)
