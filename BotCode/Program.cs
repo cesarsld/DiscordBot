@@ -1,17 +1,9 @@
 ﻿using System;
 using System.Threading;
 using Discord;
-using MongoDB.Driver;
-using System.Threading.Tasks;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Driver.Linq;
-using DiscordBot.Axie;
-using DiscordBot.Axie.Battles;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-using System.Numerics;
-using System.Collections.Generic;
+using DiscordBot.Mongo;
+using MongoDB.Driver;
 
 namespace DiscordBot
 {
@@ -26,6 +18,9 @@ namespace DiscordBot
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
                     new Bot().RunAsync().GetAwaiter().GetResult();
+                    //var db = DatabaseConnection.GetDb();
+                    //var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+                    //collection.UpdateMany(Builders<BsonDocument>.Filter.Empty, Builders<BsonDocument>.Update.Set("battleHistory", "0x" ));
 ;
                 }
                 catch (Exception ex)

@@ -119,6 +119,7 @@ namespace DiscordBot
                                                      + "- `>axie purechance/pure/p axie_id_1 axie_id_2 (optional)beta` : Show user's chance to breed a pure axie from 2 preset axies. Write beta at the end if you want to access axies in beta.\n"
                                                      + "- `>axie subs` : Show services user can subscribe to.\n"
                                                      + "- `>axie qolhelp/qhelp` : Show QoL list help.\n"
+                                                     + "- `>axie dbhelp` : Show database list help.\n"
                                                      + "- `>axie breedList 0xADRE55` : Returns a list of the best axie pairs to breed to obtain a pure axie.\n"
                                                      + "NOTE : You may use the prefix `>a` instead of >axie");
         }
@@ -133,6 +134,17 @@ namespace DiscordBot
                                                      + "- `>axie qoltype` : Show what suggestion types you can submit.\n"
                                                      + "- `>axie qoladd/qadd _type description` : Submit a suggestion of type `_type`. (Player council or higher)\n"
                                                      + "- `>axie qolremove/qrem`_index : Remove suggestion at index `_iindex`. (Core or staff member)\n"
+                                                     + "NOTE : You may use the prefix `>a` instead of >axie");
+        }
+
+        [Command("dbhelp"), Summary("return db help")]
+        public async Task PostDbHelp()
+        {
+            if (IsBotCommand(Context))
+                await Context.Channel.SendMessageAsync("Commands that you can use :\n"
+                                                     + "- `>axie winrate/wr axieId` : Show axie's winrate. \n"
+                                                     + "- `>axie winlist 0xADDRE55` : Show winrates of all axies on an address.\n"
+                                                     + "- `>axie lapseWr axieId lapseTime` : Returns the winrate of an axie of lapseTime battles (up to 42).\n"
                                                      + "NOTE : You may use the prefix `>a` instead of >axie");
         }
 
@@ -469,6 +481,7 @@ namespace DiscordBot
         #region DB Calls
 
         [Command("winrate"), Summary("GetAxieWinrate")]
+        [Alias("wr")]
         public async Task GetAxieWinrate(int id)
         {
             if (IsArena(Context)||IsBotCommand(Context))
@@ -483,6 +496,26 @@ namespace DiscordBot
                 await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
             }
         }
+
+
+        [Command("lapseWr"), Summary("GetAxieWinrate on a lapse of battles")]
+        public async Task GetDailylyWinrate(int id, int length)
+        {
+            if (IsArena(Context) || IsBotCommand(Context))
+            {
+                var db = DatabaseConnection.GetDb();
+                var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+                var filterId = Builders<BsonDocument>.Filter.Eq("_id", id);
+                var doc = (await collection.FindAsync(filterId)).FirstOrDefault();
+                var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
+                var axieData = await AxieData.GetAxieFromApi(id);
+                axieData.id = id;
+                if (length > 42) length = 42;
+                if (length < 1) length = 1;
+                await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length));
+            }
+        }
+
         #endregion
 
         #region miscellaneous

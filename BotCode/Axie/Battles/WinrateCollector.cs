@@ -81,13 +81,19 @@ namespace DiscordBot.Axie.Battles
                     {
                         var winner = winrateList.FirstOrDefault(a => a.id == winningTeam[i]);
                         if (winner != null)
+                        {
                             winner.win++;
-                        else winrateList.Add(new AxieWinrate(winningTeam[i], 1, 0));
+                            winner.battleHistory += "1";
+                        }
+                        else winrateList.Add(new AxieWinrate(winningTeam[i], 1, 0, "0x1"));
 
                         var loser = winrateList.FirstOrDefault(a => a.id == losingTeam[i]);
                         if (loser != null)
+                        {
                             loser.loss++;
-                        else winrateList.Add(new AxieWinrate(losingTeam[i], 0, 1));
+                            winner.battleHistory += "0";
+                        }
+                        else winrateList.Add(new AxieWinrate(losingTeam[i], 0, 1, "0x0"));
                     }
                 }
             }
@@ -190,14 +196,19 @@ namespace DiscordBot.Axie.Battles
                     {
                         var winner = winrateList.FirstOrDefault(a => a.id == winningTeam[i]);
                         if (winner != null)
+                        {
                             winner.win++;
-                        else winrateList.Add(new AxieWinrate(winningTeam[i], 1, 0));
+                            winner.battleHistory += "1";
+                        }
+                        else winrateList.Add(new AxieWinrate(winningTeam[i], 1, 0, "0x1"));
 
                         var loser = winrateList.FirstOrDefault(a => a.id == losingTeam[i]);
                         if (loser != null)
+                        {
                             loser.loss++;
-                        else winrateList.Add(new AxieWinrate(losingTeam[i], 0, 1));
-
+                            winner.battleHistory += "0";
+                        }
+                        else winrateList.Add(new AxieWinrate(losingTeam[i], 0, 1, "0x0"));
                     }
                 }
             }

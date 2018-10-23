@@ -66,7 +66,6 @@ namespace DiscordBot
             embed.AddInlineField("Title", title == null ? "None" : title);
             embed.AddInlineField("Exp", exp + $" | Pending exp : {pendingExp}");
             embed.AddInlineField("Level", level);
-            //embed.AddField("Owner", axieData.owner);
             embed.AddInlineField("HP", $" ({stats.hp})".PadLeft(5 + stats.hp / 2, '|'));
             embed.AddInlineField("Skill", $" ({stats.skill})".PadLeft(5 + stats.skill / 2, '|'));
             embed.AddInlineField("Speed", $" ({stats.speed})".PadLeft(5 + stats.speed / 2, '|'));
@@ -78,7 +77,6 @@ namespace DiscordBot
                 embed.AddInlineField("DPS Score", (int)Math.Floor(GetDPR() / GetMaxDPR() * 100));
                 embed.AddInlineField("Tank Score", GetTNKScore());
             }
-            //embed.AddField("Pureness", pureness);
             embed.WithThumbnailUrl(imageUrl);
             embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
             Color color = Color.Default;
@@ -205,7 +203,42 @@ namespace DiscordBot
             embed.WithColor(color);
             return embed;
         }
-
+        public EmbedBuilder EmbedWinrateRecent(AxieWinrate winRate, int historyLength)
+        {
+            var embed = new EmbedBuilder();
+            embed.WithTitle($"Axie #{id}");
+            var index = winRate.battleHistory.Length - 2 - historyLength;
+            if (index < 0) index = 0;
+            var history = winRate.battleHistory.Substring(2 + index);
+            var perfWinrate = (float)history.Count(c => c=='1') / (history.Count(c => c == '1') + history.Count(c => c == '0')) * 100;
+            embed.WithDescription((historyLength < 7? "Daily":"Weekly") + $" win rate: {perfWinrate}%");
+            embed.WithThumbnailUrl(GetImageUrl());
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
+            Color color = Color.Default;
+            switch (Class)
+            {
+                case "plant":
+                    color = Color.Green;
+                    break;
+                case "beast":
+                    color = Color.Gold;
+                    break;
+                case "aquatic":
+                    color = Color.Blue;
+                    break;
+                case "bug":
+                    color = Color.Red;
+                    break;
+                case "bird":
+                    color = Color.Magenta;
+                    break;
+                case "reptile":
+                    color = Color.DarkMagenta;
+                    break;
+            }
+            embed.WithColor(color);
+            return embed;
+        }
 
         public int GetPureness()
         {
