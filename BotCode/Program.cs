@@ -34,6 +34,7 @@ namespace DiscordBot
                     //var db = DatabaseConnection.GetDb();
                     //var collection = db.GetCollection<BsonDocument>("AxieWinrate");
                     //collection.UpdateMany(Builders<BsonDocument>.Filter.Empty, Builders<BsonDocument>.Update.Set("mysticCount", "0" ));
+                    //collection.UpdateMany(Builders<BsonDocument>.Filter.Empty, Builders<BsonDocument>.Update.Set("lastBattleDate", "0" ));
                     //var db = DatabaseConnection.GetDb();
                     //var collection = db.GetCollection<Peperoni>("test");
                     //List<int> list = new List<int>();

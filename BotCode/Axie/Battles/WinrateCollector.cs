@@ -86,7 +86,7 @@ namespace DiscordBot.Axie.Battles
                             winner.win++;
                             winner.battleHistory += "1";
                         }
-                        else winrateList.Add(new AxieWinrate(winningTeam[i], 1, 0, "0x1"));
+                        else winrateList.Add(new AxieWinrate(winningTeam[i], 1, 0, "0x1", 0));
 
                         var loser = winrateList.FirstOrDefault(a => a.id == losingTeam[i]);
                         if (loser != null)
@@ -94,7 +94,7 @@ namespace DiscordBot.Axie.Battles
                             loser.loss++;
                             loser.battleHistory += "0";
                         }
-                        else winrateList.Add(new AxieWinrate(losingTeam[i], 0, 1, "0x0"));
+                        else winrateList.Add(new AxieWinrate(losingTeam[i], 0, 1, "0x0", 0));
                     }
                 }
             }
@@ -229,7 +229,7 @@ namespace DiscordBot.Axie.Battles
                             winner.win++;
                             winner.battleHistory += "1";
                         }
-                        else winrateList.Add(new AxieWinrate(winningTeam[i], 1, 0, "0x1"));
+                        else winrateList.Add(new AxieWinrate(winningTeam[i], 1, 0, "0x1", lastUnixTimeCheck));
 
                         var loser = winrateList.FirstOrDefault(a => a.id == losingTeam[i]);
                         if (loser != null)
@@ -237,7 +237,7 @@ namespace DiscordBot.Axie.Battles
                             loser.loss++;
                             loser.battleHistory += "0";
                         }
-                        else winrateList.Add(new AxieWinrate(losingTeam[i], 0, 1, "0x0"));
+                        else winrateList.Add(new AxieWinrate(losingTeam[i], 0, 1, "0x0", lastUnixTimeCheck));
                     }
                 }
             }
@@ -263,7 +263,11 @@ namespace DiscordBot.Axie.Battles
                 {
                     var axieData = BsonSerializer.Deserialize<AxieWinrate>(doc);
                     axieData.AddLatestResults(axie);
-                    var update = Builders<BsonDocument>.Update.Set("win", axieData.win).Set("loss", axieData.loss).Set("winrate", axieData.winrate).Set("battleHistory", axieData.battleHistory);
+                    var update = Builders<BsonDocument>.Update
+                                                       .Set("win", axieData.win).Set("loss", axieData.loss)
+                                                       .Set("winrate", axieData.winrate)
+                                                       .Set("battleHistory", axieData.battleHistory)
+                                                       .Set("lastBattleDate", axieData.lastBattleDate);
                     collection.UpdateOne(filterId, update);
                 }
                 else collection.InsertOne(axie.ToBsonDocument());             
@@ -272,6 +276,35 @@ namespace DiscordBot.Axie.Battles
             {
                 tw.Write((lastBattle - 1).ToString());
             }
+        }
+    
+        public static EmbedBuilder GetTop10LeaderBoard(List<AxieWinrate> list, int mysticCount)
+        {
+            var embed = new EmbedBuilder();
+            string mult = "";
+            switch(mysticCount)
+            {
+                case 1:
+                    mult = "Single";
+                    break;
+                case 2:
+                    mult = "Double";
+                    break;
+                case 3:
+                    mult = "Triple";
+                    break;
+            }
+            embed.WithTitle(mult + " mystic leaderboard");
+            embed.WithDescription("Axies that haven't fought within the last 4 days will be removed from the leaderboard.");
+
+            for (int i = 0; i < 10; i++)
+            {
+                embed.AddField($"#{i + 1}", $"[Axie#{list[i].id}](https://axieinfinity.com/axie/{list[i].id}) . Total battles : {list[i].win + list[i].loss} | Win rate : {list[i].winrate}% ");
+            }
+
+            embed.WithColor(Color.Gold);
+            return embed;
+
         }
     }
 }

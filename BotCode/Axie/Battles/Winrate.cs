@@ -14,12 +14,16 @@ namespace DiscordBot.Axie.Battles
         public int loss;
         public float winrate;
         public string battleHistory;
-        public AxieWinrate(int _id, int _win, int _loss, string history)
+        public int mysticCount;
+        public int lastBattleDate;
+        public AxieWinrate(int _id, int _win, int _loss, string history, int date)
         {
             id = _id;
             win = _win;
             loss = _loss;
             battleHistory = history;
+            mysticCount = 0;
+            lastBattleDate = date;
         }
         public void GetWinrate()
         {
@@ -32,6 +36,7 @@ namespace DiscordBot.Axie.Battles
             loss += winrate.loss;
             GetWinrate();
             battleHistory += winrate.battleHistory.Substring(2);
+            lastBattleDate = winrate.lastBattleDate;
             TrimHistory();
         }
 

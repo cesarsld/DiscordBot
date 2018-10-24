@@ -482,9 +482,9 @@ namespace DiscordBot
 
         [Command("winrate"), Summary("GetAxieWinrate")]
         [Alias("wr")]
-        public async Task GetAxieWinrate(int id)
+        public async Task GetAxieWinrate(int id, int length = 0)
         {
-            if (IsArena(Context)||IsBotCommand(Context))
+            if (IsArena(Context) || IsBotCommand(Context))
             {
                 var db = DatabaseConnection.GetDb();
                 var collection = db.GetCollection<BsonDocument>("AxieWinrate");
@@ -493,10 +493,27 @@ namespace DiscordBot
                 var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
                 var axieData = await AxieData.GetAxieFromApi(id);
                 axieData.id = id;
-                await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
+                if (length < 42 && length > 0)
+                    await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length));
+                else
+                    await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
             }
         }
 
+        [Command("mysticleaderboard"), Summary("Get mystic winrate leaderboard")]
+        [Alias("mysticlb")]
+        public async Task GetMysticLeaderBoard(int mysticCount)
+        {
+            if (IsArena(Context) || IsBotCommand(Context))
+            {
+                var time = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
+                var db = DatabaseConnection.GetDb();
+                var collection = db.GetCollection<AxieWinrate>("AxieWinrate");
+                var dbList = await collection.FindAsync(a => a.mysticCount == mysticCount && time - a.lastBattleDate < 345600);
+                var axieList = dbList.ToList().OrderByDescending(a => a.winrate).ToList();
+                await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoard(axieList, mysticCount));
+            }
+        }
 
         [Command("lapseWr"), Summary("GetAxieWinrate on a lapse of battles")]
         public async Task GetDailylyWinrate(int id, int length = 42)
