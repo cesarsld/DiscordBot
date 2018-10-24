@@ -19,7 +19,7 @@ namespace DiscordBot.Axie
     }
     public class TaskHandler
     {
-        private static bool IsOn = true;
+        public static bool IsOn = false;
         public static readonly object SyncObj = new object();
         public static bool FetchingDataFromApi = false;
         private static Queue<Tuple<IUserMessage, string, TaskType>> taskList = new Queue<Tuple<IUserMessage, string, TaskType>>();

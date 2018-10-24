@@ -293,16 +293,21 @@ namespace DiscordBot.Axie.Battles
                 case 3:
                     mult = "Triple";
                     break;
+                case 4:
+                    mult = "Quad";
+                    break;
             }
             embed.WithTitle(mult + " mystic leaderboard");
             embed.WithDescription("Axies that haven't fought within the last 4 days will be removed from the leaderboard.");
-
-            for (int i = 0; i < 10; i++)
+            int size = 0;
+            if (mysticCount == 4) size = list.Count;
+            else size = 10;
+            for (int i = 0; i < size; i++)
             {
-                embed.AddField($"#{i + 1}", $"[Axie#{list[i].id}](https://axieinfinity.com/axie/{list[i].id}) . Total battles : {list[i].win + list[i].loss} | Win rate : {list[i].winrate}% ");
+                embed.AddField($"#{i + 1}", $" [Axie#{list[i].id}](https://axieinfinity.com/axie/{list[i].id})  Total battles : {list[i].win + list[i].loss} | Win rate : {list[i].winrate}% ");
             }
 
-            embed.WithColor(Color.Gold);
+            embed.WithColor(Color.DarkPurple);
             return embed;
 
         }

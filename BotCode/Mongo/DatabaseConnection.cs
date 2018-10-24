@@ -8,6 +8,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver.Linq;
+using DiscordBot.Axie.Battles;
 namespace DiscordBot.Mongo
 {
     class DatabaseConnection
@@ -34,5 +35,32 @@ namespace DiscordBot.Mongo
             }
             return AxieDatabase;
         }
+
+        public static async Task UpdateMystic()
+        {
+            var db = DatabaseConnection.GetDb();
+            var collection = db.GetCollection<AxieWinrate>("AxieWinrate");
+            var list = collection.Find(Builders<AxieWinrate>.Filter.Empty).ToList();
+            //collection.UpdateMany(Builders<BsonDocument>.Filter.Empty, Builders<BsonDocument>.Update.Set("mysticCount", 0 ));
+            //collection.UpdateMany(Builders<BsonDocument>.Filter.Empty, Builders<BsonDocument>.Update.Set("lastBattleDate", time ));
+            var perc = (float)list.Count / 100;
+            var currentPerc = 0;
+            var counter = 0;
+
+            foreach (var axie in list)
+            {
+                counter++;
+                if (counter > perc)
+                {
+                    counter = 0;
+                    currentPerc++;
+                    Console.WriteLine($"{currentPerc}%");
+                }
+                var apiData = await AxieData.GetAxieFromApi(axie.id);
+                axie.mysticCount = apiData.mysticCount;
+                collection.UpdateOne(a => a.id == axie.id, Builders<AxieWinrate>.Update.Set("mysticCount", axie.mysticCount));
+            }
+        }
+
     }
 }

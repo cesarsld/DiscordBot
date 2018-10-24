@@ -30,21 +30,8 @@ namespace DiscordBot
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
                     new Bot().RunAsync().GetAwaiter().GetResult();
+                    //DatabaseConnection.UpdateMystic().GetAwaiter().GetResult();
                     //WinrateCollector.GetAllData();
-                    //var db = DatabaseConnection.GetDb();
-                    //var collection = db.GetCollection<BsonDocument>("AxieWinrate");
-                    //collection.UpdateMany(Builders<BsonDocument>.Filter.Empty, Builders<BsonDocument>.Update.Set("mysticCount", "0" ));
-                    //collection.UpdateMany(Builders<BsonDocument>.Filter.Empty, Builders<BsonDocument>.Update.Set("lastBattleDate", "0" ));
-                    //var db = DatabaseConnection.GetDb();
-                    //var collection = db.GetCollection<Peperoni>("test");
-                    //List<int> list = new List<int>();
-                    //for (int i = 0; i < 6; i++)
-                    //    list.Add(i);
-                    //var option = new UpdateOptions();
-                    //option.IsUpsert = true;
-                    //collection.UpdateMany(ele => list.Contains(ele.id), Builders<Peperoni>.Update.Set("slice", "an OIU"), option);
-                    //var pizza = collection.Find(x => x.id == 150);
-
                     //var real = pizza.First();
                     //int e = 3 + 5;
 
@@ -64,8 +51,6 @@ namespace DiscordBot
         {
             RunBot();
         }
-
-
-
+   
     }
 }

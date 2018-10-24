@@ -25,6 +25,10 @@ namespace DiscordBot
     {
 
         #region Modifier methods
+        private bool IsDev(ICommandContext context)
+        {
+            return context.Message.Author.Id == 195567858133106697;
+        }
         private bool IsMarketPlace(ICommandContext context)
         {
             CommandContext ctxt = new CommandContext(context.Client, context.Message);
@@ -504,12 +508,12 @@ namespace DiscordBot
         [Alias("mysticlb")]
         public async Task GetMysticLeaderBoard(int mysticCount)
         {
-            if (IsArena(Context) || IsBotCommand(Context))
+            if (IsArena(Context) || IsBotCommand(Context)|| Context.Message.Author.Id == 195567858133106697)
             {
                 var time = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
                 var db = DatabaseConnection.GetDb();
                 var collection = db.GetCollection<AxieWinrate>("AxieWinrate");
-                var dbList = await collection.FindAsync(a => a.mysticCount == mysticCount && time - a.lastBattleDate < 345600);
+                var dbList = await collection.FindAsync(a => a.mysticCount == mysticCount && a.lastBattleDate > time - 345600);
                 var axieList = dbList.ToList().OrderByDescending(a => a.winrate).ToList();
                 await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoard(axieList, mysticCount));
             }
@@ -545,6 +549,33 @@ namespace DiscordBot
                 await Context.Message.AddReactionAsync(new Emoji("✅"));
             }
         }
+
+        [Command("startServices"), Summary("show you addresses")]
+        public async Task StartServices()
+        {
+            if (IsDev(Context))
+            {
+                if (!TaskHandler.IsOn)
+                {
+                    TaskHandler.IsOn = true;
+                    _ = TaskHandler.UpdateServiceCheckLoop();
+                    await Context.Message.AddReactionAsync(new Emoji("✅"));
+                }
+            }
+        }
+        [Command("stopServices"), Summary("show you addresses")]
+        public async Task StopServices()
+        {
+            if (IsDev(Context))
+            {
+                if (TaskHandler.IsOn)
+                {
+                    TaskHandler.IsOn = false;
+                    await Context.Message.AddReactionAsync(new Emoji("✅"));
+                }
+            }
+        }
+
 
         [Command("breedlist"), Summary("Returns best breed pairs for pure axie")]
         [Alias("bl")]
