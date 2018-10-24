@@ -499,7 +499,7 @@ namespace DiscordBot
 
 
         [Command("lapseWr"), Summary("GetAxieWinrate on a lapse of battles")]
-        public async Task GetDailylyWinrate(int id, int length)
+        public async Task GetDailylyWinrate(int id, int length = 42)
         {
             if (IsArena(Context) || IsBotCommand(Context))
             {

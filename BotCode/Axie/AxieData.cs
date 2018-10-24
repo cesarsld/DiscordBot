@@ -211,7 +211,7 @@ namespace DiscordBot
             if (index < 0) index = 0;
             var history = winRate.battleHistory.Substring(2 + index);
             var perfWinrate = (float)history.Count(c => c=='1') / (history.Count(c => c == '1') + history.Count(c => c == '0')) * 100;
-            embed.WithDescription((historyLength < 7? "Daily":"Weekly") + $" win rate: {perfWinrate}%");
+            embed.WithDescription($" win rate from the last {historyLength} battles: {perfWinrate}%");
             embed.WithThumbnailUrl(GetImageUrl());
             embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
             Color color = Color.Default;

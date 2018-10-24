@@ -27,7 +27,7 @@ namespace DiscordBot.Axie.Battles
         {
             Dictionary<int, Winrate> winrateData = new Dictionary<int, Winrate>();
             List<AxieWinrate> winrateList = new List<AxieWinrate>();
-            int battleCount = 28535;
+            int battleCount = 29950;
             int axieIndex = 0;
             int safetyNet = 0;
             int perc = battleCount / 100;
@@ -50,6 +50,7 @@ namespace DiscordBot.Axie.Battles
                     }
                     catch (Exception ex)
                     {
+                        Console.WriteLine(ex.Message);
                         safetyNet++;
                     }
                 }
@@ -91,7 +92,7 @@ namespace DiscordBot.Axie.Battles
                         if (loser != null)
                         {
                             loser.loss++;
-                            winner.battleHistory += "0";
+                            loser.battleHistory += "0";
                         }
                         else winrateList.Add(new AxieWinrate(losingTeam[i], 0, 1, "0x0"));
                     }
@@ -102,8 +103,18 @@ namespace DiscordBot.Axie.Battles
             foreach (var axie in winrateList) axie.GetWinrate();
             var db = DatabaseConnection.GetDb();
             var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+            float percDB = (float)winrateList.Count / 100f;
+            int counter = 0;
+            int currentperc = 0;
             foreach (var axie in winrateList)
             {
+                counter++;
+                if (counter > perc)
+                {
+                    currentperc++;
+                    counter = 0;
+                    Console.WriteLine($"{currentperc}%");
+                }
                 collection.InsertOne(axie.ToBsonDocument());
             }
         }
@@ -150,8 +161,7 @@ namespace DiscordBot.Axie.Battles
             string battleNumberPath = "AxieData/LastCheck.txt";
             int lastChecked = 0;
             int lastBattle = 0;
-            int total = lastBattle - lastChecked;
-            float perc = (float)total / 100;
+            
             int counter = 0;
             int currentperc = 0;
             using (System.Net.WebClient wc = new System.Net.WebClient())
@@ -163,7 +173,8 @@ namespace DiscordBot.Axie.Battles
                 lastChecked = Convert.ToInt32(sr.ReadToEnd());
             }
             List<AxieWinrate> winrateList = new List<AxieWinrate>();
-
+            int total = lastBattle - lastChecked;
+            float perc = (float)total / 100;
             while (lastChecked < lastBattle)
             {
                 lastChecked++;
@@ -171,13 +182,20 @@ namespace DiscordBot.Axie.Battles
                 if(counter > perc)
                 {
                     currentperc++;
-                    perc += perc;
+                    counter = 0;
                     Console.WriteLine($"{currentperc}%");
                 }
                 string json = null;
-                using (System.Net.WebClient wc = new System.Net.WebClient())
+                try
                 {
-                     json = wc.DownloadString("https://api.axieinfinity.com/v1/battle/history/matches/" + lastChecked.ToString());
+                    using (System.Net.WebClient wc = new System.Net.WebClient())
+                    {
+                        json = wc.DownloadString("https://api.axieinfinity.com/v1/battle/history/matches/" + lastChecked.ToString());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
                 }
                 if (json != null)
                 {
@@ -217,7 +235,7 @@ namespace DiscordBot.Axie.Battles
                         if (loser != null)
                         {
                             loser.loss++;
-                            winner.battleHistory += "0";
+                            loser.battleHistory += "0";
                         }
                         else winrateList.Add(new AxieWinrate(losingTeam[i], 0, 1, "0x0"));
                     }
@@ -236,7 +254,7 @@ namespace DiscordBot.Axie.Battles
                 if (counter > perc)
                 {
                     currentperc++;
-                    perc += perc;
+                    counter = 0;
                     Console.WriteLine($"{currentperc}%");
                 }
                 var filterId = Builders<BsonDocument>.Filter.Eq("_id", axie.id);
