@@ -45,5 +45,15 @@ namespace DiscordBot
             }
             else return "";
         }
+        public static void SetDBUrl(string url)
+        {
+            if (File.Exists(dbUrlPath))
+            {
+                using (StreamWriter sw = new StreamWriter(dbUrlPath))
+                {
+                    sw.Write(url);
+                }
+            }
+        }
     }
 }

@@ -30,12 +30,6 @@ namespace DiscordBot
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
                     new Bot().RunAsync().GetAwaiter().GetResult();
-                    //DatabaseConnection.UpdateMystic().GetAwaiter().GetResult();
-                    //WinrateCollector.GetAllData();
-                    //var real = pizza.First();
-                    //int e = 3 + 5;
-
-
                 }
                 catch (Exception ex)
                 {

@@ -20,10 +20,18 @@ namespace DiscordBot.Mongo
 
         public static void SetupConnection()
         {
-            var connectionString = DiscordKeyGetter.GetDBUrl(); ;
+            var connectionString = DiscordKeyGetter.GetDBUrl();
 
             Client = new MongoClient(connectionString);
             AxieDatabase = Client.GetDatabase("AxieData");
+        }
+
+        public static void UpdateIpAddress(string ip)
+        {
+            var connectionString = DiscordKeyGetter.GetDBUrl();
+            var newString = connectionString.Substring(0, 26);
+            newString += ip + ":27017";
+            
         }
 
         public static IMongoDatabase GetDb()

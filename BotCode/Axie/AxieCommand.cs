@@ -563,6 +563,18 @@ namespace DiscordBot
                 }
             }
         }
+
+        [Command("updatedb"), Summary("show you addresses")]
+        public async Task StopServices(string ip)
+        {
+            if (IsDev(Context))
+            {
+                DatabaseConnection.UpdateIpAddress(ip);
+                DatabaseConnection.SetupConnection();
+                await Context.Message.AddReactionAsync(new Emoji("✅"));
+            }
+        }
+
         [Command("stopServices"), Summary("show you addresses")]
         public async Task StopServices()
         {
