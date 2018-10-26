@@ -140,10 +140,25 @@ namespace DiscordBot
         }
         public EmbedBuilder EmbedQQData(bool expAllowed)
         {
+            string json = "";
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                try
+                {
+                    json = wc.DownloadString("https://axieinfinity.com/api/axies/" + id.ToString()); //https://axieinfinity.com/api/axies/
+                }
+
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    return;
+                }
+            }
+            JObject axieJson = JObject.Parse(json);
             var embed = new EmbedBuilder();
             embed.WithTitle($"Axie #{id}");
             if (expAllowed)
-                embed.WithDescription($"Exp : {exp} | Pending exp : {pendingExp}");
+                embed.WithDescription($"Exp : " + axieJson["exp"] + $" | Pending exp : {pendingExp}");
             embed.WithThumbnailUrl(GetImageUrl());
             embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
             Color color = Color.Default;

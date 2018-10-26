@@ -21,6 +21,9 @@ namespace DiscordBot.Axie.Battles
 {
     class WinrateCollector
     {
+        public static bool IsDbSyncing = false;
+        public static int apiPerc = 0;
+        public static int dbPerc = 0;
         public static int lastUnixTimeCheck = 0;
         public static readonly int unixTimeBetweenUpdates = 21600;
         public static void GetAllData()
@@ -152,6 +155,7 @@ namespace DiscordBot.Axie.Battles
         }
         public static async Task GetDataSinceLastChack()
         {
+            IsDbSyncing = true;
             lastUnixTimeCheck = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
             using (var tw = new StreamWriter("AxieData/LastTimeCheck.txt"))
             {
@@ -161,9 +165,8 @@ namespace DiscordBot.Axie.Battles
             string battleNumberPath = "AxieData/LastCheck.txt";
             int lastChecked = 0;
             int lastBattle = 0;
-            
+            apiPerc = 0;
             int counter = 0;
-            int currentperc = 0;
             using (System.Net.WebClient wc = new System.Net.WebClient())
             {
                 lastBattle = Convert.ToInt32((await wc.DownloadStringTaskAsync(dataCountUrl)));
@@ -181,9 +184,9 @@ namespace DiscordBot.Axie.Battles
                 counter++;
                 if(counter > perc)
                 {
-                    currentperc++;
+                    apiPerc++;
                     counter = 0;
-                    Console.WriteLine($"{currentperc}%");
+                    Console.WriteLine($"{apiPerc}%");
                 }
                 string json = null;
                 try
@@ -245,7 +248,7 @@ namespace DiscordBot.Axie.Battles
             var db = DatabaseConnection.GetDb();
             var collection = db.GetCollection<BsonDocument>("AxieWinrate");
             Console.WriteLine("Initialising DB write phase");
-            currentperc = 0;
+            dbPerc = 0;
             perc = (float)winrateList.Count / 100;
             counter = 0;
             foreach (var axie in winrateList)
@@ -253,9 +256,9 @@ namespace DiscordBot.Axie.Battles
                 counter++;
                 if (counter > perc)
                 {
-                    currentperc++;
+                    dbPerc++;
                     counter = 0;
-                    Console.WriteLine($"{currentperc}%");
+                    Console.WriteLine($"{dbPerc}%");
                 }
                 var filterId = Builders<BsonDocument>.Filter.Eq("_id", axie.id);
                 var doc = collection.Find(filterId).FirstOrDefault();
@@ -276,6 +279,7 @@ namespace DiscordBot.Axie.Battles
             {
                 tw.Write((lastBattle - 1).ToString());
             }
+            IsDbSyncing = false;
         }
     
         public static EmbedBuilder GetTop10LeaderBoard(List<AxieWinrate> list, int mysticCount)
