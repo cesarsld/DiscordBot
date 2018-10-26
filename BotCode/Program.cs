@@ -3,8 +3,9 @@ using System.Threading;
 using Discord;
 using MongoDB.Bson;
 using DiscordBot.Mongo;
+using DiscordBot.Axie.ApiCalls;
 using MongoDB.Driver;
-using DiscordBot.Axie.Battles;
+using DiscordBot.Axie;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -29,6 +30,7 @@ namespace DiscordBot
                 try
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
+                    //StatDataHandler.GetTraitMapping("Zigzag");
                     new Bot().RunAsync().GetAwaiter().GetResult();
                 }
                 catch (Exception ex)

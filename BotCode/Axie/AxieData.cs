@@ -10,7 +10,7 @@ using System.Numerics;
 
 namespace DiscordBot
 {
-    public class AxieData
+    public class AxieObject
     {
         public int id;
         public string name;
@@ -151,7 +151,6 @@ namespace DiscordBot
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.ToString());
-                    return;
                 }
             }
             JObject axieJson = JObject.Parse(json);
@@ -311,7 +310,7 @@ namespace DiscordBot
                 return "";
             }
         }
-        public static async Task<AxieData> GetAxieFromApi(int axieId)
+        public static async Task<AxieObject> GetAxieFromApi(int axieId)
         {
             string json = "";
             int downloadTries = 0;
@@ -348,7 +347,7 @@ namespace DiscordBot
                 }
             }
             JObject axieJson = JObject.Parse(json);
-            AxieData axieData = axieJson.ToObject<AxieData>();
+            AxieObject axieData = axieJson.ToObject<AxieObject>();
             axieData.jsonData = axieJson;
             return axieData;
         }
@@ -480,7 +479,7 @@ namespace DiscordBot
                 return "";
             }
         }
-        public static async Task<AxieData> GetAxieFromApi(int axieId)
+        public static async Task<AxieObject> GetAxieFromApi(int axieId)
         {
             string json = "";
             int downloadTries = 0;
@@ -517,7 +516,7 @@ namespace DiscordBot
                 }
             }
             JObject axieJson = JObject.Parse(json);
-            AxieData axieData = axieJson.ToObject<AxieData>();
+            AxieObject axieData = axieJson.ToObject<AxieObject>();
             axieData.jsonData = axieJson;
             return axieData;
         }

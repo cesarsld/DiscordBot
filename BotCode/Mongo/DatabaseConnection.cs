@@ -64,7 +64,7 @@ namespace DiscordBot.Mongo
                     currentPerc++;
                     Console.WriteLine($"{currentPerc}%");
                 }
-                var apiData = await AxieData.GetAxieFromApi(axie.id);
+                var apiData = await AxieObject.GetAxieFromApi(axie.id);
                 axie.mysticCount = apiData.mysticCount;
                 collection.UpdateOne(a => a.id == axie.id, Builders<AxieWinrate>.Update.Set("mysticCount", axie.mysticCount));
             }

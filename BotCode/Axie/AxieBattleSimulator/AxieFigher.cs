@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using DiscordBot.Axie;
 namespace DiscordBot.Axie.AxieBattleSimulator
 {
-    public class AxieFigher : AxieData
+    public class AxieFigher : AxieObject
     {
         private int currentHp;
         private Dictionary<int, string> skillOrder;

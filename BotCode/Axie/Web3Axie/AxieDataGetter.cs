@@ -1253,7 +1253,7 @@ namespace DiscordBot.Axie.Web3Axie
 
                         foreach (var log in auctionCreationLogs)
                         {
-                            var axie = await AxieData.GetAxieFromApi(Convert.ToInt32(log.Event.tokenId.ToString()));
+                            var axie = await AxieObject.GetAxieFromApi(Convert.ToInt32(log.Event.tokenId.ToString()));
                             var price = log.Event.startingPrice;
                             await axie.GetTrueAuctionData();
                             _ = CheckForAuctionFilters(axie, price);
@@ -1313,7 +1313,7 @@ namespace DiscordBot.Axie.Web3Axie
         {
             SocketChannel channel = Bot.GetChannelContext(marketPlaceChannelId);  //479664564061995019
             IMessageChannel msgChannel = channel as IMessageChannel;
-            var axieData = await AxieData.GetAxieFromApi(index);
+            var axieData = await AxieObject.GetAxieFromApi(index);
             if (price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
 
         }
@@ -1373,7 +1373,7 @@ namespace DiscordBot.Axie.Web3Axie
             }
         }
 
-        private static async Task CheckForAuctionFilters(AxieData axie, BigInteger price)
+        private static async Task CheckForAuctionFilters(AxieObject axie, BigInteger price)
         {
             var subList = await SubscriptionServicesHandler.GetSubList();
             foreach (var user in subList)

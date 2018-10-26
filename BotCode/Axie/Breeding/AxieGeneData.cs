@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-namespace DiscordBot
+using DiscordBot.Axie.ApiCalls;
+namespace DiscordBot.Axie.Breeding
 { 
     public class AxieGeneData
     {
@@ -55,6 +55,19 @@ namespace DiscordBot
             probability += TraitData[index].R1Class == desiredClass ? 0.09375f : 0;      //0.11
             probability += TraitData[index].R2Class == desiredClass ? 0.03125f : 0;      //0.04 from freak  234375f weird from trung
             return probability;
+        }
+
+        public bool ContainsTrait(TraitMap traitMap)
+        {
+            var group = genome[traitMap.partGroup];
+            for (int i = 0; i < 3; i++)
+            {
+                if (traitMap.classCode == group.Substring(2 + i * 10, 4) &&
+                    traitMap.traitCode == group.Substring(6 + i * 10, 5))
+                    return true;
+
+            }
+            return false;
         }
     }
 

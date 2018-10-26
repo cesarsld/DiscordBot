@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver.Linq;
-using DiscordBot.Axie;
+using DiscordBot.Axie.ApiCalls;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -124,7 +124,7 @@ namespace DiscordBot.Axie.Battles
 
         public static async Task FetchDataFromAddress(string address, IUserMessage message)
         {
-            var listFromApi = await CollectionStatDataHandler.GetAxieListFromAddress(address);
+            var listFromApi = await StatDataHandler.GetAxieListFromAddress(address);
             var db = DatabaseConnection.GetDb();
             var collection = db.GetCollection<BsonDocument>("AxieWinrate");
             string winrateAddressPath = "WinrateFromAddress.txt";
@@ -245,6 +245,7 @@ namespace DiscordBot.Axie.Battles
                 }
             }
             foreach (var axie in winrateList) axie.GetWinrate();
+            apiPerc = 100;
             var db = DatabaseConnection.GetDb();
             var collection = db.GetCollection<BsonDocument>("AxieWinrate");
             Console.WriteLine("Initialising DB write phase");
@@ -304,7 +305,7 @@ namespace DiscordBot.Axie.Battles
             embed.WithTitle(mult + " mystic leaderboard");
             embed.WithDescription("Axies that haven't fought within the last 4 days will be removed from the leaderboard.");
             int size = 0;
-            if (mysticCount == 4) size = list.Count;
+            if (list.Count < 10) size = list.Count;
             else size = 10;
             for (int i = 0; i < size; i++)
             {

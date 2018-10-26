@@ -4,31 +4,34 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Numerics;
+using DiscordBot.Axie.Breeding;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Discord.Commands;
 using Discord;
 using DiscordBot.Axie.Battles;
 using DiscordBot.Axie.SubscriptionServices;
+using DiscordBot.Axie.ApiCalls;
 namespace DiscordBot.Axie
 {
     public enum TaskType
     {
         BreedQuery,
-        WinrateQuery
+        WinrateQuery,
+        TraitQuery
     }
     public class TaskHandler
     {
         public static bool IsOn = false;
         public static readonly object SyncObj = new object();
         public static bool FetchingDataFromApi = false;
-        private static Queue<Tuple<IUserMessage, string, TaskType>> taskList = new Queue<Tuple<IUserMessage, string, TaskType>>();
+        private static Queue<Tuple<IUserMessage, string, TaskType, object>> taskList = new Queue<Tuple<IUserMessage, string, TaskType, object>>();
 
         public static async Task RunTasks()
         {
             while (taskList.Count != 0)
             {
-                Tuple<IUserMessage, string, TaskType> query;
+                Tuple<IUserMessage, string, TaskType, object> query;
                 lock (SyncObj)
                 {
                     query = taskList.Dequeue();
@@ -41,18 +44,21 @@ namespace DiscordBot.Axie
                     case TaskType.WinrateQuery:
                         await WinrateCollector.FetchDataFromAddress(query.Item2, query.Item1);
                         break;
+                    case TaskType.TraitQuery:
+                        await StatDataHandler.GetAxiesWithTraits(query.Item4 as string, query.Item2, query.Item1);
+                        break;
                 }
 
             }
             FetchingDataFromApi = false;
         }
 
-        public static async Task AddTask(ICommandContext context, string address, TaskType taskType)
+        public static async Task AddTask(ICommandContext context, string address, TaskType taskType, object obj)
         {
             var message = await context.Message.Author.SendMessageAsync($"Added to task queue at position #{taskList.Count + 1}. Please wait.");
             lock (SyncObj)
             {
-                taskList.Enqueue(new Tuple<IUserMessage, string, TaskType>(message, address, taskType));
+                taskList.Enqueue(new Tuple<IUserMessage, string, TaskType, object>(message, address, taskType, obj));
             }
         }
 
@@ -70,18 +76,6 @@ namespace DiscordBot.Axie
 
                 foreach (var sub in subList)
                 {
-                    //Axie lab service check
-                    //var axieLabSub = sub.GetServiceList().FirstOrDefault(service => service.name == ServiceEnum.AxieLab) as AxieLabService;
-                    //if (axieLabSub != null)
-                    //{
-                    //    if (axieLabSub.GetPrice() >= eggLabPrice)
-                    //    {
-                    //        hasTriggered = true;
-                    //        _ = Bot.GetUser(sub.GetId()).SendMessageAsync("", false, axieLabSub.GetTriggerEmbedMessage());
-                    //        axieLabSub.SetPrice(0);
-                    //    }
-                    //}
-                    //MarketPlace trigger check
                     var marketplaceSub = sub.GetServiceList().FirstOrDefault(service => service.name == ServiceEnum.MarketPlace) as MarketplaceService;
                     if (marketplaceSub != null)
                     {

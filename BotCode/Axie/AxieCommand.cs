@@ -8,6 +8,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.AxieRace;
 using DiscordBot.Axie;
+using DiscordBot.Axie.Breeding;
 using DiscordBot.Axie.SubscriptionServices.PremiumServices;
 using DiscordBot.Axie.QoLListHandler;
 using DiscordBot.Axie.SubscriptionServices;
@@ -125,6 +126,7 @@ namespace DiscordBot
                                                      + "- `>axie qolhelp/qhelp` : Show QoL list help.\n"
                                                      + "- `>axie dbhelp` : Show database list help.\n"
                                                      + "- `>axie breedList 0xADRE55` : Returns a list of the best axie pairs to breed to obtain a pure axie.\n"
+                                                     + "- `>axie traitList/tl 0xADRE55 trait` : Returns a list of the axies that contains that trait within their genes.\n"
                                                      + "NOTE : You may use the prefix `>a` instead of >axie");
         }
 
@@ -225,7 +227,7 @@ namespace DiscordBot
         {
             if (IsMarketPlace(Context) || IsBotCommand(Context))
             {
-                var axieData = await AxieData.GetAxieFromApi(axieNumber);
+                var axieData = await AxieObject.GetAxieFromApi(axieNumber);
                 string owner = (string)axieData.jsonData["owner"];
                 int axieId = (int)axieData.jsonData["id"];
                 await AxieHolderListHandler.AddNonBuyableAxie(axieId, Context.Message.Author.Id, owner, Context);
@@ -237,7 +239,7 @@ namespace DiscordBot
         {
             if (IsMarketPlace(Context) || IsBotCommand(Context))
             {
-                var axieData = await AxieData.GetAxieFromApi(axieNumber);
+                var axieData = await AxieObject.GetAxieFromApi(axieNumber);
                 string owner = (string)axieData.jsonData["owner"];
                 int axieId = (int)axieData.jsonData["id"];
                 await AxieHolderListHandler.RemoveNonBuyableAxie(axieId, Context.Message.Author.Id, owner, Context);
@@ -256,7 +258,7 @@ namespace DiscordBot
         {
             if (IsMarketPlace(Context) || IsBotCommand(Context))
             {
-                var axieData = await AxieData.GetAxieFromApi(axieNumber);
+                var axieData = await AxieObject.GetAxieFromApi(axieNumber);
                 string owner = (string)axieData.jsonData["owner"];
                 int axieId = (int)axieData.jsonData["id"];
                 await AxieHolderListHandler.GetHolderId(owner, axieId, Context);
@@ -275,7 +277,7 @@ namespace DiscordBot
         {
             if (IsBotCommand(Context))
             {
-                AxieData axieData = await AxieData.GetAxieFromApi(index);
+                AxieObject axieData = await AxieObject.GetAxieFromApi(index);
                 axieData.id = index;
 
                 if (axieData.stage <= 2) await Context.Channel.SendMessageAsync("Axie is still an egg! I can't check what it's going to be >:O ");
@@ -289,7 +291,7 @@ namespace DiscordBot
         {
             if (IsArena(Context) || IsBotCommand(Context))
             {
-                AxieData data = await AxieData.GetAxieFromApi(index);
+                AxieObject data = await AxieObject.GetAxieFromApi(index);
                 data.id = index;
                 await Context.Channel.SendMessageAsync("", false, data.EmbedQQData(true));
 
@@ -302,7 +304,7 @@ namespace DiscordBot
         {
             if (IsGeneral(Context) || IsBotCommand(Context))
             {
-                AxieData data = await AxieData.GetAxieFromApi(index);
+                AxieObject data = await AxieObject.GetAxieFromApi(index);
                 data.id = index;
                 await Context.Channel.SendMessageAsync("", false, data.EmbedQQData(false));
 
@@ -317,8 +319,8 @@ namespace DiscordBot
             if (IsBotCommand(Context))
             {
                 //string url = isBeta == "beta" ? "http://beta.axieinfinity.com/api/axies/" : "https://axieinfinity.com/api/axies/";
-                var axieData1 = await AxieData.GetAxieFromApi(axie1);
-                var axieData2 = await AxieData.GetAxieFromApi(axie2);
+                var axieData1 = await AxieObject.GetAxieFromApi(axie1);
+                var axieData2 = await AxieObject.GetAxieFromApi(axie2);
 
                 string genes1 = (string)axieData1.jsonData["genes"];
                 string genes2 = (string)axieData2.jsonData["genes"];
@@ -426,7 +428,7 @@ namespace DiscordBot
             var auctionService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.AuctionWatch) as AuctionWatchService;
             foreach (var filter in auctionService.GetList())
             {
-                if (filter.Match(await AxieData.GetAxieFromApi(axieId), 50))
+                if (filter.Match(await AxieObject.GetAxieFromApi(axieId), 50))
                 {
                     await Context.Channel.SendMessageAsync("", embed: await filter.GetTriggerMessage(axieId));
                 }
@@ -497,14 +499,14 @@ namespace DiscordBot
                     var filterId = Builders<BsonDocument>.Filter.Eq("_id", id);
                     var doc = (await collection.FindAsync(filterId)).FirstOrDefault();
                     var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
-                    var axieData = await AxieData.GetAxieFromApi(id);
+                    var axieData = await AxieObject.GetAxieFromApi(id);
                     axieData.id = id;
                     if (length < 42 && length > 0)
                         await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length));
                     else
                         await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
                 }
-                else await Context.Channel.SendMessageAsync("The battle database is currently being updated. Please try again later. Data fetched from API : {} | Data synced to DB : {}");
+                else await Context.Channel.SendMessageAsync($"The battle database is currently being updated. Please try again later. \nData fetched from API : **{WinrateCollector.apiPerc}%**  \nData synced to DB : **{WinrateCollector.dbPerc}%**");
             }
         }
 
@@ -523,7 +525,7 @@ namespace DiscordBot
                     var axieList = dbList.ToList().Where(a => (a.win + a.loss) >= 100).OrderByDescending(a => a.winrate).ToList();
                     await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoard(axieList, mysticCount));
                 }
-                else await Context.Channel.SendMessageAsync($"The battle database is currently being updated. Please try again later. Data fetched from API : {WinrateCollector.apiPerc}$ | Data synced to DB : {WinrateCollector.dbPerc}%");
+                else await Context.Channel.SendMessageAsync($"The battle database is currently being updated. Please try again later. \nData fetched from API : **{WinrateCollector.apiPerc}%** \nData synced to DB : **{WinrateCollector.dbPerc}%**");
             }
         }
 
@@ -537,7 +539,7 @@ namespace DiscordBot
                 var filterId = Builders<BsonDocument>.Filter.Eq("_id", id);
                 var doc = (await collection.FindAsync(filterId)).FirstOrDefault();
                 var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
-                var axieData = await AxieData.GetAxieFromApi(id);
+                var axieData = await AxieObject.GetAxieFromApi(id);
                 axieData.id = id;
                 if (length > 42) length = 42;
                 if (length < 1) length = 1;
@@ -602,7 +604,20 @@ namespace DiscordBot
         [Alias("bl")]
         public async Task GetBreedList(string address)
         {
-            await TaskHandler.AddTask(Context, address, TaskType.BreedQuery);
+            await TaskHandler.AddTask(Context, address, TaskType.BreedQuery, null);
+            await Context.Message.AddReactionAsync(new Emoji("✅"));
+            if (!TaskHandler.FetchingDataFromApi)
+            {
+                TaskHandler.FetchingDataFromApi = true;
+                _ = TaskHandler.RunTasks();
+            }
+        }
+
+        [Command("traitList"), Summary("Returns best breed pairs for pure axie")]
+        [Alias("tl")]
+        public async Task GetBreedList(string address, [Remainder]string trait)
+        {
+            await TaskHandler.AddTask(Context, address, TaskType.TraitQuery, trait);
             await Context.Message.AddReactionAsync(new Emoji("✅"));
             if (!TaskHandler.FetchingDataFromApi)
             {
@@ -615,7 +630,7 @@ namespace DiscordBot
         [Alias("winlist")]
         public async Task GetWinrateList(string address)
         {
-            await TaskHandler.AddTask(Context, address, TaskType.WinrateQuery);
+            await TaskHandler.AddTask(Context, address, TaskType.WinrateQuery, null);
             await Context.Message.AddReactionAsync(new Emoji("✅"));
             if (!TaskHandler.FetchingDataFromApi)
             {

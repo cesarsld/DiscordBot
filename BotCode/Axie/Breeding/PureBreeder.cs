@@ -8,7 +8,8 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Discord.Commands;
 using Discord;
-namespace DiscordBot.Axie
+using DiscordBot.Axie.ApiCalls;
+namespace DiscordBot.Axie.Breeding
 {
     class PureBreeder
     {
@@ -28,7 +29,7 @@ namespace DiscordBot.Axie
 
         public static async Task GetPureBreedingChancesFromAddress(string address, IUserMessage message)
         {
-            var listFromApi = await CollectionStatDataHandler.GetAxieListFromAddress(address);
+            var listFromApi = await StatDataHandler.GetAxieListFromAddress(address);
 
 
             var predisposedAxieList = new Dictionary<int, AxieDataOld>();
@@ -149,7 +150,7 @@ namespace DiscordBot.Axie
 
             return base2.ToString();
         }
-        private static string[] GetSubGroups(string gene)
+        public static string[] GetSubGroups(string gene)
         {
             string[] geneArray = new string[8];
             int stringIndex = 0;
