@@ -488,19 +488,23 @@ namespace DiscordBot
         [Alias("wr")]
         public async Task GetAxieWinrate(int id, int length = 0)
         {
-            if (IsArena(Context) || IsBotCommand(Context))
+            if (IsArena(Context) || IsBotCommand(Context) )
             {
-                var db = DatabaseConnection.GetDb();
-                var collection = db.GetCollection<BsonDocument>("AxieWinrate");
-                var filterId = Builders<BsonDocument>.Filter.Eq("_id", id);
-                var doc = (await collection.FindAsync(filterId)).FirstOrDefault();
-                var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
-                var axieData = await AxieData.GetAxieFromApi(id);
-                axieData.id = id;
-                if (length < 42 && length > 0)
-                    await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length));
-                else
-                    await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
+                if (!WinrateCollector.IsDbSyncing)
+                {
+                    var db = DatabaseConnection.GetDb();
+                    var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+                    var filterId = Builders<BsonDocument>.Filter.Eq("_id", id);
+                    var doc = (await collection.FindAsync(filterId)).FirstOrDefault();
+                    var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
+                    var axieData = await AxieData.GetAxieFromApi(id);
+                    axieData.id = id;
+                    if (length < 42 && length > 0)
+                        await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length));
+                    else
+                        await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
+                }
+                else await Context.Channel.SendMessageAsync("The battle database is currently being updated. Please try again later. Data fetched from API : {} | Data synced to DB : {}");
             }
         }
 
@@ -510,12 +514,16 @@ namespace DiscordBot
         {
             if (IsArena(Context) || IsBotCommand(Context)|| Context.Message.Author.Id == 195567858133106697)
             {
-                var time = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
-                var db = DatabaseConnection.GetDb();
-                var collection = db.GetCollection<AxieWinrate>("AxieWinrate");
-                var dbList = await collection.FindAsync(a => a.mysticCount == mysticCount && a.lastBattleDate > time - 345600);
-                var axieList = dbList.ToList().OrderByDescending(a => a.winrate).ToList();
-                await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoard(axieList, mysticCount));
+                if (!WinrateCollector.IsDbSyncing)
+                {
+                    var time = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
+                    var db = DatabaseConnection.GetDb();
+                    var collection = db.GetCollection<AxieWinrate>("AxieWinrate");
+                    var dbList = await collection.FindAsync(a => a.mysticCount == mysticCount && a.lastBattleDate > time - 345600);
+                    var axieList = dbList.ToList().Where(a => (a.win + a.loss) >= 100).OrderByDescending(a => a.winrate).ToList();
+                    await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoard(axieList, mysticCount));
+                }
+                else await Context.Channel.SendMessageAsync($"The battle database is currently being updated. Please try again later. Data fetched from API : {WinrateCollector.apiPerc}$ | Data synced to DB : {WinrateCollector.dbPerc}%");
             }
         }
 
@@ -534,6 +542,7 @@ namespace DiscordBot
                 if (length > 42) length = 42;
                 if (length < 1) length = 1;
                 await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length));
+
             }
         }
 
