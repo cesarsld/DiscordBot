@@ -268,6 +268,62 @@ namespace DiscordBot.Axie.ApiCalls
             return axieList;
         }
 
+        public static async Task<List<AxieTeam>> GetTeamListFromAddress(string address)
+        {
+            var teamList = new List<AxieTeam>();
+            bool dataAvailable = true;
+            bool setupDone = false;
+            int pages = 9999;
+            int axieIndex = 0;
+            int safetyNet = 0;
+
+            while (axieIndex < pages && dataAvailable)
+            {
+                Console.WriteLine($"Page {axieIndex + 1} out of {pages}");
+                string json = null;
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    try
+                    {
+                        json = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/battle/teams/?address=" + address + "&offset=" + (10 * axieIndex).ToString() + "&count=10");
+                        safetyNet = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        safetyNet++;
+                        if (safetyNet > 25) axieIndex++;
+                        axieIndex--;
+                    }
+                }
+                axieIndex++;
+                if (json != null)
+                {
+                    JObject teamJson = JObject.Parse(json);
+                    if (!setupDone)
+                    {
+                        int axieTeams = (int)teamJson["total"];
+                        int remainder = axieTeams % 10;
+                        if (remainder == 0) pages = axieTeams / 10;
+                        else pages = axieTeams / 10 + 1;
+                        setupDone = true;
+                    }
+                    foreach (var team in teamJson["teams"])
+                    {
+                        AxieTeam axieTeam = new AxieTeam();
+                        
+                        axieTeam.name = (string)team["name"];
+                        for (int i = 0; i < 3; i++)
+                        {
+                            axieTeam.teamMembers[i].id = (int)team["teamMembers"][i]["axieId"];
+                        }
+                        teamList.Add(axieTeam);
+                    }
+                }
+
+            }
+            return teamList;
+        }
+
         public static async Task GetAxiesWithTraits(string trait, string address, IUserMessage message)
         {
             var axieList = await GetAxieListFromAddress(address);

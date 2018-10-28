@@ -15,10 +15,12 @@ using System.IO;
 using DiscordBot.Mongo;
 using System.Text;
 using MongoDB.Driver.Core;
-
+using System.Data;
 
 namespace DiscordBot.Axie.Battles
 {
+    //https://api.axieinfinity.com/v1/battle/teams/?address=0x4ce15b37851a4448a28899062906a02e51dee267&offset=0&count=10
+
     class WinrateCollector
     {
         public static bool IsDbSyncing = false;
@@ -122,6 +124,42 @@ namespace DiscordBot.Axie.Battles
             }
         }
 
+        public static DataTable jsonStringToTable(string jsonContent)
+        {
+            DataTable dt = JsonConvert.DeserializeObject<DataTable>(jsonContent);
+            return dt;
+        }
+        //public static string jsonToCsv(string jsonContent, string delimiter)
+        //{
+        //    StringWriter csvString = new StringWriter();
+        //    //using (var csv = new CsvWriter(csvString))
+        //    //{
+            
+        //        csv.Configuration.SkipEmptyRecords = true;
+        //        csv.Configuration.WillThrowOnMissingField = false;
+        //        csv.Configuration.Delimiter = delimiter;
+
+        //        using (var dt = jsonStringToTable(jsonContent))
+        //        {
+        //            foreach (DataColumn column in dt.Columns)
+        //            {
+        //                csv.WriteField(column.ColumnName);
+        //            }
+        //            csv.NextRecord();
+
+        //            foreach (DataRow row in dt.Rows)
+        //            {
+        //                for (var i = 0; i < dt.Columns.Count; i++)
+        //                {
+        //                    csv.WriteField(row[i]);
+        //                }
+        //                csv.NextRecord();
+        //            }
+        //        }
+        //    //}
+        //    return csvString.ToString();
+        //}
+
         public static async Task FetchDataFromAddress(string address, IUserMessage message)
         {
             var listFromApi = await StatDataHandler.GetAxieListFromAddress(address);
@@ -139,10 +177,37 @@ namespace DiscordBot.Axie.Battles
                 }
             }
             winrateList = winrateList.OrderBy(ax => ax.id).ToList();
-            string winrateData = JsonConvert.SerializeObject(winrateList, Formatting.Indented);  
+            string winrateData = JsonConvert.SerializeObject(winrateList, Formatting.Indented);
+            //var dddd = CsvSerializer.SerializeToCsv<AxieWinrate>(winrateList);
+            //var euh = winrateList.tocs
             using (var tw = new StreamWriter(winrateAddressPath))
             {
                 await tw.WriteAsync(winrateData);
+            }
+            await message.Channel.SendFileAsync(winrateAddressPath);
+        }
+        public static async Task FetchTeamDataFromAddress(string address, IUserMessage message)
+        {
+            var teamList = await StatDataHandler.GetTeamListFromAddress(address);
+            var db = DatabaseConnection.GetDb();
+            var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+            string winrateAddressPath = "TeamWinrateFromAddress.txt";
+            foreach (var team in teamList)
+            {
+                for(int i = 0; i < 3; i++)
+                {
+                    var filterId = Builders<BsonDocument>.Filter.Eq("_id", team.teamMembers[i].id);
+                    var doc = collection.Find(filterId).FirstOrDefault();
+                    if (doc != null)
+                    {
+                        team.teamMembers[i] = BsonSerializer.Deserialize<AxieWinrate>(doc);
+                    }
+                }
+            }
+            string teamData = JsonConvert.SerializeObject(teamList, Formatting.Indented);
+            using (var tw = new StreamWriter(winrateAddressPath))
+            {
+                await tw.WriteAsync(teamData);
             }
             await message.Channel.SendFileAsync(winrateAddressPath);
         }
@@ -268,7 +333,8 @@ namespace DiscordBot.Axie.Battles
                     var axieData = BsonSerializer.Deserialize<AxieWinrate>(doc);
                     axieData.AddLatestResults(axie);
                     var update = Builders<BsonDocument>.Update
-                                                       .Set("win", axieData.win).Set("loss", axieData.loss)
+                                                       .Set("win", axieData.win)
+                                                       .Set("loss", axieData.loss)
                                                        .Set("winrate", axieData.winrate)
                                                        .Set("battleHistory", axieData.battleHistory)
                                                        .Set("lastBattleDate", axieData.lastBattleDate);

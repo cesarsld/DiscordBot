@@ -127,6 +127,7 @@ namespace DiscordBot
                                                      + "- `>axie dbhelp` : Show database list help.\n"
                                                      + "- `>axie breedList 0xADRE55` : Returns a list of the best axie pairs to breed to obtain a pure axie.\n"
                                                      + "- `>axie traitList/tl 0xADRE55 trait` : Returns a list of the axies that contains that trait within their genes.\n"
+                                                     + "- `>axie TeamList/teamL 0xADRE55` : Returns a list of winrates of each team of an address.\n"
                                                      + "NOTE : You may use the prefix `>a` instead of >axie");
         }
 
@@ -631,6 +632,19 @@ namespace DiscordBot
         public async Task GetWinrateList(string address)
         {
             await TaskHandler.AddTask(Context, address, TaskType.WinrateQuery, null);
+            await Context.Message.AddReactionAsync(new Emoji("✅"));
+            if (!TaskHandler.FetchingDataFromApi)
+            {
+                TaskHandler.FetchingDataFromApi = true;
+                _ = TaskHandler.RunTasks();
+            }
+        }
+
+        [Command("teamList"), Summary("Returns winrates of an address")]
+        [Alias("teamL")]
+        public async Task GetTeamList(string address)
+        {
+            await TaskHandler.AddTask(Context, address, TaskType.TeamQuery, null);
             await Context.Message.AddReactionAsync(new Emoji("✅"));
             if (!TaskHandler.FetchingDataFromApi)
             {
