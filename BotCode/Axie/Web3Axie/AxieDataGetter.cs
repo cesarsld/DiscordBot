@@ -13,6 +13,9 @@ using Discord.WebSocket;
 using DiscordBot.Axie.SubscriptionServices;
 using DiscordBot.Axie.SubscriptionServices.PremiumServices;
 using Newtonsoft.Json.Linq;
+using DiscordBot.Axie;
+
+using Nethereum.Util;
 using System.Linq;
 namespace DiscordBot.Axie.Web3Axie
 {
@@ -21,7 +24,9 @@ namespace DiscordBot.Axie.Web3Axie
 
         #region ABI & contract declaration
         private static string AxieCoreContractAddress = "0xF4985070Ce32b6B1994329DF787D1aCc9a2dd9e2";
+        private static string NftAddress = "0xf5b0a3efb8e8e4c201e2a935f110eaaf3ffecb8d";
         private static string AxieLabContractAddress = "0x99ff9f4257D5b6aF1400C994174EbB56336BB79F";
+        private static string AxieExtraDataContract = "0x10e304a53351b272dc415ad049ad06565ebdfe34";
         private static string auctionABI = @"[
   {
     'constant': false,
@@ -1198,6 +1203,40 @@ namespace DiscordBot.Axie.Web3Axie
   }
 ]
 ";
+        private static string extraABI = @"[
+  {
+    'constant': true,
+    'inputs': [
+      {
+        'name': '_axieId',
+        'type': 'uint256'
+      }
+    ],
+    'name': 'getExtra',
+    'outputs': [
+      {
+        'name': '',
+        'type': 'uint256'
+      },
+      {
+        'name': '',
+        'type': 'uint256'
+      },
+      {
+        'name': '',
+        'type': 'uint256'
+      },
+      {
+        'name': '',
+        'type': 'uint256'
+      }
+    ],
+    'payable': false,
+    'stateMutability': 'view',
+    'type': 'function'
+  }
+]"; 
+
         #endregion
         private static ulong marketPlaceChannelId = 423343101428498435;
         private static ulong botCommandChannelId = 487932149354463232;
@@ -1211,6 +1250,47 @@ namespace DiscordBot.Axie.Web3Axie
         {
         }
 
+        public static async Task<AxieExtraData> GetExtraData(int axieId)
+        {
+            var web3 = new Web3("https://mainnet.infura.io");
+            var extraDataContract = web3.Eth.GetContract(extraABI, AxieExtraDataContract);
+            var getExtraFunction = extraDataContract.GetFunction("getExtra");
+            try
+            {
+                var result = await getExtraFunction.CallDeserializingToObjectAsync<AxieExtraData>(new BigInteger(axieId));
+                return result;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                Console.ReadLine();
+            }
+            return null;
+        }
+
+        public static async Task<AxieExtraData> test(int axieId)
+        {
+            var web3 = new Web3("https://mainnet.infura.io");
+            var auctionContract = web3.Eth.GetContract(auctionABI, AxieCoreContractAddress);
+            var getSellerInfoFunction = auctionContract.GetFunction("getAuction");
+            try
+            {
+                var lastBlock = await GetLastBlockCheckpoint(web3);
+                var firstBlock = GetInitialBlockCheckpoint(lastBlock.BlockNumber);
+                object[] input = new object[2];
+                input[0] = NftAddress;
+                input[1] = new BigInteger(axieId);
+                var result = await getSellerInfoFunction.CallDeserializingToObjectAsync<SellerInfo>(firstBlock, input);
+                
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                Console.ReadLine();
+            }
+            return null;
+        }
+
         public static async Task GetData()
         {
             IsServiceOn = true;
@@ -1218,6 +1298,7 @@ namespace DiscordBot.Axie.Web3Axie
             var web3 = new Web3("https://mainnet.infura.io");
             //get contracts
             var auctionContract = web3.Eth.GetContract(auctionABI, AxieCoreContractAddress);
+            var getSellerInfoFunction = auctionContract.GetFunction("getAuction");
             var labContract = web3.Eth.GetContract(labABI, AxieLabContractAddress);
             //get events
             var auctionSuccesfulEvent = auctionContract.GetEvent("AuctionSuccessful");
@@ -1268,6 +1349,12 @@ namespace DiscordBot.Axie.Web3Axie
                             int axieId = Convert.ToInt32(log.Event.tokenId.ToString());
                             float priceinEth = Convert.ToSingle(Nethereum.Util.UnitConversion.Convert.FromWei(log.Event.totalPrice).ToString());
                             _ = CheckForExistingMarketTriggers(axieId);
+                            //object[] input = new object[2];
+                            //input[0] = NftAddress;
+                            //input[1] = log.Event.tokenId;
+                            //var sellerInfo = await getSellerInfoFunction.CallDeserializingToObjectAsync<SellerInfo>(
+                            //    new BlockParameter(new HexBigInteger(log.Log.BlockNumber.Value - 1)) , input);
+                            //await AlertSeller(axieId, priceinEth, sellerInfo.seller);
                             await PostAxieToMarketplace(axieId, priceinEth);
                             await Task.Delay(5000);
                         };
@@ -1373,6 +1460,29 @@ namespace DiscordBot.Axie.Web3Axie
             }
         }
 
+        private static async Task AlertSeller(int axieID, float price, string address)
+        {
+            var axieData = await AxieObject.GetAxieFromApi(axieID);
+            var subList = await SubscriptionServicesHandler.GetSubList();
+            if (subList != null)
+            {
+                foreach (var user in subList)
+                {
+                    var marketService = user.GetServiceList().FirstOrDefault(s => s.name == ServiceEnum.MarketPlace) as MarketplaceService;
+                    if (marketService != null)
+                    {
+                        if (marketService.GetNotifStatus())
+                        {
+                            if (await AxieHolderListHandler.DoesUserHaveAddress(user.GetId(), address))
+                            {
+                                await Bot.GetUser(user.GetId()).SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private static async Task CheckForAuctionFilters(AxieObject axie, BigInteger price)
         {
             var subList = await SubscriptionServicesHandler.GetSubList();
@@ -1432,6 +1542,7 @@ namespace DiscordBot.Axie.Web3Axie
         public BigInteger referralReward { get; set; }
     }
 
+
     public class AuctionCreatedEvent
     {
         [Parameter("address", "_nftAddress", 1, true)]
@@ -1461,6 +1572,49 @@ namespace DiscordBot.Axie.Web3Axie
 
         [Parameter("uint256", "_tokenId", 2, true)]
         public BigInteger tokenId { get; set; }
+    }
+
+    [FunctionOutput]
+    public class AxieExtraData 
+    { 
+        [Parameter("uint256", "_sireId", 1)]
+        public BigInteger sireId { get; set; }
+
+        [Parameter("uint256", "_matronId", 2)]
+        public BigInteger matronId { get; set; }
+
+        [Parameter("uint256", "_exp", 3)]
+        public BigInteger exp { get; set; }
+
+        [Parameter("uint256", "_numBreeding", 4)]
+        public BigInteger numBreeding { get; set; }
+    }
+
+    [FunctionOutput]
+    public class SellerInfo
+    {
+        [Parameter("address", "seller", 1)]
+        public string seller { get; set; }
+
+        [Parameter("uint256", "startingPrice", 2)]
+        public BigInteger startingPrice { get; set; }
+
+        [Parameter("uint256", "endingPrice", 3)]
+        public BigInteger endingPrice { get; set; }
+
+        [Parameter("uint256", "duration", 4)]
+        public BigInteger duration { get; set; }
+
+        [Parameter("uint256", "startedAt", 5)]
+        public BigInteger startedAt { get; set; }
+    }
+
+    [Function("getExtra")]
+    public class AxieExtraFunction 
+    {
+        [Parameter("uint256", "_axieId", 1)]
+        public BigInteger axieId { get; set; }
+
     }
 
 }

@@ -119,8 +119,9 @@ namespace DiscordBot
                                                      + "- `>axie nonbuyable axie_id` : Remove an axie from being buyable.\n"
                                                      + "- `>axie buyable axie_id` : Add an axie to be buyable again.\n"
                                                      + "- `>axie buy input_id` : Ping the owner of this axie.\n"
-                                                     + "- `>axie show` : Show user's addresses.\n"
+                                                     + "- `>axie show` : Show user's addresses.\n\n"
                                                      + "- `>axie find/f axie_id` : Show axie data.\n"
+                                                     + "- `>axie breedCount/bc axie_id` : Show axie's breed count.\n"
                                                      + "- `>axie purechance/pure/p axie_id_1 axie_id_2 (optional)beta` : Show user's chance to breed a pure axie from 2 preset axies. Write beta at the end if you want to access axies in beta.\n"
                                                      + "- `>axie subs` : Show services user can subscribe to.\n"
                                                      + "- `>axie qolhelp/qhelp` : Show QoL list help.\n"
@@ -193,6 +194,7 @@ namespace DiscordBot
                         message = "Commands: \n"
                                 + "- `>a marketsub` : subscribe to Marketplace services\n"
                                 + "- `>a marketunsub/munsub` : unsubscribe to Marketplace services\n"
+                                + "- `>a marketNotify true/false` : Sets trigger to notify when you sell an axie\n"
                                 + "- `>a markettrigger/mtrigger axie_id trigger_price` : Bot will notify you when indicated axie reaches the trigger price.\n"
                                 + "- `>a removetrigger/rtrigger axie_id` : Remove axie trigger from list.";
                         break;
@@ -294,7 +296,7 @@ namespace DiscordBot
             {
                 AxieObject data = await AxieObject.GetAxieFromApi(index);
                 data.id = index;
-                await Context.Channel.SendMessageAsync("", false, data.EmbedQQData(true));
+                await Context.Channel.SendMessageAsync("", false, data.EmbedBaseData(true));
 
             }
         }
@@ -307,8 +309,25 @@ namespace DiscordBot
             {
                 AxieObject data = await AxieObject.GetAxieFromApi(index);
                 data.id = index;
-                await Context.Channel.SendMessageAsync("", false, data.EmbedQQData(false));
+                await Context.Channel.SendMessageAsync("", false, data.EmbedBaseData(false));
 
+            }
+        }
+
+        [Command("BreedCount"), Summary("find an axie from API")]
+        [Alias("bc")]
+        public async Task FindBreedCount(int index)
+        {
+            if (IsGeneral(Context) || IsBotCommand(Context))
+            {
+                var web3Data = await AxieDataGetter.GetExtraData(index);
+                if (web3Data != null)
+                {
+                    AxieObject data = await AxieObject.GetAxieFromApi(index);
+                    data.id = index;
+                    await Context.Channel.SendMessageAsync("", false, data.EmbedBreedData(Convert.ToInt32(web3Data.numBreeding.ToString())));
+                }
+                else await Context.Message.AddReactionAsync(new Emoji("❌"));
             }
         }
 
@@ -388,6 +407,13 @@ namespace DiscordBot
         public async Task SetMarketplaceTrigger(int axieId, float priceTrigger)
         {
             await SubscriptionServicesHandler.SetMarketPriceTrigger(Context.Message.Author.Id, axieId, priceTrigger, Context);
+        }
+
+        [Command("marketNotify"), Summary("subscribe to market service")]
+        [Alias("mnotif")]
+        public async Task NotifySales(bool _bool)
+        {
+            await SubscriptionServicesHandler.UnSubToService(Context.Message.Author.Id, Context, ServiceEnum.MarketPlace);
         }
 
         [Command("removetrigger"), Summary("set market trigger")]

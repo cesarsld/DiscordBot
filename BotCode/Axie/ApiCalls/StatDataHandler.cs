@@ -314,7 +314,8 @@ namespace DiscordBot.Axie.ApiCalls
                         axieTeam.name = (string)team["name"];
                         for (int i = 0; i < 3; i++)
                         {
-                            axieTeam.teamMembers[i].id = (int)team["teamMembers"][i]["axieId"];
+                            var member = axieTeam.GetAxieByIndex(i);
+                            member.id = (int)team["teamMembers"][i]["axieId"];
                         }
                         teamList.Add(axieTeam);
                     }

@@ -11,7 +11,7 @@ namespace DiscordBot.Axie
     {
         public string name;
         public AxieWinrate[] teamMembers;
-
+        public AxieWinrate GetAxieByIndex(int i) => teamMembers[i];
         public AxieTeam()
         {
             name = "";
@@ -20,6 +20,11 @@ namespace DiscordBot.Axie
             {
                 teamMembers[i] = new AxieWinrate();
             }
+        }
+
+        public void CalculateTeamWinrate()
+        {
+
         }
     }
 }

@@ -51,6 +51,7 @@ namespace DiscordBot
         public AxieStats stats;
         public AxieAuction auction;
         public JObject jsonData;
+        public JObject oldjsonData;
 
         public EmbedBuilder EmbedAxieData(string extra)
         {
@@ -138,7 +139,7 @@ namespace DiscordBot
             embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
             return embed;
         }
-        public EmbedBuilder EmbedQQData(bool expAllowed)
+        public EmbedBuilder EmbedBaseData(bool expAllowed)
         {
             string json = "";
             using (System.Net.WebClient wc = new System.Net.WebClient())
@@ -154,6 +155,7 @@ namespace DiscordBot
                 }
             }
             JObject axieJson = JObject.Parse(json);
+            oldjsonData = axieJson;
             var embed = new EmbedBuilder();
             embed.WithTitle($"Axie #{id}");
             if (expAllowed)
@@ -253,7 +255,36 @@ namespace DiscordBot
             embed.WithColor(color);
             return embed;
         }
+        public EmbedBuilder EmbedBreedData(int breedCount)
+        {
+            var embed = EmbedBaseData(false);
+            string qual = "";
+            switch (breedCount)
+            {
+                case 0:
+                    qual = "Virgin!";
+                    break;
+                case 1:
+                    qual = "Experienced!";
+                    break;
+                case 2:
+                    qual = "Bunny!";
+                    break;
+                case 3:
+                    qual = "Escort!";
+                    break;
+                case 4:
+                    qual = "Mature!";
+                    break;
+                case 5:
+                    qual = "Granny!";
+                    break;
 
+            }
+            embed.WithTitle(qual);
+            embed.WithDescription($"Breed  count : {breedCount}");
+            return embed;
+        }
         public int GetPureness()
         {
             int pureness = 0;
@@ -346,10 +377,17 @@ namespace DiscordBot
                     }
                 }
             }
-            JObject axieJson = JObject.Parse(json);
-            AxieObject axieData = axieJson.ToObject<AxieObject>();
-            axieData.jsonData = axieJson;
-            return axieData;
+            try
+            {
+                JObject axieJson = JObject.Parse(json);
+                AxieObject axieData = axieJson.ToObject<AxieObject>();
+                axieData.jsonData = axieJson;
+                return axieData;
+            }
+            catch (Exception e)
+            {
+                return new AxieObject { id = 0};
+            }
         }
       
         public async Task GetTrueAuctionData()
@@ -370,6 +408,25 @@ namespace DiscordBot
             }
             JObject axieJson = JObject.Parse(json);
             auction = axieJson["auction"].ToObject<AxieAuction>();
+        }
+        public async Task<int> GetTrueBeedData()
+        {
+            string json = "";
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                try
+                {
+                    json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + id.ToString()); //https://axieinfinity.com/api/axies/
+                }
+
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+
+                }
+            }
+            JObject axieJson = JObject.Parse(json);
+            return (int)axieJson["expForBreeding"];
         }
     }
 

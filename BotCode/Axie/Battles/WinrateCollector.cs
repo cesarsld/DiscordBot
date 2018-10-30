@@ -196,11 +196,12 @@ namespace DiscordBot.Axie.Battles
             {
                 for(int i = 0; i < 3; i++)
                 {
-                    var filterId = Builders<BsonDocument>.Filter.Eq("_id", team.teamMembers[i].id);
+                    var member = team.GetAxieByIndex(i);
+                    var filterId = Builders<BsonDocument>.Filter.Eq("_id", member.id);
                     var doc = collection.Find(filterId).FirstOrDefault();
                     if (doc != null)
                     {
-                        team.teamMembers[i] = BsonSerializer.Deserialize<AxieWinrate>(doc);
+                        member = BsonSerializer.Deserialize<AxieWinrate>(doc);
                     }
                 }
             }

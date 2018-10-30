@@ -186,6 +186,22 @@ namespace DiscordBot.Axie.SubscriptionServices
             }
         }
 
+        public static async Task SetSaleNotifier(ulong userId, bool _bool, ICommandContext context)
+        {
+            subUserList = await GetSubList();
+            var existingUser = GetUserFromId(userId);
+            if (existingUser != null)
+            {
+                var marketplaceService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.MarketPlace) as MarketplaceService;
+                if (marketplaceService != null)
+                {
+                    marketplaceService.SetNotifStatus(_bool);
+                    await context.Message.AddReactionAsync(new Emoji("✅"));
+                }
+                else await context.Channel.SendMessageAsync("Error. You are not subscribed to Marketplace service.");
+            }
+        }
+
         public static async Task RemoveMarketPriceTrigger(ulong userId, int axieId, ICommandContext context)
         {
             if (subUserList == null) subUserList = await GetSubListFromFile();

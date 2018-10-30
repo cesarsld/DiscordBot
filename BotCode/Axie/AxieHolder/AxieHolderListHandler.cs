@@ -266,6 +266,18 @@ namespace DiscordBot
             }
         }
 
+        public static async Task<bool> DoesUserHaveAddress(ulong userId, string address)
+        {
+            List<AxieHolder> axieHolders = await GetAxieHolders();
+            AxieHolder axieHolder = axieHolders.FirstOrDefault(holder => holder.GetUserId() == userId);
+            if (axieHolder == null)
+            {
+                if (axieHolder.GetAddressList().Contains(address.ToLower())) return true;
+                else return false;
+            }
+            else return false;
+        }
+
         private static bool IsAddressValid(string address)
         {
             if (address.StartsWith("0x"))
