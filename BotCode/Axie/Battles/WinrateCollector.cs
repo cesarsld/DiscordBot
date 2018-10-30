@@ -201,7 +201,7 @@ namespace DiscordBot.Axie.Battles
                     var doc = collection.Find(filterId).FirstOrDefault();
                     if (doc != null)
                     {
-                        member = BsonSerializer.Deserialize<AxieWinrate>(doc);
+                        team.teamMembers[i] = BsonSerializer.Deserialize<AxieWinrate>(doc);
                     }
                 }
             }
