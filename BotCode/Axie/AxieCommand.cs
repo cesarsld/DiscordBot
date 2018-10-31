@@ -318,7 +318,7 @@ namespace DiscordBot
         [Alias("bc")]
         public async Task FindBreedCount(int index)
         {
-            if (IsGeneral(Context) || IsBotCommand(Context))
+            if (IsMarketPlace(Context) || IsBotCommand(Context))
             {
                 var web3Data = await AxieDataGetter.GetExtraData(index);
                 if (web3Data != null)
@@ -678,7 +678,11 @@ namespace DiscordBot
                 _ = TaskHandler.RunTasks();
             }
         }
-
+        [Command("test")]
+        public async Task Test()
+        {
+            await AxieDataGetter.AlertSeller(150, 4.5f, "0xf521Bb7437bEc77b0B15286dC3f49A87b9946773");
+        }
         [Command("burn"), Summary("buuuuuuurn that axie >:D")]
         public async Task BurnJoke(int index)
         {

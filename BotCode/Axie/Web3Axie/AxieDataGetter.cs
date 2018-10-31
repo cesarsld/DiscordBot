@@ -1349,12 +1349,12 @@ namespace DiscordBot.Axie.Web3Axie
                             int axieId = Convert.ToInt32(log.Event.tokenId.ToString());
                             float priceinEth = Convert.ToSingle(Nethereum.Util.UnitConversion.Convert.FromWei(log.Event.totalPrice).ToString());
                             _ = CheckForExistingMarketTriggers(axieId);
-                            //object[] input = new object[2];
-                            //input[0] = NftAddress;
-                            //input[1] = log.Event.tokenId;
-                            //var sellerInfo = await getSellerInfoFunction.CallDeserializingToObjectAsync<SellerInfo>(
-                            //    new BlockParameter(new HexBigInteger(log.Log.BlockNumber.Value - 1)) , input);
-                            //await AlertSeller(axieId, priceinEth, sellerInfo.seller);
+                            object[] input = new object[2];
+                            input[0] = NftAddress;
+                            input[1] = log.Event.tokenId;
+                            var sellerInfo = await getSellerInfoFunction.CallDeserializingToObjectAsync<SellerInfo>(
+                                new BlockParameter(new HexBigInteger(log.Log.BlockNumber.Value - 1)), input);
+                            await AlertSeller(axieId, priceinEth, sellerInfo.seller);
                             await PostAxieToMarketplace(axieId, priceinEth);
                             await Task.Delay(5000);
                         };
@@ -1460,7 +1460,7 @@ namespace DiscordBot.Axie.Web3Axie
             }
         }
 
-        private static async Task AlertSeller(int axieID, float price, string address)
+        public static async Task AlertSeller(int axieID, float price, string address)
         {
             var axieData = await AxieObject.GetAxieFromApi(axieID);
             var subList = await SubscriptionServicesHandler.GetSubList();

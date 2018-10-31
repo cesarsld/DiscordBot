@@ -270,7 +270,7 @@ namespace DiscordBot
         {
             List<AxieHolder> axieHolders = await GetAxieHolders();
             AxieHolder axieHolder = axieHolders.FirstOrDefault(holder => holder.GetUserId() == userId);
-            if (axieHolder == null)
+            if (axieHolder != null)
             {
                 if (axieHolder.GetAddressList().Contains(address.ToLower())) return true;
                 else return false;
