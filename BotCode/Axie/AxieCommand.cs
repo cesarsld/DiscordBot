@@ -629,7 +629,7 @@ namespace DiscordBot
 
         [Command("breedlist"), Summary("Returns best breed pairs for pure axie")]
         [Alias("bl")]
-        public async Task GetBreedList(string address)
+        public async Task GetBreedList([Remainder]string address)
         {
             await TaskHandler.AddTask(Context, address, TaskType.BreedQuery, null);
             await Context.Message.AddReactionAsync(new Emoji("✅"));

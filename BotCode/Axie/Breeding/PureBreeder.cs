@@ -29,7 +29,17 @@ namespace DiscordBot.Axie.Breeding
 
         public static async Task GetPureBreedingChancesFromAddress(string address, IUserMessage message)
         {
-            var listFromApi = await StatDataHandler.GetAxieListFromAddress(address);
+            string[] addresses = address.Split(' ');
+            var listFromApi = new List<AxieDataOld>();
+            foreach(var add in addresses)
+            {
+                if (AxieHolderListHandler.IsAddressValid(add))
+                {
+                    listFromApi.AddRange(await StatDataHandler.GetAxieListFromAddress(add));
+                }
+
+            }
+            //var listFromApi = await StatDataHandler.GetAxieListFromAddress(address);
 
 
             var predisposedAxieList = new Dictionary<int, AxieDataOld>();
