@@ -1457,6 +1457,7 @@ namespace DiscordBot.Axie.Web3Axie
             {
                 _ = SubscriptionServicesHandler.SetSubList();
                 hasTriggered = false;
+                
             }
         }
 

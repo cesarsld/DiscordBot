@@ -220,7 +220,7 @@ namespace DiscordBot
                         {
                             if (!(holder.userId == context.Message.Author.Id))
                             {
-                                await Bot.GetUser(holder.userId).SendMessageAsync($"<@{holder.GetUserId()}> , axie #{axieId} has caught the interest of <@{context.Message.Author.Id}> ! Take it to DM for further discussions ;)");
+                                await Bot.GetUser(holder.userId).SendMessageAsync($"<@{holder.GetUserId()}> , axie #{axieId} has caught the interest of {context.Message.Author.Username} #{context.Message.Author.DiscriminatorValue} ! Take it to DM for further discussions ;)");
                                 await context.Channel.SendMessageAsync($"The owner has been notified of your interest to buy their axie! They will contact you in due time :D");
                             }
                             else await context.Channel.SendMessageAsync($"Stop trying to buy your own axies! >:(");
@@ -278,7 +278,7 @@ namespace DiscordBot
             else return false;
         }
 
-        private static bool IsAddressValid(string address)
+        public static bool IsAddressValid(string address)
         {
             if (address.StartsWith("0x"))
             {

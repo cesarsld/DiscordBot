@@ -7,6 +7,7 @@ using DiscordBot.Axie.ApiCalls;
 using MongoDB.Driver;
 using DiscordBot.Axie;
 using System.Linq;
+using DiscordBot.Axie.Battles;
 using System.Collections.Generic;
 using DiscordBot.Axie.Web3Axie;
 
@@ -32,6 +33,7 @@ namespace DiscordBot
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
                     //StatDataHandler.GetTraitMapping("Zigzag");
+                    //WinrateCollector.GetUniquePlayers();
                     new Bot().RunAsync().GetAwaiter().GetResult();
                 }
                 catch (Exception ex)

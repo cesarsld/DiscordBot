@@ -27,7 +27,8 @@ namespace DiscordBot.Axie.Battles
         public static int apiPerc = 0;
         public static int dbPerc = 0;
         public static int lastUnixTimeCheck = 0;
-        public static readonly int unixTimeBetweenUpdates = 21600;
+        public static readonly int unixTimeBetweenUpdates = 86400;
+        private static int updateCount = 0;
         public static void GetAllData()
         {
             Dictionary<int, Winrate> winrateData = new Dictionary<int, Winrate>();
@@ -123,6 +124,63 @@ namespace DiscordBot.Axie.Battles
                 collection.InsertOne(axie.ToBsonDocument());
             }
         }
+
+        public static void GetUniquePlayers()
+        {
+            Dictionary<int, Winrate> winrateData = new Dictionary<int, Winrate>();
+            List<AxieWinrate> winrateList = new List<AxieWinrate>();
+            List<string> uniqueUsers = new List<string>();
+            int timeCheck = 0;
+            int battleCount = 78634;
+            int axieIndex = 0;
+            int safetyNet = 0;
+            int perc = battleCount / 100;
+            int currentPerc = 0;
+            while (axieIndex < battleCount)
+            {
+                axieIndex++;
+                if (axieIndex % perc == 0)
+                {
+                    currentPerc++;
+                    Console.WriteLine(currentPerc.ToString() + "%");
+                }
+                string json = null;
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    try
+                    {
+                        json = wc.DownloadString("https://api.axieinfinity.com/v1/battle/history/matches/" + axieIndex.ToString());
+                        safetyNet = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        safetyNet++;
+                    }
+                }
+                if (json != null)
+                {
+                    JObject axieJson = JObject.Parse(json);
+                    int time = Convert.ToInt32(((string)axieJson["createdAt"]).Remove(((string)axieJson["createdAt"]).Length - 3, 3));
+                    if (timeCheck == 0) timeCheck = time;
+                    if (time - timeCheck > 86400)
+                    {
+                        Console.WriteLine("Day passed");
+                        var dailyData = new DailyUsers(Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds()), uniqueUsers.Count);
+                        var db1 = DatabaseConnection.GetDb();
+                        var collection1 = db1.GetCollection<DailyUsers>("DailyBattleDAU");
+                        collection1.InsertOne(dailyData);
+                        timeCheck += 86400;
+                        uniqueUsers.Clear();
+                    }
+                    if (!uniqueUsers.Contains((string)axieJson["winner"])) uniqueUsers.Add((string)axieJson["winner"]);
+                    if (!uniqueUsers.Contains((string)axieJson["loser"])) uniqueUsers.Add((string)axieJson["loser"]);
+
+                }
+            }
+            
+        }
+
 
         public static DataTable jsonStringToTable(string jsonContent)
         {
@@ -348,8 +406,23 @@ namespace DiscordBot.Axie.Battles
                 tw.Write((lastBattle - 1).ToString());
             }
             IsDbSyncing = false;
+            await GetDailyPlayers(winrateList);
         }
-    
+
+        private static async Task GetDailyPlayers(List<AxieWinrate> list)
+        {
+            List<string> uniquePlayers = new List<string>();
+            foreach (var axie in list)
+            {
+                var data = await AxieObject.GetAxieFromApi(axie.id);
+                if (!uniquePlayers.Contains(data.owner)) uniquePlayers.Add(data.owner);
+            }
+            var dailyData = new DailyUsers(Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds()), uniquePlayers.Count);
+            var db = DatabaseConnection.GetDb();
+            var collection = db.GetCollection<DailyUsers>("DailyBattleDAU");
+            collection.InsertOne(dailyData);
+        }
+
         public static EmbedBuilder GetTop10LeaderBoard(List<AxieWinrate> list, int mysticCount)
         {
             var embed = new EmbedBuilder();
