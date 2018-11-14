@@ -136,6 +136,8 @@ namespace DiscordBot.Axie.Battles
             int safetyNet = 0;
             int perc = battleCount / 100;
             int currentPerc = 0;
+            var db1 = DatabaseConnection.GetDb();
+            var collection1 = db1.GetCollection<DailyUsers>("DailyBattleDAU");
             while (axieIndex < battleCount)
             {
                 axieIndex++;
@@ -166,16 +168,13 @@ namespace DiscordBot.Axie.Battles
                     if (time - timeCheck > 86400)
                     {
                         Console.WriteLine("Day passed");
-                        var dailyData = new DailyUsers(Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds()), uniqueUsers.Count);
-                        var db1 = DatabaseConnection.GetDb();
-                        var collection1 = db1.GetCollection<DailyUsers>("DailyBattleDAU");
+                        var dailyData = new DailyUsers(time, uniqueUsers.Count);
                         collection1.InsertOne(dailyData);
                         timeCheck += 86400;
                         uniqueUsers.Clear();
                     }
                     if (!uniqueUsers.Contains((string)axieJson["winner"])) uniqueUsers.Add((string)axieJson["winner"]);
                     if (!uniqueUsers.Contains((string)axieJson["loser"])) uniqueUsers.Add((string)axieJson["loser"]);
-
                 }
             }
             

@@ -285,6 +285,7 @@ namespace DiscordBot.Axie.ApiCalls
                 {
                     try
                     {
+                        //https://api.axieinfinity.com/v1/battle/teams?address=0xf521Bb7437bEc77b0B15286dC3f49A87b9946773&offset=0&count=500&no_limit=1
                         json = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/battle/teams/?address=" + address + "&offset=" + (10 * axieIndex).ToString() + "&count=10");
                         safetyNet = 0;
                     }

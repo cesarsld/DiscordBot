@@ -75,7 +75,7 @@ namespace DiscordBot.Axie
                 int unixTime = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
                 //if (eggLabPrice < 0.133) eggLabPrice = 0.133;
                 if (WinrateCollector.lastUnixTimeCheck == 0) WinrateCollector.UpdateUnixLastCheck();
-                if (unixTime - WinrateCollector.lastUnixTimeCheck >= WinrateCollector.unixTimeBetweenUpdates) _=  WinrateCollector.GetDataSinceLastChack();
+                //if (unixTime - WinrateCollector.lastUnixTimeCheck >= WinrateCollector.unixTimeBetweenUpdates) _=  WinrateCollector.GetDataSinceLastChack();
                 var subList = await SubscriptionServicesHandler.GetSubList();
 
                 foreach (var sub in subList)
