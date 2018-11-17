@@ -32,37 +32,37 @@ namespace DiscordBot
         }
         private bool IsMarketPlace(ICommandContext context)
         {
-            if (context.Guild.Id != 410537146672349205) return true;
             CommandContext ctxt = new CommandContext(context.Client, context.Message);
+            if (context.Guild != null && context.Guild.Id != 410537146672349205) return true;
             return ctxt.IsPrivate || context.Channel.Id == 423343101428498435 || context.Guild.Id == 329959863545364480;
         }
 
         private bool IsSuggestion(ICommandContext context)
         {
-            if (context.Guild.Id != 410537146672349205) return true;
             CommandContext ctxt = new CommandContext(context.Client, context.Message);
+            if (context.Guild != null && context.Guild.Id != 410537146672349205) return true;
             return ctxt.IsPrivate || context.Channel.Id == 416268771510976513 || context.Guild.Id == 329959863545364480;
         }
 
         private bool IsArena(ICommandContext context)
         {
-            if (context.Guild.Id != 410537146672349205) return true;
             CommandContext ctxt = new CommandContext(context.Client, context.Message);
+            if (context.Guild != null && context.Guild.Id != 410537146672349205) return true;
             return ctxt.IsPrivate || context.Channel.Id == 498508595206422543 || context.Guild.Id == 329959863545364480;
         }
 
         private bool IsBreeding(ICommandContext context)
         {
             CommandContext ctxt = new CommandContext(context.Client, context.Message);
-            if (context.Guild.Id != 410537146672349205) return true;
+            if (context.Guild != null && context.Guild.Id != 410537146672349205) return true;
             return ctxt.IsPrivate || context.Channel.Id == 442695028188381185 || context.Guild.Id == 329959863545364480;
         }
 
 
         private bool IsBotCommand(ICommandContext context)
         {
-            if (context.Guild.Id != 410537146672349205) return true;
             CommandContext ctxt = new CommandContext(context.Client, context.Message);
+            if (context.Guild != null && context.Guild.Id != 410537146672349205) return true;
             return ctxt.IsPrivate || context.Channel.Id == 487932149354463232 || context.Guild.Id == 329959863545364480 || context.Guild.Id != 410537146672349205; //487932149354463232
         }
 
@@ -98,8 +98,8 @@ namespace DiscordBot
 
         private bool IsGeneral(ICommandContext context)
         {
-            if (context.Guild.Id != 410537146672349205) return true;
             CommandContext ctxt = new CommandContext(context.Client, context.Message);
+            if (context.Guild != null && context.Guild.Id != 410537146672349205) return true;
             return ctxt.IsPrivate || context.Channel.Id == 410537147116814348 || context.Channel.Id == 414794784448970752 || context.Guild.Id == 329959863545364480;
         }
 

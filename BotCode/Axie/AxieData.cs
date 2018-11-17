@@ -96,10 +96,19 @@ namespace DiscordBot
                     color = Color.Red;
                     break;
                 case "bird":
-                    color = Color.Magenta;
+                    color = new Color(255, 182, 193);
                     break;
                 case "reptile":
-                    color = Color.DarkMagenta;
+                    color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
                     break;
             }
             embed.WithColor(color);
@@ -132,6 +141,15 @@ namespace DiscordBot
                     break;
                 case "reptile":
                     color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
                     break;
             }
             embed.WithColor(color);
@@ -178,10 +196,19 @@ namespace DiscordBot
                     color = Color.Red;
                     break;
                 case "bird":
-                    color = Color.Magenta;
+                    color = new Color(255, 182, 193);
                     break;
                 case "reptile":
-                    color = Color.DarkMagenta;
+                    color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
                     break;
             }
             embed.WithColor(color);
@@ -210,10 +237,19 @@ namespace DiscordBot
                     color = Color.Red;
                     break;
                 case "bird":
-                    color = Color.Magenta;
+                    color = new Color(255, 182, 193);
                     break;
                 case "reptile":
-                    color = Color.DarkMagenta;
+                    color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
                     break;
             }
             embed.WithColor(color);
@@ -246,10 +282,19 @@ namespace DiscordBot
                     color = Color.Red;
                     break;
                 case "bird":
-                    color = Color.Magenta;
+                    color = new Color(255, 182, 193);
                     break;
                 case "reptile":
-                    color = Color.DarkMagenta;
+                    color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
                     break;
             }
             embed.WithColor(color);
