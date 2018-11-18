@@ -27,7 +27,7 @@ namespace DiscordBot.Axie.Breeding
             return GetChance(axieGeneData1, axieGeneData2);
         }
 
-        public static async Task GetPureBreedingChancesFromAddress(string address, IUserMessage message)
+        public static async Task GetPureBreedingChancesFromAddress(string address, IUserMessage message, List<string> classFilters = null)
         {
             string[] addresses = address.Split(' ');
             var listFromApi = new List<AxieDataOld>();
@@ -49,24 +49,27 @@ namespace DiscordBot.Axie.Breeding
             var axieList_3_6 = new List<AxieDataOld>();
             foreach (var axie in listFromApi)
             {
-                switch (axie.GetAbsolutePureness())
+                if (classFilters != null && classFilters.Contains(axie.Class))
                 {
-                    case 6:
-                        axieList_6_6.Add(axie);
-                        predisposedAxieList.Add(axie.id, axie);
-                        break;
-                    case 5:
-                        axieList_5_6.Add(axie);
-                        predisposedAxieList.Add(axie.id, axie);
-                        break;
-                    case 4:
-                        axieList_4_6.Add(axie);
-                        predisposedAxieList.Add(axie.id, axie);
-                        break;
-                    case 3:
-                        axieList_3_6.Add(axie);
-                        predisposedAxieList.Add(axie.id, axie);
-                        break;
+                    switch (axie.GetAbsolutePureness())
+                    {
+                        case 6:
+                            axieList_6_6.Add(axie);
+                            predisposedAxieList.Add(axie.id, axie);
+                            break;
+                        case 5:
+                            axieList_5_6.Add(axie);
+                            predisposedAxieList.Add(axie.id, axie);
+                            break;
+                        case 4:
+                            axieList_4_6.Add(axie);
+                            predisposedAxieList.Add(axie.id, axie);
+                            break;
+                        case 3:
+                            axieList_3_6.Add(axie);
+                            predisposedAxieList.Add(axie.id, axie);
+                            break;
+                    }
                 }
             }
             var axieList = predisposedAxieList.Values.ToList();
@@ -101,15 +104,19 @@ namespace DiscordBot.Axie.Breeding
         {
             AxieDataOld bestAxie = null;
             float bestChance = 0;
-            for (int i = 0; i < axieList.Count - 1; i++)
+            for (int i = 0; i < axieList.Count; i++)
             {
                 if (axie.id != axieList[i].id)
                 {
-                    float chance = GetBreedingChance(axie.genes, axieList[i].genes);
-                    if (bestChance < chance)
+                    if (AreAxieRelated(axie, axieList[i])) continue;
+                    else
                     {
-                        bestChance = chance;
-                        bestAxie = axieList[i];
+                        float chance = GetBreedingChance(axie.genes, axieList[i].genes);
+                        if (bestChance < chance)
+                        {
+                            bestChance = chance;
+                            bestAxie = axieList[i];
+                        }
                     }
                 }
             }
@@ -125,6 +132,23 @@ namespace DiscordBot.Axie.Breeding
                 }
             }
         }
+
+        private static bool AreAxieRelated(AxieDataOld father, AxieDataOld mother)
+        {
+            if (father.id == mother.matronId
+                || father.id == mother.sireId
+                || father.id == father.matronId
+                || father.id == father.sireId
+                || mother.id == father.matronId
+                || mother.id == father.sireId
+                || mother.id == mother.matronId
+                || mother.id == mother.sireId)
+                return true;
+            else
+                return false; ;
+        }
+
+
         public static string calcBinary(string gene)
         {
             BigInteger gene256 = BigInteger.Parse(gene);

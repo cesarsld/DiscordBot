@@ -488,6 +488,8 @@ namespace DiscordBot
 
         public int exp;
         public int level;
+        public int sireId;
+        public int matronId;
         public int stage;
         public AxieStats stats;
         public AxieAuction auction;

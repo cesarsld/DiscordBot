@@ -40,7 +40,7 @@ namespace DiscordBot.Axie
                 switch(query.Item3)
                 {
                     case TaskType.BreedQuery:
-                        await PureBreeder.GetPureBreedingChancesFromAddress(query.Item2, query.Item1);
+                        await PureBreeder.GetPureBreedingChancesFromAddress(query.Item2, query.Item1, query.Item4 as List<string>);
                         break;
                     case TaskType.WinrateQuery:
                         await WinrateCollector.FetchDataFromAddress(query.Item2, query.Item1);

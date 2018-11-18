@@ -644,7 +644,36 @@ namespace DiscordBot
         [Alias("bl")]
         public async Task GetBreedList([Remainder]string address)
         {
-            await TaskHandler.AddTask(Context, address, TaskType.BreedQuery, null);
+            string[] inputData = address.Split(' ');
+            List<string> classFilters = new List<string>();
+            List<string> addressList = new List<string>();
+            foreach (var input in inputData)
+            {
+                switch (input)
+                {
+                    case "bird":
+                    case "beast":
+                    case "reptile":
+                    case "aquatic":
+                    case "plant":
+                    case "bug":
+                        classFilters.Add(input);
+                        break;
+                    default:
+                        addressList.Add(input);
+                        break;
+
+                }
+            }
+            string addresses = "";
+            for (int i = 0; i < addressList.Count; i++)
+            {
+                if (i != 0) addresses += " ";
+                addresses += addressList[i];
+            }
+            
+
+            await TaskHandler.AddTask(Context, addresses, TaskType.BreedQuery, classFilters);
             await Context.Message.AddReactionAsync(new Emoji("✅"));
             if (!TaskHandler.FetchingDataFromApi)
             {
