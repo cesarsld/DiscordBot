@@ -49,7 +49,32 @@ namespace DiscordBot.Axie.Breeding
             var axieList_3_6 = new List<AxieDataOld>();
             foreach (var axie in listFromApi)
             {
-                if (classFilters != null && classFilters.Contains(axie.Class))
+                if (classFilters.Count > 0)
+                {
+                    if (classFilters.Contains(axie.Class))
+                    {
+                        switch (axie.GetAbsolutePureness())
+                        {
+                            case 6:
+                                axieList_6_6.Add(axie);
+                                predisposedAxieList.Add(axie.id, axie);
+                                break;
+                            case 5:
+                                axieList_5_6.Add(axie);
+                                predisposedAxieList.Add(axie.id, axie);
+                                break;
+                            case 4:
+                                axieList_4_6.Add(axie);
+                                predisposedAxieList.Add(axie.id, axie);
+                                break;
+                            case 3:
+                                axieList_3_6.Add(axie);
+                                predisposedAxieList.Add(axie.id, axie);
+                                break;
+                        }
+                    }
+                }
+                else
                 {
                     switch (axie.GetAbsolutePureness())
                     {
@@ -135,7 +160,7 @@ namespace DiscordBot.Axie.Breeding
 
         private static bool AreAxieRelated(AxieDataOld father, AxieDataOld mother)
         {
-            if (father.id == mother.matronId
+            if (   father.id == mother.matronId
                 || father.id == mother.sireId
                 || father.id == father.matronId
                 || father.id == father.sireId
@@ -143,6 +168,27 @@ namespace DiscordBot.Axie.Breeding
                 || mother.id == father.sireId
                 || mother.id == mother.matronId
                 || mother.id == mother.sireId)
+                return true;
+            else
+                return false; ;
+        }
+
+        private static bool AreAxieRelated2(AxieDataOld father, AxieDataOld mother)
+        {
+            if (   
+                //father not mother's parents
+                father.id == mother.matronId
+                || father.id == mother.sireId
+                //mother not father's parents
+                || mother.id == father.matronId
+                || mother.id == father.sireId
+
+                //check if parents are siblings
+                || father.matronId == mother.matronId
+                || father.matronId == mother.sireId
+                || father.sireId == mother.matronId
+                || father.sireId == mother.sireId)
+               
                 return true;
             else
                 return false; ;
