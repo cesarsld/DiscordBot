@@ -30,7 +30,7 @@ namespace DiscordBot.Axie
 
         public static async Task RunTasks()
         {
-            while (taskList.Count != 0)
+            while (taskList.Count != 0 || !FetchingDataFromApi)
             {
                 Tuple<IUserMessage, string, TaskType, object> query;
                 lock (SyncObj)

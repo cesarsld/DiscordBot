@@ -609,6 +609,8 @@ namespace DiscordBot
                 if (!TaskHandler.IsOn)
                 {
                     TaskHandler.IsOn = true;
+                    TaskHandler.FetchingDataFromApi = true;
+                    _ = TaskHandler.RunTasks();
                     _ = TaskHandler.UpdateServiceCheckLoop();
                     await Context.Message.AddReactionAsync(new Emoji("✅"));
                 }
