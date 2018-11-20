@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Discord;
+using DiscordBot.Axie.Web3Axie;
 using System.Numerics;
 
 namespace DiscordBot
@@ -177,7 +178,7 @@ namespace DiscordBot
             var embed = new EmbedBuilder();
             embed.WithTitle($"Axie #{id}");
             if (expAllowed)
-                embed.WithDescription($"Exp : " + axieJson["exp"] + $" | Pending exp : {pendingExp}");
+                embed.WithDescription($"Exp : " + axieJson["exp"] + $" | Pending exp : {pendingExp - (AxieDataGetter.GetSyncedExp(id).GetAwaiter().GetResult())}");
             embed.WithThumbnailUrl(GetImageUrl());
             embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
             Color color = Color.Default;
@@ -323,6 +324,9 @@ namespace DiscordBot
                     break;
                 case 5:
                     qual = "Granny!";
+                    break;
+                case 6:
+                    qual = "Ancient!";
                     break;
 
             }

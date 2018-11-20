@@ -27,6 +27,7 @@ namespace DiscordBot.Axie.Web3Axie
         private static string NftAddress = "0xf5b0a3efb8e8e4c201e2a935f110eaaf3ffecb8d";
         private static string AxieLabContractAddress = "0x99ff9f4257D5b6aF1400C994174EbB56336BB79F";
         private static string AxieExtraDataContract = "0x10e304a53351b272dc415ad049ad06565ebdfe34";
+        private static string ExpCheckpointContract = "0x71FfC95Ca3BcEbF26024f689F40006182916167f";
         private static string auctionABI = @"[
   {
     'constant': false,
@@ -1235,7 +1236,27 @@ namespace DiscordBot.Axie.Web3Axie
     'stateMutability': 'view',
     'type': 'function'
   }
-]"; 
+]";
+        private static string expABI = @"[
+{
+    'constant': true,
+    'inputs': [{
+        'name': '_axieId',
+        'type': 'uint256'
+    }],
+    'name': 'getCheckpoint',
+    'outputs': [{
+        'name': '_exp',
+        'type': 'uint256'
+    }, {
+        'name': '_createdAt',
+        'type': 'uint256'
+    }],
+    'payable': false,
+    'stateMutability': 'view',
+    'type': 'function'
+}
+]";
 
         #endregion
         private static ulong marketPlaceChannelId = 423343101428498435;
@@ -1259,6 +1280,24 @@ namespace DiscordBot.Axie.Web3Axie
             {
                 var result = await getExtraFunction.CallDeserializingToObjectAsync<AxieExtraData>(new BigInteger(axieId));
                 return result;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                Console.ReadLine();
+            }
+            return null;
+        }
+
+        public static async Task<int> GetSyncedExp(int axieId)
+        {
+            var web3 = new Web3("https://mainnet.infura.io");
+            var expContract = web3.Eth.GetContract(expABI, ExpCheckpointContract);
+            var getExpFunction = expContract.GetFunction("getExtra");
+            try
+            {
+                var result = await getExpFunction.CallDeserializingToObjectAsync<AxieExpCheckPoint>(new BigInteger(axieId));
+                return Convert.ToInt32(result.exp.ToString());
             }
             catch (Exception e)
             {
@@ -1589,6 +1628,17 @@ namespace DiscordBot.Axie.Web3Axie
 
         [Parameter("uint256", "_numBreeding", 4)]
         public BigInteger numBreeding { get; set; }
+    }
+
+
+    [FunctionOutput]
+    public class AxieExpCheckPoint
+    {
+        [Parameter("uint256", "_exp", 3)]
+        public BigInteger exp { get; set; }
+
+        [Parameter("uint256", "_createdAt", 4)]
+        public BigInteger createdAt { get; set; }
     }
 
     [FunctionOutput]
