@@ -1293,7 +1293,7 @@ namespace DiscordBot.Axie.Web3Axie
         {
             var web3 = new Web3("https://mainnet.infura.io");
             var expContract = web3.Eth.GetContract(expABI, ExpCheckpointContract);
-            var getExpFunction = expContract.GetFunction("getExtra");
+            var getExpFunction = expContract.GetFunction("getCheckpoint");
             try
             {
                 var result = await getExpFunction.CallDeserializingToObjectAsync<AxieExpCheckPoint>(new BigInteger(axieId));
@@ -1304,7 +1304,7 @@ namespace DiscordBot.Axie.Web3Axie
                 Console.WriteLine(e.ToString());
                 Console.ReadLine();
             }
-            return null;
+            return 0;
         }
 
         public static async Task<AxieExtraData> test(int axieId)

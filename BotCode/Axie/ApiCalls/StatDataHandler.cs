@@ -337,11 +337,13 @@ namespace DiscordBot.Axie.ApiCalls
                 var subGroup = PureBreeder.GetSubGroups(genome);
                 if (new AxieGeneData(subGroup).ContainsTrait(traitMap)) matchList.Add(axie.id);
             }
+            Console.WriteLine("data ready");
             string data = JsonConvert.SerializeObject(matchList, Formatting.Indented);
             using (var tw = new StreamWriter("TraitMatchList.txt"))
             {
                 tw.Write(data);
             }
+            Console.WriteLine("Sending data");
             await message.Channel.SendFileAsync("TraitMatchList.txt");
         }
 
