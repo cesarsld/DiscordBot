@@ -254,7 +254,13 @@ namespace DiscordBot.Axie.ApiCalls
                     }
                     foreach (var axie in addressJson["axies"])
                     {
-                        AxieDataOld axieData = axie.ToObject<AxieDataOld>();
+                        AxieDataOld axieData = new AxieDataOld();
+                        //try
+                        //{
+                            axieData = axie.ToObject<AxieDataOld>();
+                        //}
+                        //catch (Exception e)
+                        //{ Console.WriteLine(e.Message); }
                         axieData.jsonData = JObject.Parse(axie.ToString());
                         if (axieData.stage <= 2)
                         {

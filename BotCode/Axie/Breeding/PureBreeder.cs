@@ -47,11 +47,41 @@ namespace DiscordBot.Axie.Breeding
             var axieList_5_6 = new List<AxieDataOld>();
             var axieList_4_6 = new List<AxieDataOld>();
             var axieList_3_6 = new List<AxieDataOld>();
+            Console.WriteLine("Starting filtering : ");
             foreach (var axie in listFromApi)
             {
+                Console.Write("|");
                 if (classFilters.Count > 0)
                 {
                     if (classFilters.Contains(axie.Class))
+                    {
+                        if (await axie.CanBreed())
+                        {
+                            switch (axie.GetAbsolutePureness())
+                            {
+                                case 6:
+                                    axieList_6_6.Add(axie);
+                                    predisposedAxieList.Add(axie.id, axie);
+                                    break;
+                                case 5:
+                                    axieList_5_6.Add(axie);
+                                    predisposedAxieList.Add(axie.id, axie);
+                                    break;
+                                case 4:
+                                    axieList_4_6.Add(axie);
+                                    predisposedAxieList.Add(axie.id, axie);
+                                    break;
+                                case 3:
+                                    axieList_3_6.Add(axie);
+                                    predisposedAxieList.Add(axie.id, axie);
+                                    break;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (await axie.CanBreed())
                     {
                         switch (axie.GetAbsolutePureness())
                         {
@@ -72,28 +102,6 @@ namespace DiscordBot.Axie.Breeding
                                 predisposedAxieList.Add(axie.id, axie);
                                 break;
                         }
-                    }
-                }
-                else
-                {
-                    switch (axie.GetAbsolutePureness())
-                    {
-                        case 6:
-                            axieList_6_6.Add(axie);
-                            predisposedAxieList.Add(axie.id, axie);
-                            break;
-                        case 5:
-                            axieList_5_6.Add(axie);
-                            predisposedAxieList.Add(axie.id, axie);
-                            break;
-                        case 4:
-                            axieList_4_6.Add(axie);
-                            predisposedAxieList.Add(axie.id, axie);
-                            break;
-                        case 3:
-                            axieList_3_6.Add(axie);
-                            predisposedAxieList.Add(axie.id, axie);
-                            break;
                     }
                 }
             }
@@ -158,7 +166,7 @@ namespace DiscordBot.Axie.Breeding
             }
         }
 
-        private static bool AreAxieRelated(AxieDataOld father, AxieDataOld mother)
+        private static bool AreAxieRelated2(AxieDataOld father, AxieDataOld mother)
         {
             if (   father.id == mother.matronId
                 || father.id == mother.sireId
@@ -173,7 +181,7 @@ namespace DiscordBot.Axie.Breeding
                 return false; ;
         }
 
-        private static bool AreAxieRelated2(AxieDataOld father, AxieDataOld mother)
+        private static bool AreAxieRelated(AxieDataOld father, AxieDataOld mother)
         {
             if (   
                 //father not mother's parents

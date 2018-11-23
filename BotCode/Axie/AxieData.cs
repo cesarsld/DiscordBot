@@ -494,6 +494,7 @@ namespace DiscordBot
         public int level;
         public int sireId;
         public int matronId;
+        public int? expForBreeding;
         public int stage;
         public AxieStats stats;
         public AxieAuction auction;
@@ -538,6 +539,14 @@ namespace DiscordBot
                 }
             }
             return pureness.Max();
+        }
+
+        public async Task<bool> CanBreed()
+        {
+            var syncedExp = await AxieDataGetter.GetSyncedExp(id);
+            var v1Api = await AxieObject.GetAxieFromApi(id);
+            int totalExp = exp + v1Api.pendingExp - syncedExp;
+            return totalExp >= expForBreeding;
         }
 
         public int GetDPR()
