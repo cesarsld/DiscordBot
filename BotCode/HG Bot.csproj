@@ -202,6 +202,7 @@
     <Compile Include="Axie\AxieCommand.cs" />
     <Compile Include="Axie\AxieData.cs" />
     <Compile Include="Axie\AxieTeam.cs" />
+    <Compile Include="Axie\Battles\PartWinrate.cs" />
     <Compile Include="Axie\Battles\StatisticClasses.cs" />
     <Compile Include="Axie\Breeding\AxieGeneData.cs" />
     <Compile Include="Axie\AxieHolder\AxieHolder.cs" />

@@ -596,7 +596,7 @@ namespace DiscordBot
                 return "";
             }
         }
-        public static async Task<AxieObject> GetAxieFromApi(int axieId)
+        public static async Task<AxieDataOld> GetAxieFromApi(int axieId)
         {
             string json = "";
             int downloadTries = 0;
@@ -607,7 +607,7 @@ namespace DiscordBot
                 {
                     try
                     {
-                        json = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/ || https://api.axieinfinity.com/v1/axies/
+                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/ || https://api.axieinfinity.com/v1/axies/
                         hasFetched = true;
                     }
 
@@ -633,7 +633,7 @@ namespace DiscordBot
                 }
             }
             JObject axieJson = JObject.Parse(json);
-            AxieObject axieData = axieJson.ToObject<AxieObject>();
+            AxieDataOld axieData = axieJson.ToObject<AxieDataOld>();
             axieData.jsonData = axieJson;
             return axieData;
         }
