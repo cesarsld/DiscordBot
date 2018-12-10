@@ -14,6 +14,7 @@ using DiscordBot.Axie.QoLListHandler;
 using DiscordBot.Axie.SubscriptionServices;
 using DiscordBot.Axie.Web3Axie;
 using DiscordBot.Axie.Battles;
+using DiscordBot.Axie.ApiCalls;
 using DiscordBot.Mongo;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -134,6 +135,10 @@ namespace DiscordBot
                                                      + "- `>axie buy input_id` : Ping the owner of this axie.\n"
                                                      + "- `>axie show` : Show user's addresses.\n\n"
                                                      + "- `>axie find/f axie_id` : Show axie data.\n"
+                                                     + "- `>axie peef axie_id/name` : Show axie image.\n"
+                                                     + "- `>axie winrate/wr axie_id/name` : Show axie winrate.\n"
+                                                     + "- `>axie updateNickname/IdNick axie_id` : Update axie nickname in Database.\n"
+                                                     + "- `>axie UpdateAddressNickname/AddNick 0xADR355` : Update axie nickname from address in Database.\n"
                                                      + "- `>axie breedCount/bc axie_id` : Show axie's breed count.\n"
                                                      + "- `>axie purechance/pure/p axie_id_1 axie_id_2 (optional)beta` : Show user's chance to breed a pure axie from 2 preset axies. Write beta at the end if you want to access axies in beta.\n"
                                                      + "- `>axie subs` : Show services user can subscribe to.\n"
@@ -314,22 +319,22 @@ namespace DiscordBot
             }
         }
 
+        //[Command("peek"), Summary("find an axie from API")]
+        //[Alias("pk")]
+        //public async Task FindAxieQQ(int index, string extra = null)
+        //{
+        //    if (IsGeneral(Context) || IsBotCommand(Context) || IsBreeding(Context) || IsArena(Context))
+        //    {
+        //        AxieObject data = await AxieObject.GetAxieFromApi(index);
+        //        data.id = index;
+        //        await Context.Channel.SendMessageAsync("", false, data.EmbedBaseData(false));
+
+        //    }
+        //}
+
         [Command("peek"), Summary("find an axie from API")]
         [Alias("pk")]
-        public async Task FindAxieQQ(int index, string extra = null)
-        {
-            if (IsGeneral(Context) || IsBotCommand(Context) || IsBreeding(Context) || IsArena(Context))
-            {
-                AxieObject data = await AxieObject.GetAxieFromApi(index);
-                data.id = index;
-                await Context.Channel.SendMessageAsync("", false, data.EmbedBaseData(false));
-
-            }
-        }
-
-        [Command("peektest"), Summary("find an axie from API")]
-        [Alias("pk")]
-        public async Task FindAxieQQtest([Remainder]string data)
+        public async Task FindAxieQQ([Remainder]string data)
         {
             if (IsGeneral(Context) || IsBotCommand(Context) || IsBreeding(Context) || IsArena(Context))
             {
@@ -343,8 +348,9 @@ namespace DiscordBot
                 catch
                 {
                     var collec = DatabaseConnection.GetDb().GetCollection<AxieMapping>("IdNameMapping");
-                    var axieMap = (await collec.FindAsync(a => a.name == data)).ToList().FirstOrDefault();
-                    if(axieMap != null)
+                    //var axieMap = (await collec.FindAsync(a => a.name.ToLower() == data.ToLower())).ToList().FirstOrDefault();
+                    var axieMap = (await collec.FindAsync(a => a.name.ToLower().Contains(data.ToLower()))).ToList().FirstOrDefault();
+                    if (axieMap != null)
                     {
                         AxieObject axie = await AxieObject.GetAxieFromApi(axieMap.id);
                         await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false));
@@ -554,14 +560,39 @@ namespace DiscordBot
 
         #region DB Calls
 
+        //[Command("winrate"), Summary("GetAxieWinrate")]
+        //[Alias("wr")]
+        //public async Task GetAxieWinrate(int id, int length = 0)
+        //{
+        //    if (IsArena(Context) || IsBotCommand(Context) )
+        //    {
+        //        if (!WinrateCollector.IsDbSyncing)
+        //        {
+        //            var db = DatabaseConnection.GetDb();
+        //            var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+        //            var filterId = Builders<BsonDocument>.Filter.Eq("_id", id);
+        //            var doc = (await collection.FindAsync(filterId)).FirstOrDefault();
+        //            var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
+        //            var axieData = await AxieObject.GetAxieFromApi(id);
+        //            axieData.id = id;
+        //            if (length < 42 && length > 0)
+        //                await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length));
+        //            else
+        //                await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
+        //        }
+        //        else await Context.Channel.SendMessageAsync($"The battle database is currently being updated. Please try again later. \nData fetched from API : **{WinrateCollector.apiPerc}%**  \nData synced to DB : **{WinrateCollector.dbPerc}%**");
+        //    }
+        //}
+
         [Command("winrate"), Summary("GetAxieWinrate")]
         [Alias("wr")]
-        public async Task GetAxieWinrate(int id, int length = 0)
+        public async Task GetAxieWinrate(string data)
         {
-            if (IsArena(Context) || IsBotCommand(Context) )
+            if (IsArena(Context) || IsBotCommand(Context))
             {
-                if (!WinrateCollector.IsDbSyncing)
+                try
                 {
+                    var id = Convert.ToInt32(data);
                     var db = DatabaseConnection.GetDb();
                     var collection = db.GetCollection<BsonDocument>("AxieWinrate");
                     var filterId = Builders<BsonDocument>.Filter.Eq("_id", id);
@@ -569,12 +600,27 @@ namespace DiscordBot
                     var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
                     var axieData = await AxieObject.GetAxieFromApi(id);
                     axieData.id = id;
-                    if (length < 42 && length > 0)
-                        await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length));
-                    else
-                        await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
+                    await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
+
                 }
-                else await Context.Channel.SendMessageAsync($"The battle database is currently being updated. Please try again later. \nData fetched from API : **{WinrateCollector.apiPerc}%**  \nData synced to DB : **{WinrateCollector.dbPerc}%**");
+                catch
+                {
+                    var collec = DatabaseConnection.GetDb().GetCollection<AxieMapping>("IdNameMapping");
+                    var axieMap = (await collec.FindAsync(a => a.name.ToLower().Contains(data.ToLower()))).ToList().FirstOrDefault();
+                    if (axieMap != null)
+                    {
+                        AxieObject axie = await AxieObject.GetAxieFromApi(axieMap.id);
+                        var db = DatabaseConnection.GetDb();
+                        var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+                        var filterId = Builders<BsonDocument>.Filter.Eq("_id", axieMap.id);
+                        var doc = (await collection.FindAsync(filterId)).FirstOrDefault();
+                        var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
+                        var axieData = await AxieObject.GetAxieFromApi(axieMap.id);
+                        axieData.id = axieMap.id;
+                        await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
+
+                    }
+                }
             }
         }
 
@@ -614,6 +660,42 @@ namespace DiscordBot
                 await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length));
 
             }
+        }
+
+        [Command("UpdateNickname"), Summary("Update nickname")]
+        [Alias("IdNick")]
+        public async Task UpdateNickname(int id)
+        {
+            var collec = DatabaseConnection.GetDb().GetCollection<AxieMapping>("IdNameMapping");
+            var data = await AxieDataOld.GetAxieFromApi(id);
+            var axie = (await collec.FindAsync(a => a.id == id)).FirstOrDefault();
+            if (axie != null)
+            {
+                await collec.UpdateOneAsync(a => a.id == id, Builders<AxieMapping>.Update.Set(b => b.name, data.name));
+                await Context.Message.AddReactionAsync(new Emoji("✅"));
+            }
+            else
+                await collec.InsertOneAsync(new AxieMapping(data.id, data.name));
+        }
+
+        [Command("UpdateAddressNickname"), Summary("Update nickname")]
+        [Alias("AddNick")]
+        public async Task UpdateAddressNickname(string address)
+        {
+            var list = await StatDataHandler.GetAxieListFromAddress(address);
+            var collec = DatabaseConnection.GetDb().GetCollection<AxieMapping>("IdNameMapping");
+            foreach (var ax in list)
+            {
+                var axie = (await collec.FindAsync(a => a.id == ax.id)).FirstOrDefault();
+                if (axie != null)
+                {
+                    var data = await AxieDataOld.GetAxieFromApi(ax.id);
+                    await collec.UpdateOneAsync(a => a.id == ax.id, Builders<AxieMapping>.Update.Set(b => b.name, data.name));
+                }
+                else
+                    await collec.InsertOneAsync(new AxieMapping(ax.id, ax.name));
+            }
+            await Context.Message.AddReactionAsync(new Emoji("✅"));
         }
 
         #endregion

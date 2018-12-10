@@ -33,7 +33,7 @@ namespace DiscordBot
                 {
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
                     //StatDataHandler.GetTraitMapping("Zigzag");
-                    //PartWinrate.ConcatData().GetAwaiter().GetResult();
+                    //StatDataHandler.GetAxieListFromGlobal().GetAwaiter().GetResult();
                     new Bot().RunAsync().GetAwaiter().GetResult();
                 }
                 catch (Exception ex)

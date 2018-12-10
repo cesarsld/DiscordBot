@@ -22,10 +22,15 @@ namespace DiscordBot.Axie.Battles
     {
         public int Usage = 0;
         public int WinDiff = 0;
+        public float perc = 0;
         public TraitInfo(int gain, int use)
         {
             Usage = use;
             WinDiff = gain;
+        }
+        public void percup()
+        {
+            perc = (float)(Usage + WinDiff) / (2 * Usage) * 100;
         }
     }
 
@@ -94,8 +99,12 @@ namespace DiscordBot.Axie.Battles
                     }
                 }
             }
+            foreach (var part in traitData)
+            {
+                part.Value.percup();
+            }
             List<KeyValuePair<string, TraitInfo>> transferList = traitData.ToList();
-            transferList.Sort((pair1, pair2) => pair2.Value.WinDiff.CompareTo(pair1.Value.WinDiff));
+            transferList.Sort((pair1, pair2) => pair2.Value.perc.CompareTo(pair1.Value.perc));
             traitData = transferList.ToDictionary(name => name.Key, _data => _data.Value);
             string data = JsonConvert.SerializeObject(traitData, Formatting.Indented);
             string path = "TraitData.txt";

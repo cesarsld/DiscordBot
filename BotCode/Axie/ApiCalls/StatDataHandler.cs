@@ -299,13 +299,9 @@ namespace DiscordBot.Axie.ApiCalls
         public static async Task<List<AxieMapping>> GetAxieListFromGlobal()
         {
             var axieList = new List<AxieMapping>();
-            bool dataAvailable = true;
-            bool setupDone = false;
             var axieCount = await GetAxieCount();
             int axiePages = axieCount / 12 + (axieCount % 12 == 0? 0 :1 );
             int total = axiePages;
-            int axieIndex = 0;
-            int safetyNet = 0;
             int perc = axiePages / 100;
             while (axiePages >= 0)
             {
@@ -320,7 +316,6 @@ namespace DiscordBot.Axie.ApiCalls
                         axiePages--;
                         //var uri = new Uri("https://axieinfinity.com/api/addresses/" + address + "/axies?offset=" + (12 * axieIndex).ToString());
                         json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies?offset=" + (12 * axiePages).ToString());
-                        safetyNet = 0;
                     }
                     catch (Exception ex)
                     {
@@ -350,7 +345,7 @@ namespace DiscordBot.Axie.ApiCalls
             }
 
             var collec = DatabaseConnection.GetDb().GetCollection<AxieMapping>("IdNameMapping");
-            foreach (var map in axieList) await collec.InsertManyAsync(axieList);
+            await collec.InsertManyAsync(axieList);
 
             return axieList;
         }
