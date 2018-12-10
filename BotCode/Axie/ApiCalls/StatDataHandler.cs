@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using DiscordBot.Mongo;
 using System.IO;
 using System.Text;
 
@@ -34,6 +35,27 @@ namespace DiscordBot.Axie.ApiCalls
 
     public class StatDataHandler
     {
+
+        private static async Task<int> GetAxieCount()
+        {
+            var json = "";
+            //https://axieinfinity.com/api/axies
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                try
+                {
+                    json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies"); //https://axieinfinity.com/api/axies/ || https://api.axieinfinity.com/v1/axies/
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+            JObject axieObj = JObject.Parse(json);
+            return (int)axieObj["totalAxies"];
+        }
+
         public static void GetData()
         {
             Rank[] rankingList = new Rank[100];
@@ -212,7 +234,6 @@ namespace DiscordBot.Axie.ApiCalls
             }
         }
 
-
         public static async Task<List<AxieDataOld>> GetAxieListFromAddress(string address)
         {
             var axieList = new List<AxieDataOld>();
@@ -257,7 +278,7 @@ namespace DiscordBot.Axie.ApiCalls
                         AxieDataOld axieData = new AxieDataOld();
                         //try
                         //{
-                            axieData = axie.ToObject<AxieDataOld>();
+                        axieData = axie.ToObject<AxieDataOld>();
                         //}
                         //catch (Exception e)
                         //{ Console.WriteLine(e.Message); }
@@ -271,6 +292,66 @@ namespace DiscordBot.Axie.ApiCalls
                     }
                 }
             }
+            return axieList;
+        }
+
+
+        public static async Task<List<AxieMapping>> GetAxieListFromGlobal()
+        {
+            var axieList = new List<AxieMapping>();
+            bool dataAvailable = true;
+            bool setupDone = false;
+            var axieCount = await GetAxieCount();
+            int axiePages = axieCount / 12 + (axieCount % 12 == 0? 0 :1 );
+            int total = axiePages;
+            int axieIndex = 0;
+            int safetyNet = 0;
+            int perc = axiePages / 100;
+            while (axiePages >= 0)
+            {
+
+                Console.WriteLine($"Page {total - axiePages} out of {total}");
+
+                string json = null;
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    try
+                    {
+                        axiePages--;
+                        //var uri = new Uri("https://axieinfinity.com/api/addresses/" + address + "/axies?offset=" + (12 * axieIndex).ToString());
+                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies?offset=" + (12 * axiePages).ToString());
+                        safetyNet = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+                if (json != null)
+                {
+                    JObject addressJson = JObject.Parse(json);
+
+                    foreach (var axie in addressJson["axies"])
+                    {
+                        AxieDataOld axieData = new AxieDataOld();
+                        //try
+                        //{
+                            axieData = axie.ToObject<AxieDataOld>();
+                        //}
+
+                        //catch (Exception e)
+                        //{ Console.WriteLine(e.Message); }
+                        axieData.jsonData = JObject.Parse(axie.ToString());
+                        if(axieList.Exists(obj => obj.name == (string)axie["name"]))
+                            axieList.Add(new AxieMapping((int)axie["id"], (string)axie["id"]));
+                        else
+                            axieList.Add(new AxieMapping((int)axie["id"], (string)axie["name"]));
+                    }
+                }
+            }
+
+            var collec = DatabaseConnection.GetDb().GetCollection<AxieMapping>("IdNameMapping");
+            foreach (var map in axieList) await collec.InsertManyAsync(axieList);
+
             return axieList;
         }
 

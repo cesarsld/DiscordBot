@@ -327,6 +327,34 @@ namespace DiscordBot
             }
         }
 
+        [Command("peektest"), Summary("find an axie from API")]
+        [Alias("pk")]
+        public async Task FindAxieQQtest([Remainder]string data)
+        {
+            if (IsGeneral(Context) || IsBotCommand(Context) || IsBreeding(Context) || IsArena(Context))
+            {
+                try
+                {
+                    var id = Convert.ToInt32(data);
+                    AxieObject axie = await AxieObject.GetAxieFromApi(id);
+                    await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false));
+
+                }
+                catch
+                {
+                    var collec = DatabaseConnection.GetDb().GetCollection<AxieMapping>("IdNameMapping");
+                    var axieMap = (await collec.FindAsync(a => a.name == data)).ToList().FirstOrDefault();
+                    if(axieMap != null)
+                    {
+                        AxieObject axie = await AxieObject.GetAxieFromApi(axieMap.id);
+                        await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false));
+
+                    }
+                }
+
+            }
+        }
+
         [Command("BreedCount"), Summary("find an axie from API")]
         [Alias("bc")]
         public async Task FindBreedCount(int index)

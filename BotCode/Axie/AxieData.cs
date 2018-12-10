@@ -11,6 +11,17 @@ using System.Numerics;
 
 namespace DiscordBot
 {
+    public class AxieMapping
+    {
+        public int id;
+        public string name;
+        public AxieMapping(int _id, string _name)
+        {
+            id = _id;
+            name = _name;
+        }
+    }
+
     public class AxieObject
     {
         public int id;
