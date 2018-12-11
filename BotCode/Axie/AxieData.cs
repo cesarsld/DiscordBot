@@ -339,6 +339,9 @@ namespace DiscordBot
                 case 6:
                     qual = "Ancient!";
                     break;
+                case 7:
+                    qual = "Sterile!";
+                    break;
 
             }
             embed.WithTitle(qual);

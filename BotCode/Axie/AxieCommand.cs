@@ -643,8 +643,8 @@ namespace DiscordBot
             }
         }
 
-        [Command("lapseWr"), Summary("GetAxieWinrate on a lapse of battles")]
-        public async Task GetDailylyWinrate(int id, int length = 42)
+        [Command("lapse"), Summary("GetAxieWinrate on a lapse of battles")]
+        public async Task GetDailylyWinrate(int id, int length = 100)
         {
             if (IsArena(Context) || IsBotCommand(Context))
             {
@@ -655,7 +655,7 @@ namespace DiscordBot
                 var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
                 var axieData = await AxieObject.GetAxieFromApi(id);
                 axieData.id = id;
-                if (length > 42) length = 42;
+                if (length >= 100) length = 100;
                 if (length < 1) length = 1;
                 await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length));
 
