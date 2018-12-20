@@ -5,6 +5,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Mongo;
+using System.Collections.Generic;
 
 namespace DiscordBot
 {
@@ -93,15 +94,52 @@ namespace DiscordBot
                 var msg = messageParam as SocketUserMessage;
                 if (msg == null) return;
 
+                var context = new CommandContext(DiscordClient, msg);
+                guildName = context.Guild?.Name ?? "NULL";
+
                 int argPos = 0;
-                //if(msg.Content.StartsWith(""))
+                if(context.Guild?.Id == 410537146672349205)
+                {
+                    if(msg.Content.Contains("https://axieinfinity"))
+                    {
+                        var copy = msg.Content;
+                        var index = 0;
+                        var indexList = new List<int>();
+                        while (index != -1)
+                        {
+                            var occurence = copy.IndexOf("https://axieinfinity", index);
+                            if (occurence != -1)
+                            {
+                                indexList.Add(occurence);
+                            }
+                        }
+                        foreach(var i in indexList)
+                        {
+                            if (i == 0) 
+                            {
+                                await msg.Author.SendMessageAsync("Your message has been deleted due to forgetting to put <link> in between you link!" + 
+                                                                 $"Here is the content written: {copy}");
+                                await msg.DeleteAsync();
+                            }
+                            else
+                            {
+                                if(copy[i - 1] != '<')
+                                {
+                                    await msg.Author.SendMessageAsync("Your message has been deleted due to forgetting to put <link> in between you link!" +
+                                                                     $"Here is the content written: {copy}");
+                                    await msg.DeleteAsync();
+                                }
+                            }
+                        }
+                    }
+                }
                 if (msg.HasCharPrefix(CommandPrefix, ref argPos)) /* || msg.HasMentionPrefix(_client.CurrentUser, ref pos) */
                 {
                     userName = GetUserName(msg.Author);
                     channelName = msg.Channel?.Name ?? "NULL";
 
                     //var context = new SocketCommandContext(DiscordClient, msg);
-                    var context = new CommandContext(DiscordClient, msg);
+                    //var context = new CommandContext(DiscordClient, msg);
                     guildName = context.Guild?.Name ?? "NULL";
                     Logger.LogInternal($"HandleCommandAsync G: {guildName} C: {channelName} User: {userName}  Msg: {msg}");
 
