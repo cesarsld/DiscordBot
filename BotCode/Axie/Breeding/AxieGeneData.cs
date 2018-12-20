@@ -69,6 +69,17 @@ namespace DiscordBot.Axie.Breeding
             }
             return false;
         }
+
+        public bool ContainsShape(ShapeMap shapeMap)
+        {
+            var group = genome[shapeMap.partGroup];
+            for (int i = 0; i < 3; i++)
+            {
+                if (shapeMap.shapeCode == group.Substring(2 + i * 6, 6))
+                    return true;
+            }
+            return false;
+        }
     }
 
     public class AxieGeneTrait

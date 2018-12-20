@@ -515,6 +515,29 @@ namespace DiscordBot
         public JObject jsonData;
 
 
+        public bool hasMystic
+        {
+            get
+            {
+                foreach (var part in parts)
+                    if (part.mystic)
+                        return true;
+                return false;
+            }
+        }
+        public int mysticCount
+        {
+            get
+            {
+                int count = 0;
+                foreach (var part in parts)
+                    if (part.mystic)
+                        count++;
+
+                return count;
+            }
+        }
+
         public int GetPureness()
         {
             int pureness = 0;

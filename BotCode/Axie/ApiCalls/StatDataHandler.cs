@@ -33,6 +33,20 @@ namespace DiscordBot.Axie.ApiCalls
         }
     }
 
+    public class ShapeMap
+    {
+        public int partGroup;
+        public string shapeCode;
+
+        public ShapeMap()
+        { }
+        public ShapeMap(int group, string shape)
+        {
+            partGroup = group;
+            shapeCode = shape;
+        }
+    }
+
     public class StatDataHandler
     {
 
@@ -427,6 +441,47 @@ namespace DiscordBot.Axie.ApiCalls
             }
             Console.WriteLine("Sending data");
             await message.Channel.SendFileAsync("TraitMatchList.txt");
+        }
+
+        public static async Task GetAxiesWithShape(string trait, string address, IUserMessage message)
+        {
+            var axieList = await GetAxieListFromAddress(address);
+            var shapeMap = GetShapeMapping(trait);
+            List<int> matchList = new List<int>();
+            foreach (var axie in axieList)
+            {
+                var genome = PureBreeder.calcBinary(axie.genes);
+                var subGroup = PureBreeder.GetSubGroups(genome);
+                if (new AxieGeneData(subGroup).ContainsShape(shapeMap)) matchList.Add(axie.id);
+            }
+            Console.WriteLine("data ready");
+            string data = JsonConvert.SerializeObject(matchList, Formatting.Indented);
+            using (var tw = new StreamWriter("TraitMatchList.txt"))
+            {
+                tw.Write(data);
+            }
+            Console.WriteLine("Sending data");
+            await message.Channel.SendFileAsync("TraitMatchList.txt");
+        }
+
+        public static ShapeMap GetShapeMapping(string shape)
+        {
+            var json = "";
+            using (StreamReader sr = new StreamReader("AxieData/ShapeMapping.txt", Encoding.UTF8))
+            {
+                json = sr.ReadToEnd();
+            }
+            JToken shapeMap = JToken.Parse(json);
+            bool traitFound = false;
+            ShapeMap traitMap = new ShapeMap();
+            try
+            {
+                return new ShapeMap(1, (string)shapeMap["shape"]);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public static TraitMap GetTraitMapping(string trait)

@@ -50,6 +50,8 @@ namespace DiscordBot
             DiscordClient.Log += Logger.Log;
             DiscordClient.MessageReceived += HandleCommandAsync;
             DiscordClient.Ready += Axie.Web3Axie.AxieDataGetter.GetData;
+            var id = DiscordClient.ConnectionState;
+            
         }
 
         ~Bot()

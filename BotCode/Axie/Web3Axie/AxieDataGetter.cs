@@ -1330,9 +1330,12 @@ namespace DiscordBot.Axie.Web3Axie
             return null;
         }
 
+        public static void ShutDownLoop() => IsServiceOn = false;
+
         public static async Task GetData()
         {
             IsServiceOn = true;
+            TaskHandler.IsOn = true;
             _ = TaskHandler.UpdateServiceCheckLoop();
             var web3 = new Web3("https://mainnet.infura.io");
             //get contracts
@@ -1499,6 +1502,39 @@ namespace DiscordBot.Axie.Web3Axie
                 
             }
         }
+
+        private static async Task CheckForExistingAuctionWatchTriggers(int axieID, BigInteger price)
+        {
+            var subList = await SubscriptionServicesHandler.GetSubList();
+            bool hasTriggered = false;
+            var axieData = await AxieObject.GetAxieFromApi(axieID);
+            if (subList != null)
+            {
+                foreach (var user in subList)
+                {
+
+                    var auctionWatchService = user.GetServiceList().FirstOrDefault(s => s.name == ServiceEnum.AuctionWatch) as AuctionWatchService;
+                    if (auctionWatchService != null)
+                    {
+                        var list = auctionWatchService.GetList();
+                        foreach (var filter in list)
+                        {
+                            if (filter.Match(axieData, price))
+                            {
+                                await Bot.GetUser(user.GetId()).SendMessageAsync("", embed: await filter.GetTriggerMessage(axieID));
+                            }
+                        }
+                    }
+                }
+            }
+            if (hasTriggered)
+            {
+                _ = SubscriptionServicesHandler.SetSubList();
+                hasTriggered = false;
+
+            }
+        }
+
 
         public static async Task AlertSeller(int axieID, float price, string address)
         {

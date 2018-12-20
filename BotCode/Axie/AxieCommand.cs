@@ -586,7 +586,7 @@ namespace DiscordBot
 
         [Command("winrate"), Summary("GetAxieWinrate")]
         [Alias("wr")]
-        public async Task GetAxieWinrate(string data)
+        public async Task GetAxieWinrate([Remainder]string data)
         {
             if (IsArena(Context) || IsBotCommand(Context))
             {
