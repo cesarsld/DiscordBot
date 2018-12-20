@@ -428,6 +428,9 @@ namespace DiscordBot.Axie.Battles
             string mult = "";
             switch(mysticCount)
             {
+                case 0:
+                    mult = "Non";
+                    break;
                 case 1:
                     mult = "Single";
                     break;
@@ -455,5 +458,43 @@ namespace DiscordBot.Axie.Battles
             return embed;
 
         }
+
+        public static EmbedBuilder GetTop10LeaderBoardLatest(List<AxieWinrate> list, int mysticCount)
+        {
+            var embed = new EmbedBuilder();
+            string mult = "";
+            switch (mysticCount)
+            {
+                case 0:
+                    mult = "Non";
+                    break;
+                case 1:
+                    mult = "Single";
+                    break;
+                case 2:
+                    mult = "Double";
+                    break;
+                case 3:
+                    mult = "Triple";
+                    break;
+                case 4:
+                    mult = "Quad";
+                    break;
+            }
+            embed.WithTitle(mult + " mystic leaderboard - Last 100 battles");
+            embed.WithDescription("Axies that haven't fought within the last 4 days will be removed from the leaderboard.");
+            int size = 0;
+            if (list.Count < 10) size = list.Count;
+            else size = 10;
+            for (int i = 0; i < size; i++)
+            {
+                embed.AddField($"#{i + 1}", $" [Axie#{list[i].id}](https://axieinfinity.com/axie/{list[i].id})  Total battles : {list[i].GetRecentWins() + list[i].GetRecentLosses()} | Win rate : {list[i].GetRecentWinrate()}% ");
+            }
+
+            embed.WithColor(Color.DarkPurple);
+            return embed;
+
+        }
+
     }
 }

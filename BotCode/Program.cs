@@ -34,8 +34,8 @@ namespace DiscordBot
                     Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
                     //StatDataHandler.GetTraitMapping("Zigzag");
                     //StatDataHandler.GetAxieListFromGlobal().GetAwaiter().GetResult();
-                    DatabaseConnection.UpdateMystic().GetAwaiter().GetResult();
-                    //new Bot().RunAsync().GetAwaiter().GetResult();
+                    //DatabaseConnection.UpdateMystic().GetAwaiter().GetResult();
+                    new Bot().RunAsync().GetAwaiter().GetResult();
                 }
                 catch (Exception ex)
                 {

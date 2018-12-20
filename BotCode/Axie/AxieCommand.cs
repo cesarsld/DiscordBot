@@ -656,7 +656,7 @@ namespace DiscordBot
                     var collection = db.GetCollection<AxieWinrate>("AxieWinrate");
                     var dbList = await collection.FindAsync(a => a.mysticCount == mysticCount && a.lastBattleDate > time - 345600);
                     var axieList = dbList.ToList().Where(a => (a.battleHistory.Length) >= 90).OrderByDescending(a => a.GetRecentWins()).ToList();
-                    await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoard(axieList, mysticCount));
+                    await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoardLatest(axieList, mysticCount));
                 }
                 else await Context.Channel.SendMessageAsync($"The battle database is currently being updated. Please try again later. \nData fetched from API : **{WinrateCollector.apiPerc}%** \nData synced to DB : **{WinrateCollector.dbPerc}%**");
             }

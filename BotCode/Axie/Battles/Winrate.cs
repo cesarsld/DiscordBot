@@ -53,10 +53,19 @@ namespace DiscordBot.Axie.Battles
 
         public int GetRecentWins()
         {
-            var index = battleHistory.Length - 2;
-            if (index < 0) index = 0;
-            var history = battleHistory.Substring(2 + index);
+            var history = battleHistory.Substring(2);
             return history.Count(c => c == '1');
+        }
+        public int GetRecentLosses()
+        {
+
+            var history = battleHistory.Substring(2);
+            return history.Count(c => c == '0');
+        }
+
+        public float GetRecentWinrate()
+        {
+            return (float)GetRecentWins() / (GetRecentWins() + GetRecentLosses()) * 100;
         }
     }
     public class Winrate

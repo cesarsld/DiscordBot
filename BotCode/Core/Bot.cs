@@ -100,40 +100,9 @@ namespace DiscordBot
                 guildName = context.Guild?.Name ?? "NULL";
 
                 int argPos = 0;
-                if(context.Guild?.Id == 410537146672349205)
+                if(context.Guild?.Id == 410537146672349205 /*remove 1 at the end*/ || context.Guild?.Id == 329959863545364480)
                 {
-                    if(msg.Content.Contains("https://axieinfinity"))
-                    {
-                        var copy = msg.Content;
-                        var index = 0;
-                        var indexList = new List<int>();
-                        while (index != -1)
-                        {
-                            var occurence = copy.IndexOf("https://axieinfinity", index);
-                            if (occurence != -1)
-                            {
-                                indexList.Add(occurence);
-                            }
-                        }
-                        foreach(var i in indexList)
-                        {
-                            if (i == 0) 
-                            {
-                                await msg.Author.SendMessageAsync("Your message has been deleted due to forgetting to put <link> in between you link!" + 
-                                                                 $"Here is the content written: {copy}");
-                                await msg.DeleteAsync();
-                            }
-                            else
-                            {
-                                if(copy[i - 1] != '<')
-                                {
-                                    await msg.Author.SendMessageAsync("Your message has been deleted due to forgetting to put <link> in between you link!" +
-                                                                     $"Here is the content written: {copy}");
-                                    await msg.DeleteAsync();
-                                }
-                            }
-                        }
-                    }
+                    await CheckIfMPFormat(msg);
                 }
                 if (msg.HasCharPrefix(CommandPrefix, ref argPos)) /* || msg.HasMentionPrefix(_client.CurrentUser, ref pos) */
                 {
@@ -163,6 +132,46 @@ namespace DiscordBot
                 }
                 catch
                 {
+                }
+            }
+        }
+
+        private async Task CheckIfMPFormat(SocketUserMessage msg)
+        {
+            if (msg.Content.Contains("https://axieinfinity"))
+            {
+                var copy = msg.Content;
+                var index = 0;
+                var indexList = new List<int>();
+                while (index != -1)
+                {
+                    var occurence = copy.IndexOf("https://axieinfinity", index);
+                    if (occurence != -1)
+                    {
+                        indexList.Add(occurence);
+                        index = occurence + 1;
+                    }
+                    else index = occurence;
+                }
+                foreach (var i in indexList)
+                {
+                    if (i == 0)
+                    {
+                        await msg.Author.SendMessageAsync("Your message has been deleted due to forgetting to put <link> in between you link(s)! " +
+                                                         $"Here is the content written: \n {copy}");
+                        await msg.DeleteAsync();
+                        return;
+                    }
+                    else
+                    {
+                        if (copy[i - 1] != '<')
+                        {
+                            await msg.Author.SendMessageAsync("Your message has been deleted due to forgetting to put <link> in between you link(S)! " +
+                                                             $"Here is the content written: \n {copy}");
+                            await msg.DeleteAsync();
+                            return;
+                        }
+                    }
                 }
             }
         }
