@@ -643,6 +643,25 @@ namespace DiscordBot
             }
         }
 
+        [Command("latestleaderboard"), Summary("Get mystic winrate leaderboard")]
+        [Alias("latelb")]
+        public async Task GetLatestLeaderboard(int mysticCount)
+        {
+            if (IsArena(Context) || IsBotCommand(Context) || Context.Message.Author.Id == 195567858133106697)
+            {
+                if (!WinrateCollector.IsDbSyncing)
+                {
+                    var time = Convert.ToInt32(((DateTimeOffset)(DateTime.UtcNow)).ToUnixTimeSeconds());
+                    var db = DatabaseConnection.GetDb();
+                    var collection = db.GetCollection<AxieWinrate>("AxieWinrate");
+                    var dbList = await collection.FindAsync(a => a.mysticCount == mysticCount && a.lastBattleDate > time - 345600);
+                    var axieList = dbList.ToList().Where(a => (a.battleHistory.Length) >= 90).OrderByDescending(a => a.GetRecentWins()).ToList();
+                    await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoard(axieList, mysticCount));
+                }
+                else await Context.Channel.SendMessageAsync($"The battle database is currently being updated. Please try again later. \nData fetched from API : **{WinrateCollector.apiPerc}%** \nData synced to DB : **{WinrateCollector.dbPerc}%**");
+            }
+        }
+
         [Command("lapse"), Summary("GetAxieWinrate on a lapse of battles")]
         public async Task GetDailylyWinrate(int id, int length = 100)
         {
