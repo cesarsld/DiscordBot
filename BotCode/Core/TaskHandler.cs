@@ -19,7 +19,8 @@ namespace DiscordBot.Axie
         BreedQuery,
         WinrateQuery,
         TraitQuery,
-        TeamQuery
+        TeamQuery,
+        ShapeQuery
     }
     public class TaskHandler
     {
@@ -50,6 +51,9 @@ namespace DiscordBot.Axie
                         break;
                     case TaskType.TeamQuery:
                         await WinrateCollector.FetchTeamDataFromAddress(query.Item2, query.Item1);
+                        break;
+                    case TaskType.ShapeQuery:
+                        await StatDataHandler.GetAxiesWithShape(query.Item4 as string, query.Item1);
                         break;
                 }
 

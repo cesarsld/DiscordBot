@@ -157,7 +157,7 @@ namespace DiscordBot
                 {
                     if (i == 0)
                     {
-                        await msg.Author.SendMessageAsync("Your message has been deleted due to forgetting to put <link> in between you link(s)! " +
+                        await msg.Author.SendMessageAsync("Your message has been deleted due to forgetting to put <link> in between your link(s)! " +
                                                          $"Here is the content written: \n {copy}");
                         await msg.DeleteAsync();
                         return;
@@ -166,7 +166,7 @@ namespace DiscordBot
                     {
                         if (copy[i - 1] != '<')
                         {
-                            await msg.Author.SendMessageAsync("Your message has been deleted due to forgetting to put <link> in between you link(S)! " +
+                            await msg.Author.SendMessageAsync("Your message has been deleted due to forgetting to put <link> in between your link(S)! " +
                                                              $"Here is the content written: \n {copy}");
                             await msg.DeleteAsync();
                             return;

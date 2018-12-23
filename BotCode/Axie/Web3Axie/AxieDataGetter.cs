@@ -1443,7 +1443,8 @@ namespace DiscordBot.Axie.Web3Axie
             SocketChannel channel = Bot.GetChannelContext(marketPlaceChannelId);  //479664564061995019
             IMessageChannel msgChannel = channel as IMessageChannel;
             var axieData = await AxieObject.GetAxieFromApi(index);
-            if (price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
+            if(price >= 1 && axieData.stage <= 3) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
+            else if (price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
 
         }
 
@@ -1567,7 +1568,11 @@ namespace DiscordBot.Axie.Web3Axie
                 var marketService = user.GetServiceList().FirstOrDefault(s => s.name == ServiceEnum.AuctionWatch) as AuctionWatchService;
                 if (marketService != null)
                 {
-                    marketService.IsFilterMatch(axie, price);
+                    var message = await marketService.IsFilterMatch(axie, price);
+                    if (message != null)
+                    {
+                        await Bot.GetUser(user.GetId()).SendMessageAsync("", embed: message);
+                    }
                 }
             }
         }

@@ -182,7 +182,7 @@ namespace DiscordBot
                 await Context.Channel.SendMessageAsync("Subscriptions that you can use :\n"
                                                      + "- Axie Lab service. For more info input `>a sub lab` \n"
                                                      + "- Marketplace service. For more info input `>a sub market`\n"
-                                                     + "- Auction Watch service. For more info input `>a sub market` [PREMIUM]\n"
+                                                     + "- Auction Watch service. For more info input `>a sub snipe`\n"
                                                      + "");
         }
 
@@ -201,12 +201,13 @@ namespace DiscordBot
                                 + "- `>a labtrigger trigger_price` : change trigger price so that the bot notifies you when the pod price reaches your trigger price.\n"
                                 + "- `>a removetrigger` : remove trigger price.";
                         break;
-                    case "watch":
+                    case "snipe":
                         message = "Commands: \n"
-                                + "- `>a watchsub` : subscribe to Market Watch services\n"
-                                + "- `>a watchunsub` : subscribe to Market Watch services\n"
-                                + "- `>a watchfilter/wf filter_Input` : Add an axie filter. Example :\n `>a wf mystic2 beast bug pure4 tail-the-last-one horn-strawberry-shortcake 2.345e `\n"
-                                + "";
+                                + "- `>a snipesub` : subscribe to Market Watch services\n"
+                                + "- `>a snipeunsub` : subscribe to Market Watch services\n"
+                                + "- `>a snipefilter/snipef filter_Input` : Add an axie filter. Example :\n `>a snipef mystic2 beast bug pure4 tail-the-last-one horn-strawberry-shortcake 2.345e `\n"
+                                + "- `>a snipeshow` : Show all the snipe filters you have created\n"
+                                + "- `>a sniperemove/sniper id` : Remove a snipe filter at index ID. ID can be seen using the snipeshow command";
                         break;
                     case "market":
                         message = "Commands: \n"
@@ -444,7 +445,7 @@ namespace DiscordBot
 
         [Command("marketunsub"), Summary("subscribe to market service")]
         [Alias("munsub")]
-        public async Task UnsubscribeToMarketService()
+        public async Task UnsubscribeToMarketService(bool _bool)
         {
             await SubscriptionServicesHandler.UnSubToService(Context.Message.Author.Id, Context, ServiceEnum.MarketPlace);
         }
@@ -460,7 +461,7 @@ namespace DiscordBot
         [Alias("mnotif")]
         public async Task NotifySales(bool _bool)
         {
-            await SubscriptionServicesHandler.UnSubToService(Context.Message.Author.Id, Context, ServiceEnum.MarketPlace);
+            await SubscriptionServicesHandler.SetSaleNotifier(Context.Message.Author.Id, _bool, Context);
         }
 
         [Command("removetrigger"), Summary("set market trigger")]
@@ -474,19 +475,25 @@ namespace DiscordBot
 
         #region Auction creation commands
 
-        [Command("watchsub"), Summary("Create auction filter")]
-        [Alias("as")]
+        [Command("snipesub"), Summary("Create auction filter")]
+        [Alias("snipesub")]
         public async Task SubscribeToAuctionWatcher()
         {
             await SubscriptionServicesHandler.SubscribeToService(Context.Message.Author.Id, Context, ServiceEnum.AuctionWatch);
         }
 
-        [Command("watchfilter"), Summary("Create auction filter")]
-        [Alias("wf")]
+        [Command("snipeunsub"), Summary("Create auction filter")]
+        [Alias("snipeunsub")]
+        public async Task UnubscribeToAuctionWatcher()
+        {
+            await SubscriptionServicesHandler.UnSubToService(Context.Message.Author.Id, Context, ServiceEnum.AuctionWatch);
+        }
+
+        [Command("snipefilter"), Summary("Create auction filter")]
+        [Alias("snipef")]
         public async Task CreateAuctionFilter([Remainder]string filterInput)
         {
-            await Context.Channel.SendMessageAsync("Under construction...");
-            return;
+            //return;
             if (filterInput != null)
             {
                 await SubscriptionServicesHandler.CreateAuctionFilter(Context.Message.Author.Id, filterInput, Context);
@@ -507,7 +514,24 @@ namespace DiscordBot
                     await Context.Channel.SendMessageAsync("", embed: await filter.GetTriggerMessage(axieId));
                 }
             }
+        }
 
+        [Command("snipeshow"), Summary("Create auction filter")]
+        [Alias("snipeshow")]
+        public async Task ShowFilters()
+        {
+            var auctionService = (await SubscriptionServicesHandler.FindService(ServiceEnum.AuctionWatch, Context.Message.Author.Id)) as AuctionWatchService;
+            await Context.Message.Author.SendMessageAsync("", embed: auctionService.GetFilterMesage());
+        }
+
+
+        [Command("sniperemove"), Summary("Create auction filter")]
+        [Alias("sniper")]
+        public async Task RemoveFilters(int id)
+        {
+            var auctionService = (await SubscriptionServicesHandler.FindService(ServiceEnum.AuctionWatch, Context.Message.Author.Id)) as AuctionWatchService;
+            await auctionService.RemoveFilterById(id - 1);
+            await Context.Message.AddReactionAsync(new Emoji("✅"));
         }
 
         #endregion
@@ -818,6 +842,19 @@ namespace DiscordBot
         public async Task GetBreedList(string address, [Remainder]string trait)
         {
             await TaskHandler.AddTask(Context, address, TaskType.TraitQuery, trait);
+            await Context.Message.AddReactionAsync(new Emoji("✅"));
+            if (!TaskHandler.FetchingDataFromApi)
+            {
+                TaskHandler.FetchingDataFromApi = true;
+                _ = TaskHandler.RunTasks();
+            }
+        }
+
+        [Command("shapeList"), Summary("Returns best breed pairs for pure axie")]
+        [Alias("sl")]
+        public async Task GetShapeList([Remainder]string trait)
+        {
+            await TaskHandler.AddTask(Context, "",TaskType.ShapeQuery, trait);
             await Context.Message.AddReactionAsync(new Emoji("✅"));
             if (!TaskHandler.FetchingDataFromApi)
             {

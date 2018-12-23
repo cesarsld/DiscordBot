@@ -247,28 +247,41 @@ namespace DiscordBot.Axie.SubscriptionServices
 
         public static async Task CreateAuctionFilter(ulong userId, string filterInput, ICommandContext context)
         {
-            var existingUser = GetUserFromId(userId);
-            if (existingUser != null)
+            var auctionService = (await FindService(ServiceEnum.AuctionWatch, userId)) as AuctionWatchService;
+            if (auctionService != null)
             {
-                var auctionService = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == ServiceEnum.AuctionWatch) as AuctionWatchService;
-                if (auctionService != null)
+                filterInput = filterInput.ToLower();
+                var auctionFilter = AuctionFilter.ReturnNewAuctionFilter(filterInput);
+                if (auctionFilter != null)
                 {
-                    filterInput = filterInput.ToLower();
-                    var auctionFilter = AuctionFilter.ReturnNewAuctionFilter(filterInput);
-                    if (auctionFilter != null)
-                    {
-                        if (auctionService.GetList().Count > 0) auctionFilter.triggerId = auctionService.GetList().Max(f => f.triggerId) + 1;
-                        else auctionFilter.triggerId = 0;
-                        auctionService.AddFilter(auctionFilter);
-                        await SetSubList();
-                        await context.Message.AddReactionAsync(new Emoji("✅"));
-                    }
+                    if (auctionService.GetList().Count > 0) auctionFilter.triggerId = auctionService.GetList().Max(f => f.triggerId) + 1;
+                    else auctionFilter.triggerId = 0;
+                    auctionService.AddFilter(auctionFilter);
+                    await SetSubList();
+                    await context.Message.AddReactionAsync(new Emoji("✅"));
                 }
             }
             else await context.Channel.SendMessageAsync("Error. You are not subscribed to Auction watch service.");
         }
 
         #endregion
+
+        public static async Task<ISubscriptionService> FindService(ServiceEnum serviceName, ulong id)
+        {
+            await GetSubList();
+            var existingUser = GetUserFromId(id);
+            if (existingUser != null)
+            {
+                var service = existingUser.GetServiceList().FirstOrDefault(_service => _service.name == serviceName);
+                if (service != null)
+                {
+                    return service;
+                }
+                else return null;
+            }
+            else return null;
+        }
+
         public static async Task SetSubList()
         {
             StringBuilder stringBuilder = new StringBuilder();

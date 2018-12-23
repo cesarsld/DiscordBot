@@ -309,6 +309,67 @@ namespace DiscordBot.Axie.ApiCalls
             return axieList;
         }
 
+        public static async Task<List<AxieDataOld>> GetAxieListFromMarketplace()
+        {
+            var axieList = new List<AxieDataOld>();
+            bool dataAvailable = true;
+            bool setupDone = false;
+            int axiePages = 9999;
+            int axieIndex = 0;
+            int safetyNet = 0;
+            int perc = axiePages / 100;
+            while (axieIndex < axiePages && dataAvailable)
+            {
+
+                Console.WriteLine($"Page {axieIndex} out of {axiePages}");
+
+                string json = null;
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    try
+                    {
+                        //var uri = new Uri("https://axieinfinity.com/api/addresses/" + address + "/axies?offset=" + (12 * axieIndex).ToString());
+                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies?breedable&language=en&offset=" + (12 * axieIndex).ToString() + "&sale=1&sorting=lowest_price");
+                        safetyNet = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        safetyNet++;
+                        if (safetyNet > 25) axieIndex++;
+                        axieIndex--;
+                    }
+                }
+                axieIndex++;
+                if (json != null)
+                {
+                    JObject addressJson = JObject.Parse(json);
+                    if (!setupDone)
+                    {
+                        axiePages = (int)addressJson["totalPages"];
+                        setupDone = true;
+                    }
+                    foreach (var axie in addressJson["axies"])
+                    {
+                        AxieDataOld axieData = new AxieDataOld();
+                        //try
+                        //{
+                        axieData = axie.ToObject<AxieDataOld>();
+                        //}
+                        //catch (Exception e)
+                        //{ Console.WriteLine(e.Message); }
+                        axieData.jsonData = JObject.Parse(axie.ToString());
+                        if (axieData.stage <= 2)
+                        {
+                            Console.WriteLine("Axie still egg, moving on.");
+                            continue;
+                        }
+                        axieList.Add(axieData);
+                    }
+                }
+            }
+            return axieList;
+        }
+
 
         public static async Task<List<AxieMapping>> GetAxieListFromGlobal()
         {
@@ -443,11 +504,15 @@ namespace DiscordBot.Axie.ApiCalls
             await message.Channel.SendFileAsync("TraitMatchList.txt");
         }
 
-        public static async Task GetAxiesWithShape(string trait, string address, IUserMessage message)
+        public static async Task GetAxiesWithShape(string trait, IUserMessage message)
         {
-            var axieList = await GetAxieListFromAddress(address);
+            var axieList = await GetAxieListFromMarketplace();
+            //var one = await AxieDataOld.GetAxieFromApi(17696);
             var shapeMap = GetShapeMapping(trait);
             List<int> matchList = new List<int>();
+            //var genome = PureBreeder.calcBinary(one.genes);
+            //var subGroup = PureBreeder.GetSubGroups(genome);
+            //if (new AxieGeneData(subGroup).ContainsShape(shapeMap)) matchList.Add(one.id);
             foreach (var axie in axieList)
             {
                 var genome = PureBreeder.calcBinary(axie.genes);
@@ -472,14 +537,14 @@ namespace DiscordBot.Axie.ApiCalls
                 json = sr.ReadToEnd();
             }
             JToken shapeMap = JToken.Parse(json);
-            bool traitFound = false;
-            ShapeMap traitMap = new ShapeMap();
+            //var test = (string)shapeMap[shape.ToLower()];
             try
             {
-                return new ShapeMap(1, (string)shapeMap["shape"]);
+                return new ShapeMap(1, (string)shapeMap[shape.ToLower()]);
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 return null;
             }
         }
