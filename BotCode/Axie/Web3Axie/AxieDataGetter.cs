@@ -1379,7 +1379,7 @@ namespace DiscordBot.Axie.Web3Axie
                             var axie = await AxieObject.GetAxieFromApi(Convert.ToInt32(log.Event.tokenId.ToString()));
                             var price = log.Event.startingPrice;
                             await axie.GetTrueAuctionData();
-                            _ = CheckForAuctionFilters(axie, price);
+                            _ = CheckForSnipeFilters(axie, price);
                         }
                     }
 
@@ -1522,7 +1522,7 @@ namespace DiscordBot.Axie.Web3Axie
                         {
                             if (filter.Match(axieData, price))
                             {
-                                await Bot.GetUser(user.GetId()).SendMessageAsync("", embed: await filter.GetTriggerMessage(axieID));
+                                await Bot.GetUser(user.GetId()).SendMessageAsync("", embed: await filter.GetTriggerMessage(axieID, price));
                             }
                         }
                     }
@@ -1560,7 +1560,7 @@ namespace DiscordBot.Axie.Web3Axie
             }
         }
 
-        private static async Task CheckForAuctionFilters(AxieObject axie, BigInteger price)
+        private static async Task CheckForSnipeFilters(AxieObject axie, BigInteger price)
         {
             var subList = await SubscriptionServicesHandler.GetSubList();
             foreach (var user in subList)

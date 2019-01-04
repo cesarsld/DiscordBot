@@ -29,7 +29,7 @@ namespace DiscordBot
         #region Modifier methods
         private bool IsDev(ICommandContext context)
         {
-            return context.Message.Author.Id == 195567858133106697;
+            return context.Message.Author.Id == 195567858133106697 || context.Message.Author.Id == 181240813492109312;
         }
         private bool IsMarketPlace(ICommandContext context)
         {
@@ -125,29 +125,30 @@ namespace DiscordBot
         public async Task PostHelp()
         {
             if (IsBotCommand(Context))
-                await Context.Channel.SendMessageAsync("Commands that you can use :\n"
-                                                     + "- `>axie addaddress input_address` : register an ETH wallet address to user ID. You can add several addresses if you own more than 1 . \n"
-                                                     + "- `>axie removeaddress input_address` : remove an ETH wallet address from user.\n"
-                                                     + "- `>axie removeuser` : remove all data from user.\n"
-                                                     + "- `>axie ping` : Enable/disable ping status of user.\n"
-                                                     + "- `>axie nonbuyable axie_id` : Remove an axie from being buyable.\n"
-                                                     + "- `>axie buyable axie_id` : Add an axie to be buyable again.\n"
-                                                     + "- `>axie buy input_id` : Ping the owner of this axie.\n"
-                                                     + "- `>axie show` : Show user's addresses.\n\n"
-                                                     + "- `>axie find/f axie_id` : Show axie data.\n"
-                                                     + "- `>axie peef axie_id/name` : Show axie image.\n"
-                                                     + "- `>axie winrate/wr axie_id/name` : Show axie winrate.\n"
-                                                     + "- `>axie updateNickname/IdNick axie_id` : Update axie nickname in Database.\n"
-                                                     + "- `>axie UpdateAddressNickname/AddNick 0xADR355` : Update axie nickname from address in Database.\n"
-                                                     + "- `>axie breedCount/bc axie_id` : Show axie's breed count.\n"
-                                                     + "- `>axie purechance/pure/p axie_id_1 axie_id_2 (optional)beta` : Show user's chance to breed a pure axie from 2 preset axies. Write beta at the end if you want to access axies in beta.\n"
-                                                     + "- `>axie subs` : Show services user can subscribe to.\n"
-                                                     + "- `>axie qolhelp/qhelp` : Show QoL list help.\n"
-                                                     + "- `>axie dbhelp` : Show database list help.\n"
-                                                     + "- `>axie breedList 0xADRE55` : Returns a list of the best axie pairs to breed to obtain a pure axie.\n"
-                                                     + "- `>axie traitList/tl 0xADRE55 trait` : Returns a list of the axies that contains that trait within their genes.\n"
-                                                     + "- `>axie TeamList/teamL 0xADRE55` : Returns a list of winrates of each team of an address.\n"
-                                                     + "NOTE : You may use the prefix `>a` instead of >axie");
+                //await Context.Channel.SendMessageAsync("Commands that you can use :\n"
+                //                                     + "- `>axie addaddress input_address` : register an ETH wallet address to user ID. You can add several addresses if you own more than 1 . \n"
+                //                                     + "- `>axie removeaddress input_address` : remove an ETH wallet address from user.\n"
+                //                                     + "- `>axie removeuser` : remove all data from user.\n"
+                //                                     + "- `>axie ping` : Enable/disable ping status of user.\n"
+                //                                     + "- `>axie nonbuyable axie_id` : Remove an axie from being buyable.\n"
+                //                                     + "- `>axie buyable axie_id` : Add an axie to be buyable again.\n"
+                //                                     + "- `>axie buy input_id` : Ping the owner of this axie.\n"
+                //                                     + "- `>axie show` : Show user's addresses.\n\n"
+                //                                     + "- `>axie find/f axie_id` : Show axie data.\n"
+                //                                     + "- `>axie peef axie_id/name` : Show axie image.\n"
+                //                                     + "- `>axie winrate/wr axie_id/name` : Show axie winrate.\n"
+                //                                     + "- `>axie updateNickname/IdNick axie_id` : Update axie nickname in Database.\n"
+                //                                     + "- `>axie UpdateAddressNickname/AddNick 0xADR355` : Update axie nickname from address in Database.\n"
+                //                                     + "- `>axie breedCount/bc axie_id` : Show axie's breed count.\n"
+                //                                     + "- `>axie purechance/pure/p axie_id_1 axie_id_2 (optional)beta` : Show user's chance to breed a pure axie from 2 preset axies. Write beta at the end if you want to access axies in beta.\n"
+                //                                     + "- `>axie subs` : Show services user can subscribe to.\n"
+                //                                     + "- `>axie qolhelp/qhelp` : Show QoL list help.\n"
+                //                                     + "- `>axie dbhelp` : Show database list help.\n"
+                //                                     + "- `>axie breedList 0xADRE55` : Returns a list of the best axie pairs to breed to obtain a pure axie.\n"
+                //                                     + "- `>axie traitList/tl 0xADRE55 trait` : Returns a list of the axies that contains that trait within their genes.\n"
+                //                                     + "- `>axie TeamList/teamL 0xADRE55` : Returns a list of winrates of each team of an address.\n"
+                //                                     + "NOTE : You may use the prefix `>a` instead of >axie");
+                await Context.Channel.SendMessageAsync("Please check <http://axie.wiki/index.php?title=Marketplace_Bot> to find all the bot's commands!");
         }
 
         [Command("qolhelp"), Summary("register ETH wallet address to user ID")]
@@ -511,7 +512,7 @@ namespace DiscordBot
             {
                 if (filter.Match(await AxieObject.GetAxieFromApi(axieId), 50))
                 {
-                    await Context.Channel.SendMessageAsync("", embed: await filter.GetTriggerMessage(axieId));
+                    await Context.Channel.SendMessageAsync("", embed: await filter.GetTriggerMessage(axieId, new System.Numerics.BigInteger(1)));
                 }
             }
         }

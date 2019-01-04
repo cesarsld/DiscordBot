@@ -31,6 +31,7 @@ namespace DiscordBot.Mongo
             var connectionString = DiscordKeyGetter.GetDBUrl();
             var newString = connectionString.Substring(0, 26);
             newString += ip + ":27017";
+            DiscordKeyGetter.SetDBUrl(newString);
             
         }
 
