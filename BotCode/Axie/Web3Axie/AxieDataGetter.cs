@@ -1266,9 +1266,18 @@ namespace DiscordBot.Axie.Web3Axie
 
         //public static Queue<Task<IUserMessage>> messageQueue = new Queue<Task<IUserMessage>>();
 
-        public static bool IsServiceOn = true;
+        public static bool IsServiceOn = false;
         public AxieDataGetter()
         {
+        }
+
+        public static async Task StartService()
+        {
+            if(!IsServiceOn)
+            {
+                IsServiceOn = true;
+                await GetData();
+            }
         }
 
         public static async Task<AxieExtraData> GetExtraData(int axieId)
