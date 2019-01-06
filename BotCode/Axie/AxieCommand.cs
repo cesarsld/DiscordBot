@@ -649,6 +649,39 @@ namespace DiscordBot
             }
         }
 
+
+        [Command("quickBattlelogs")]
+        [Alias("quicklogs")]
+        public async Task GetQuickLogs(int id)
+        {
+            if (IsArena(Context) || IsBotCommand(Context) || IsDev(Context))
+            {
+                var db = DatabaseConnection.GetDb();
+                var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+                var filterId = Builders<BsonDocument>.Filter.Eq("_id", id);
+                var doc = (await collection.FindAsync(filterId)).FirstOrDefault();
+                var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
+                var axieData = await AxieObject.GetAxieFromApi(id);
+                axieData.id = id;
+                await Context.Channel.SendMessageAsync("", embed: axieData.EmbedGetQuickBattleLogs(axieWinrate));
+            }
+        }
+
+        [Command("AllBattlelogs")]
+        [Alias("alllogs")]
+        public async Task GetAllLogs(int id)
+        {
+            if (IsArena(Context) || IsBotCommand(Context) || IsDev(Context))
+            {
+                var db = DatabaseConnection.GetDb();
+                var collection = db.GetCollection<BsonDocument>("AxieWinrate");
+                var filterId = Builders<BsonDocument>.Filter.Eq("_id", id);
+                var doc = (await collection.FindAsync(filterId)).FirstOrDefault();
+                var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
+                await axieWinrate.GetAllLogs(Context.Message);
+            }
+        }
+
         [Command("mysticleaderboard"), Summary("Get mystic winrate leaderboard")]
         [Alias("mysticlb")]
         public async Task GetMysticLeaderBoard(int mysticCount)

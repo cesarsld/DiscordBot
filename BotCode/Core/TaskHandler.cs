@@ -20,7 +20,7 @@ namespace DiscordBot.Axie
         WinrateQuery,
         TraitQuery,
         TeamQuery,
-        ShapeQuery
+        ShapeQuery,
     }
     public class TaskHandler
     {

@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using Discord;
 using DiscordBot.Axie.Web3Axie;
 using System.Numerics;
+using System.Text;
 
 namespace DiscordBot
 {
@@ -265,6 +266,66 @@ namespace DiscordBot
                     break;
             }
             embed.WithColor(color);
+            return embed;
+        }
+        public EmbedBuilder EmbedGetQuickBattleLogs(AxieWinrate winRate)
+        {
+            StringBuilder sbWin = new StringBuilder();
+            StringBuilder sbLoss = new StringBuilder();
+            var counter = 0;
+            foreach (var win in winRate.wonBattles.OrderByDescending(a => a))
+            {
+                sbWin.Append($"[Battle #{win}](https://axieinfinity.com/battle/" + win.ToString() + ") \n");
+                counter++;
+                if (counter > 15) break;
+            }
+            counter = 0;
+            foreach (var loss in winRate.lostBattles.OrderByDescending(a => a))
+            {
+                sbLoss.Append($"[Battle #{loss}](https://axieinfinity.com/battle/" + loss.ToString() + ") \n");
+                counter++;
+                if (counter > 15) break;
+            }
+
+            var embed = new EmbedBuilder();
+            embed.WithTitle($"Axie #{id}");
+            embed.WithDescription("Battle logs");
+            embed.AddInlineField("Last won battles", sbWin);
+            embed.AddInlineField("Last lost battles", sbLoss);
+            Color color = Color.Default;
+            switch (Class)
+            {
+                case "plant":
+                    color = Color.Green;
+                    break;
+                case "beast":
+                    color = Color.Gold;
+                    break;
+                case "aquatic":
+                    color = Color.Blue;
+                    break;
+                case "bug":
+                    color = Color.Red;
+                    break;
+                case "bird":
+                    color = new Color(255, 182, 193);
+                    break;
+                case "reptile":
+                    color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
+                    break;
+            }
+            embed.WithColor(color);
+            embed.WithThumbnailUrl(GetImageUrl());
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
             return embed;
         }
         public EmbedBuilder EmbedWinrateRecent(AxieWinrate winRate, int historyLength)
