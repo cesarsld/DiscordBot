@@ -93,7 +93,8 @@ namespace DiscordBot
                                 {
                                     BanListHandler banList = new BanListHandler();
                                     banList.AddUserToBannedList(player.UserId);
-                                    _spamAccounts.Add(player);
+                                    if(!_spamAccounts.Contains(player))
+                                        _spamAccounts.Add(player);
                                 }
                                 else if (_players.TryGetValue(player, out existingPlayer))
                                 {
