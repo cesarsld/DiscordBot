@@ -12,16 +12,21 @@ namespace DiscordBot
     {
         public Player playerInfo;
         private int roll;
+        private int distance;
 
         public GiveawayParticipant(Player _player)
         {
             playerInfo = _player;
-            roll = 0;
+            distance = 0;
         }
 
         public int GetRoll() => roll;
 
         public void SetRoll(int _roll) => roll = _roll;
+
+        public int GetDistance() => distance;
+
+        public void SetDistance(int _roll) => distance = _roll;
     }
     public class GiveawayRunner
     {
@@ -34,15 +39,32 @@ namespace DiscordBot
         
         private int GetDistance(int from, int to) => Math.Abs(from - to);
 
+        private void CutExcessPlayers(Dictionary<int, List<GiveawayParticipant>> dict, int maxWinners)
+        {
+            int count = 0;
+            foreach(var value in dict.Values)
+            {
+                count += value.Count;
+            }
+            if (count <= maxWinners) return;
+            else 
+            {
+                
+            }
+        }
+
         public async Task Run(int numWinners, int target, List<Player> contestants, BotGameInstance.ShowMessageDelegate showMessageDelegate, BotGameInstance.ShowMessageDelegate sendMsg, Func<bool> cancelGame)
         {
             bool winnerFound = false;
             TimeSpan delayBetweenMessagess = new TimeSpan(0, 0, 0, 3);
             int bestRollDistance = 1000;
+            int minDistanceToWin = 1;
             StringBuilder sb = new StringBuilder(2000);
             StringBuilder sbDeath = new StringBuilder(2000);
             List<GiveawayParticipant> participants = new List<GiveawayParticipant>();
-            List<GiveawayParticipant> tiedParticipants = new List<GiveawayParticipant>();
+            List<GiveawayParticipant> winningParticipants = new List<GiveawayParticipant>();
+            List<GiveawayParticipant> lockedWinners = new List<GiveawayParticipant>();
+            var winningDict = new Dictionary<int, List<GiveawayParticipant>>();
             List<ulong> bannedList = new BanListHandler().GetBanList();
             List<Player> bannedPlayersToRemove = new List<Player>();
             foreach (Player player in contestants)
@@ -85,16 +107,48 @@ namespace DiscordBot
 
                     int distanceToTarget = GetDistance(target, currentRoll);
 
+                    participant.SetDistance(distanceToTarget);
                     participant.SetRoll(currentRoll);
-                    if (distanceToTarget < bestRollDistance)
+                    if (distanceToTarget <= bestRollDistance)
                     {
                         bestRollDistance = distanceToTarget;
-                        tiedParticipants.Clear();
-                        tiedParticipants.Add(participant);
-                    }
-                    else if (distanceToTarget == bestRollDistance) tiedParticipants.Add(participant);
+                        //winningParticipants.Clear();
+                        winningParticipants.Insert(0, participant);
+                        winningDict.Add(distanceToTarget, new List<GiveawayParticipant> { participant });
+                        winningDict.or
 
-                    sb.Append($"<@{participant.playerInfo.UserId}>  rolled: **" + participant.GetRoll().ToString() + "** \n");
+                        if (winningParticipants.Count > numWinners)
+                        {
+                            //winningParticipants = winningParticipants.OrderBy(a => a.GetDistance()).ToList();
+                            if (winningParticipants[winningParticipants.Count - 1].GetDistance() >
+                               winningParticipants[winningParticipants.Count - 2].GetDistance())
+                            {
+                                winningParticipants.RemoveAt(winningParticipants.Count - 1);
+                            }
+
+                        }
+                    }
+                    else if (distanceToTarget > minDistanceToWin)
+                    {
+                        winningParticipants.Add(participant);
+                        if(winningParticipants.Count == numWinners) 
+                        {
+                            winningParticipants = winningParticipants.OrderBy(a => a.GetDistance()).ToList();
+                            minDistanceToWin = distanceToTarget;
+                        }
+                        
+                        else
+                        {
+                            winningParticipants = winningParticipants.OrderBy(a => a.GetDistance()).ToList();
+                            winningParticipants.RemoveAt(winningParticipants.Count - 1);
+                        }
+                    }
+                    else if(distanceToTarget == minDistanceToWin)
+                    {
+                        winningParticipants.Add(participant);
+                    }
+
+                    sb.Append($"<@{participant.playerInfo.UserId}>  rolled: **" + participant.GetDistance().ToString() + "** \n");
                     if (participantsPerMessageIndex == participantsPerMessage)
                     {
                         sendMsg(sb.ToString());
@@ -106,7 +160,7 @@ namespace DiscordBot
 
                     //Thread.Sleep(delayBetweenMessagess);
                 }
-                participants = new List<GiveawayParticipant>(tiedParticipants);
+                participants = new List<GiveawayParticipant>(winningParticipants);
                 if (participants.Count == 1) winnerFound = true;
                 else
                 {
@@ -115,7 +169,7 @@ namespace DiscordBot
                 }
             }
 
-            sendMsg($"End of giveaway! \n <@{tiedParticipants[0].playerInfo.UserId}> is the winner!");
+            sendMsg($"End of giveaway! \n <@{winningParticipants[0].playerInfo.UserId}> is the winner!");
 
         }
     }
