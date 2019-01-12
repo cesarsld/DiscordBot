@@ -23,7 +23,7 @@ namespace DiscordBot
         }
     }
 
-    public class AxieObject
+    public class AxieObjectDepreciated
     {
         public int id;
         public string name;
@@ -409,6 +409,8 @@ namespace DiscordBot
             embed.WithDescription($"Breed  count : {breedCount}");
             return embed;
         }
+
+
         public int GetPureness()
         {
             int pureness = 0;
@@ -420,6 +422,8 @@ namespace DiscordBot
             if (parts.mouth.Class == Class) pureness++;
             return pureness;
         }
+
+
         public int GetDPR()
         {
             int dpr = 0;
@@ -465,7 +469,7 @@ namespace DiscordBot
                 return "";
             }
         }
-        public static async Task<AxieObject> GetAxieFromApi(int axieId)
+        public static async Task<AxieObjectDepreciated> GetAxieFromApi(int axieId)
         {
             string json = "";
             int downloadTries = 0;
@@ -504,13 +508,13 @@ namespace DiscordBot
             try
             {
                 JObject axieJson = JObject.Parse(json);
-                AxieObject axieData = axieJson.ToObject<AxieObject>();
+                AxieObjectDepreciated axieData = axieJson.ToObject<AxieObjectDepreciated>();
                 axieData.jsonData = axieJson;
                 return axieData;
             }
             catch (Exception e)
             {
-                return new AxieObject { id = 0};
+                return new AxieObjectDepreciated { id = 0};
             }
         }
       
@@ -557,6 +561,14 @@ namespace DiscordBot
 
     public class AxieDataOld
     {
+        public AxieDataOld(int _id)
+        {
+            id = _id;
+        }
+        public AxieDataOld()
+        {
+        }
+
         public int id;
         public string name;
         public string owner;
@@ -574,6 +586,352 @@ namespace DiscordBot
         public AxieStats stats;
         public AxieAuction auction;
         public JObject jsonData;
+
+        public AxieFigure figures;
+        public MinimalData minimalData;
+
+        public EmbedBuilder EmbedAxieData(string extra)
+        {
+            int pureness = GetPureness();
+
+
+
+            var embed = new EmbedBuilder();
+            embed.WithTitle(name);
+
+            embed.AddInlineField("Class", Class.First().ToString().ToUpper() + Class.Substring(1) + $" ({pureness}/6)");
+            embed.AddInlineField("Title", title == null ? "None" : title);
+            embed.AddInlineField("Exp", exp + $" | Pending exp : {GetPendinExp()}");
+            embed.AddInlineField("Level", level);
+            embed.AddInlineField("HP", $" ({stats.hp})".PadLeft(5 + stats.hp / 2, '|'));
+            embed.AddInlineField("Skill", $" ({stats.skill})".PadLeft(5 + stats.skill / 2, '|'));
+            embed.AddInlineField("Speed", $" ({stats.speed})".PadLeft(5 + stats.speed / 2, '|'));
+
+            embed.AddInlineField("Morale", $" ({stats.morale})".PadLeft(5 + stats.morale / 2, '|'));
+            if (extra != null && extra == "m")
+            {
+                embed.WithDescription("Disclaimer : DPS and Tank ratings are not official nor endorsed by the Axie team.");
+                embed.AddInlineField("DPS Score", (int)Math.Floor(GetDPR() / GetMaxDPR() * 100));
+                embed.AddInlineField("Tank Score", GetTNKScore());
+            }
+            embed.WithThumbnailUrl(GetImageUrl());
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
+            Color color = Color.Default;
+            switch (Class)
+            {
+                case "plant":
+                    color = Color.Green;
+                    break;
+                case "beast":
+                    color = Color.Gold;
+                    break;
+                case "aquatic":
+                    color = Color.Blue;
+                    break;
+                case "bug":
+                    color = Color.Red;
+                    break;
+                case "bird":
+                    color = new Color(255, 182, 193);
+                    break;
+                case "reptile":
+                    color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
+                    break;
+            }
+            embed.WithColor(color);
+            return embed;
+        }
+        public EmbedBuilder EmbedAxieSaleData(float price)
+        {
+
+            var embed = new EmbedBuilder();
+            embed.WithTitle(name);
+            embed.WithDescription("Has been sold!");
+            embed.AddInlineField("Price", price.ToString() + " ether");
+            Color color = Color.Default;
+            switch (Class)
+            {
+                case "plant":
+                    color = Color.Green;
+                    break;
+                case "beast":
+                    color = Color.Gold;
+                    break;
+                case "aquatic":
+                    color = Color.Blue;
+                    break;
+                case "bug":
+                    color = Color.Red;
+                    break;
+                case "bird":
+                    color = new Color(255, 182, 193);
+                    break;
+                case "reptile":
+                    color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
+                    break;
+            }
+            embed.WithColor(color);
+            embed.WithThumbnailUrl(GetImageUrl());
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
+            return embed;
+        }
+        public EmbedBuilder EmbedBaseData(bool expAllowed)
+        {
+            string json = "";
+            //using (System.Net.WebClient wc = new System.Net.WebClient())
+            //{
+            //    try
+            //    {
+            //        json = wc.DownloadString("https://axieinfinity.com/api/axies/" + id.ToString()); //https://axieinfinity.com/api/axies/
+            //    }
+
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine(ex.ToString());
+            //    }
+            //}
+            //JObject axieJson = JObject.Parse(json);
+            //oldjsonData = axieJson;
+            var embed = new EmbedBuilder();
+            embed.WithTitle($"Axie #{id}");
+            if (expAllowed)
+                embed.WithDescription($"Exp : {exp}" + $" | Pending exp : {GetPendinExp() - (AxieDataGetter.GetSyncedExp(id).GetAwaiter().GetResult())}");
+            embed.WithThumbnailUrl(GetImageUrl());
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
+            Color color = Color.Default;
+            switch (Class)
+            {
+                case "plant":
+                    color = Color.Green;
+                    break;
+                case "beast":
+                    color = Color.Gold;
+                    break;
+                case "aquatic":
+                    color = Color.Blue;
+                    break;
+                case "bug":
+                    color = Color.Red;
+                    break;
+                case "bird":
+                    color = new Color(255, 182, 193);
+                    break;
+                case "reptile":
+                    color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
+                    break;
+            }
+            embed.WithColor(color);
+            return embed;
+        }
+        public EmbedBuilder EmbedWinrate(AxieWinrate winRate)
+        {
+            var embed = new EmbedBuilder();
+            embed.WithTitle($"Axie #{id}");
+            embed.WithDescription($"Total battles : {winRate.win + winRate.loss} | Win rate : {winRate.winrate}%");
+            embed.WithThumbnailUrl(GetImageUrl());
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
+            Color color = Color.Default;
+            switch (Class)
+            {
+                case "plant":
+                    color = Color.Green;
+                    break;
+                case "beast":
+                    color = Color.Gold;
+                    break;
+                case "aquatic":
+                    color = Color.Blue;
+                    break;
+                case "bug":
+                    color = Color.Red;
+                    break;
+                case "bird":
+                    color = new Color(255, 182, 193);
+                    break;
+                case "reptile":
+                    color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
+                    break;
+            }
+            embed.WithColor(color);
+            return embed;
+        }
+        public EmbedBuilder EmbedGetQuickBattleLogs(AxieWinrate winRate)
+        {
+            StringBuilder sbWin = new StringBuilder();
+            StringBuilder sbLoss = new StringBuilder();
+            var counter = 0;
+            foreach (var win in winRate.wonBattles.OrderByDescending(a => a))
+            {
+                sbWin.Append($"[Battle #{win}](https://axieinfinity.com/battle/" + win.ToString() + ") \n");
+                counter++;
+                if (counter > 15) break;
+            }
+            counter = 0;
+            foreach (var loss in winRate.lostBattles.OrderByDescending(a => a))
+            {
+                sbLoss.Append($"[Battle #{loss}](https://axieinfinity.com/battle/" + loss.ToString() + ") \n");
+                counter++;
+                if (counter > 15) break;
+            }
+
+            var embed = new EmbedBuilder();
+            embed.WithTitle($"Axie #{id}");
+            embed.WithDescription("Battle logs");
+            embed.AddInlineField("Last won battles", sbWin);
+            embed.AddInlineField("Last lost battles", sbLoss);
+            Color color = Color.Default;
+            switch (Class)
+            {
+                case "plant":
+                    color = Color.Green;
+                    break;
+                case "beast":
+                    color = Color.Gold;
+                    break;
+                case "aquatic":
+                    color = Color.Blue;
+                    break;
+                case "bug":
+                    color = Color.Red;
+                    break;
+                case "bird":
+                    color = new Color(255, 182, 193);
+                    break;
+                case "reptile":
+                    color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
+                    break;
+            }
+            embed.WithColor(color);
+            embed.WithThumbnailUrl(GetImageUrl());
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
+            return embed;
+        }
+        public EmbedBuilder EmbedWinrateRecent(AxieWinrate winRate, int historyLength)
+        {
+            var embed = new EmbedBuilder();
+            embed.WithTitle($"Axie #{id}");
+            var index = winRate.battleHistory.Length - 2 - historyLength;
+            if (index < 0) index = 0;
+            var history = winRate.battleHistory.Substring(2 + index);
+            var perfWinrate = (float)history.Count(c => c == '1') / (history.Count(c => c == '1') + history.Count(c => c == '0')) * 100;
+            embed.WithDescription($" win rate from the last {historyLength} battles: {perfWinrate}%");
+            embed.WithThumbnailUrl(GetImageUrl());
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
+            Color color = Color.Default;
+            switch (Class)
+            {
+                case "plant":
+                    color = Color.Green;
+                    break;
+                case "beast":
+                    color = Color.Gold;
+                    break;
+                case "aquatic":
+                    color = Color.Blue;
+                    break;
+                case "bug":
+                    color = Color.Red;
+                    break;
+                case "bird":
+                    color = new Color(255, 182, 193);
+                    break;
+                case "reptile":
+                    color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
+                    break;
+            }
+            embed.WithColor(color);
+            return embed;
+        }
+        public EmbedBuilder EmbedBreedData(int breedCount)
+        {
+            var embed = EmbedBaseData(false);
+            string qual = "";
+            switch (breedCount)
+            {
+                case 0:
+                    qual = "Virgin!";
+                    break;
+                case 1:
+                    qual = "Experienced!";
+                    break;
+                case 2:
+                    qual = "Bunny!";
+                    break;
+                case 3:
+                    qual = "Escort!";
+                    break;
+                case 4:
+                    qual = "Mature!";
+                    break;
+                case 5:
+                    qual = "Granny!";
+                    break;
+                case 6:
+                    qual = "Ancient!";
+                    break;
+                case 7:
+                    qual = "Sterile!";
+                    break;
+
+            }
+            embed.WithTitle(qual);
+            embed.WithDescription($"Breed  count : {breedCount}");
+            return embed;
+        }
 
 
         public bool hasMystic
@@ -642,8 +1000,7 @@ namespace DiscordBot
         public async Task<bool> CanBreed()
         {
             var syncedExp = await AxieDataGetter.GetSyncedExp(id);
-            var v1Api = await AxieObject.GetAxieFromApi(id);
-            int totalExp = exp + v1Api.pendingExp - syncedExp;
+            int totalExp = exp + minimalData.pendingExp - syncedExp;
             return totalExp >= expForBreeding;
         }
 
@@ -683,20 +1040,20 @@ namespace DiscordBot
         public static float GetMaxTNK() => 129f;
         public static float GetMinTNK() => 33;
 
+        public int GetPendinExp()
+        {
+            return minimalData.pendingExp;
+        }
+
         public string GetImageUrl()
         {
-            try
-            {
-                return jsonData["figure"]["static"]["idle"].ToString();
-            }
-            catch (Exception e)
-            {
-                return "";
-            }
+            return figures.Static.idle;
         }
-        public static async Task<AxieDataOld> GetAxieFromApi(int axieId)
+        public static async Task<AxieDataOld> GetAxieFromApi(int axieId, bool axie, bool min, bool fig)
         {
-            string json = "";
+            string json = "{}";
+            string figureJson = "{}";
+            string minJson = "{}";
             int downloadTries = 0;
             bool hasFetched = false;
             while (downloadTries < 5 && !hasFetched)
@@ -705,7 +1062,12 @@ namespace DiscordBot
                 {
                     try
                     {
-                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/ || https://api.axieinfinity.com/v1/axies/
+                        if(axie)
+                            json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/ || https://api.axieinfinity.com/v1/axies/
+                        if(fig)
+                            figureJson = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/figure/" + axieId.ToString());
+                        if(min)
+                            minJson = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/minimal-axies/" + axieId.ToString());
                         hasFetched = true;
                     }
 
@@ -730,9 +1092,19 @@ namespace DiscordBot
                     }
                 }
             }
-            JObject axieJson = JObject.Parse(json);
-            AxieDataOld axieData = axieJson.ToObject<AxieDataOld>();
-            axieData.jsonData = axieJson;
+            AxieDataOld axieData;
+            if (axie)
+            {
+                JObject axieJson = JObject.Parse(json);
+                axieData = axieJson.ToObject<AxieDataOld>();
+                axieData.jsonData = axieJson;
+            }
+            else
+                axieData = new AxieDataOld(axieId);
+            if(min)
+                axieData.minimalData = JObject.Parse(minJson).ToObject<MinimalData>();
+            if(fig)
+                axieData.figures = JObject.Parse(figureJson).ToObject<AxieFigure>();
             return axieData;
         }
     }
@@ -786,9 +1158,9 @@ namespace DiscordBot
     }
     public class AxieFigure
     {
-        public string atlas;
-        public AxieImage images;
-        public string model;
+        public AxieImage axie;
+        public AxieSpirit spirit;
+        public AxieStatic Static;
     }
     public class AxieAuction
     {
@@ -803,7 +1175,25 @@ namespace DiscordBot
     }
     public class AxieImage
     {
-        [JsonProperty(PropertyName = "")]
-        public string png;
+        public string atlas;
+        public string spineModel;
+        public string image;
+    }
+    public class AxieStatic
+    {
+        public string idle;
+        public string avatar;
+    }
+    public class AxieSpirit
+    {
+        public string atlas;
+        public string spineModel;
+        public string image;
+    }
+
+    public class MinimalData
+    {
+        public int activityPoint;
+        public int pendingExp;
     }
 }

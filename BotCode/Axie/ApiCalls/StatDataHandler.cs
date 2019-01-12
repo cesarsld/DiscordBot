@@ -507,12 +507,8 @@ namespace DiscordBot.Axie.ApiCalls
         public static async Task GetAxiesWithShape(string trait, IUserMessage message)
         {
             var axieList = await GetAxieListFromMarketplace();
-            //var one = await AxieDataOld.GetAxieFromApi(17696);
             var shapeMap = GetShapeMapping(trait);
             List<int> matchList = new List<int>();
-            //var genome = PureBreeder.calcBinary(one.genes);
-            //var subGroup = PureBreeder.GetSubGroups(genome);
-            //if (new AxieGeneData(subGroup).ContainsShape(shapeMap)) matchList.Add(one.id);
             foreach (var axie in axieList)
             {
                 var genome = PureBreeder.calcBinary(axie.genes);
@@ -537,7 +533,6 @@ namespace DiscordBot.Axie.ApiCalls
                 json = sr.ReadToEnd();
             }
             JToken shapeMap = JToken.Parse(json);
-            //var test = (string)shapeMap[shape.ToLower()];
             try
             {
                 return new ShapeMap(1, (string)shapeMap[shape.ToLower()]);

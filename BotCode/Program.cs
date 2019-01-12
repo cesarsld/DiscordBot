@@ -10,6 +10,7 @@ using System.Linq;
 using DiscordBot.Axie.Battles;
 using System.Collections.Generic;
 using DiscordBot.Axie.Web3Axie;
+using System.Diagnostics;
 
 namespace DiscordBot
 {
@@ -35,6 +36,12 @@ namespace DiscordBot
                     //StatDataHandler.GetTraitMapping("Zigzag");
                     //StatDataHandler.GetAxieListFromGlobal().GetAwaiter().GetResult();
                     //DatabaseConnection.UpdateMystic().GetAwaiter().GetResult();
+                    //var sw = new Stopwatch();
+                    //sw.Start();
+                    //var axie = AxieDataOld.GetAxieFromApi(150).GetAwaiter().GetResult();
+                    //sw.Stop();
+                    //Console.WriteLine(sw.ElapsedMilliseconds);
+                    //Console.ReadLine();
                     new Bot().RunAsync().GetAwaiter().GetResult();
                 }
                 catch (Exception ex)

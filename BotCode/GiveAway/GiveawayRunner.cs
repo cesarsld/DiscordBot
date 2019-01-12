@@ -115,7 +115,7 @@ namespace DiscordBot
                         //winningParticipants.Clear();
                         winningParticipants.Insert(0, participant);
                         winningDict.Add(distanceToTarget, new List<GiveawayParticipant> { participant });
-                        winningDict.or
+                        //winningDict.or
 
                         if (winningParticipants.Count > numWinners)
                         {

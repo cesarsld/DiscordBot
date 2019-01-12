@@ -359,7 +359,34 @@ namespace DiscordBot
 
                     }
                 }
+            }
+        }
 
+        [Command("peekold"), Summary("find an axie from API")]
+        [Alias("pkold")]
+        public async Task FindAxieQQOld([Remainder]string data)
+        {
+            if (IsGeneral(Context) || IsBotCommand(Context) || IsBreeding(Context) || IsArena(Context))
+            {
+                try
+                {
+                    var id = Convert.ToInt32(data);
+                    var axie = await AxieDataOld.GetAxieFromApi(id, true, false, true);
+                    await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false));
+
+                }
+                catch
+                {
+                    var collec = DatabaseConnection.GetDb().GetCollection<AxieMapping>("IdNameMapping");
+                    //var axieMap = (await collec.FindAsync(a => a.name.ToLower() == data.ToLower())).ToList().FirstOrDefault();
+                    var axieMap = (await collec.FindAsync(a => a.name.ToLower().Contains(data.ToLower()))).ToList().FirstOrDefault();
+                    if (axieMap != null)
+                    {
+                        var axie = await AxieDataOld.GetAxieFromApi(axieMap.id, true, false, true);
+                        await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false));
+
+                    }
+                }
             }
         }
 
@@ -744,7 +771,7 @@ namespace DiscordBot
         public async Task UpdateNickname(int id)
         {
             var collec = DatabaseConnection.GetDb().GetCollection<AxieMapping>("IdNameMapping");
-            var data = await AxieDataOld.GetAxieFromApi(id);
+            var data = await AxieDataOld.GetAxieFromApi(id, true, false, false);
             var axie = (await collec.FindAsync(a => a.id == id)).FirstOrDefault();
             if (axie != null)
             {
@@ -766,7 +793,7 @@ namespace DiscordBot
                 var axie = (await collec.FindAsync(a => a.id == ax.id)).FirstOrDefault();
                 if (axie != null)
                 {
-                    var data = await AxieDataOld.GetAxieFromApi(ax.id);
+                    var data = await AxieDataOld.GetAxieFromApi(ax.id, true, false, false);
                     await collec.UpdateOneAsync(a => a.id == ax.id, Builders<AxieMapping>.Update.Set(b => b.name, data.name));
                 }
                 else
