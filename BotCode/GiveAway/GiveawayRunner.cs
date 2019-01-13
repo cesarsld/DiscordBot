@@ -39,31 +39,47 @@ namespace DiscordBot
         
         private int GetDistance(int from, int to) => Math.Abs(from - to);
 
-        private void CutExcessPlayers(Dictionary<int, List<GiveawayParticipant>> dict, int maxWinners)
+        private Dictionary<int, List<GiveawayParticipant>> CutExcessPlayers(Dictionary<int, List<GiveawayParticipant>> dict, int maxWinners)
         {
+            var newDict = new Dictionary<int, List<GiveawayParticipant>>();
             int count = 0;
             foreach(var value in dict.Values)
             {
                 count += value.Count;
             }
-            if (count <= maxWinners) return;
+            if (count <= maxWinners) return dict;
             else 
             {
-                
+                var distList = dict.Keys.ToList().OrderBy(a => a).ToList();
+                var newList = new List<int>();
+                var cumulPlayers = 0;
+                foreach (var key in distList)
+                {
+                    cumulPlayers += dict[key].Count;
+                    newDict.Add(key, dict[key]);
+                    if (cumulPlayers >= maxWinners)
+                        return newDict;
+                }
+                return newDict;
             }
+        }
+
+        private List<GiveawayParticipant> GetListFromDict(Dictionary<int, List<GiveawayParticipant>> dict)
+        {
+            var newList = new List<GiveawayParticipant>();
+            foreach (var list in dict.Values)
+            {
+                newList.AddRange(list);
+            }
+            return newList;
         }
 
         public async Task Run(int numWinners, int target, List<Player> contestants, BotGameInstance.ShowMessageDelegate showMessageDelegate, BotGameInstance.ShowMessageDelegate sendMsg, Func<bool> cancelGame)
         {
             bool winnerFound = false;
             TimeSpan delayBetweenMessagess = new TimeSpan(0, 0, 0, 3);
-            int bestRollDistance = 1000;
-            int minDistanceToWin = 1;
             StringBuilder sb = new StringBuilder(2000);
-            StringBuilder sbDeath = new StringBuilder(2000);
             List<GiveawayParticipant> participants = new List<GiveawayParticipant>();
-            List<GiveawayParticipant> winningParticipants = new List<GiveawayParticipant>();
-            List<GiveawayParticipant> lockedWinners = new List<GiveawayParticipant>();
             var winningDict = new Dictionary<int, List<GiveawayParticipant>>();
             List<ulong> bannedList = new BanListHandler().GetBanList();
             List<Player> bannedPlayersToRemove = new List<Player>();
@@ -109,46 +125,15 @@ namespace DiscordBot
 
                     participant.SetDistance(distanceToTarget);
                     participant.SetRoll(currentRoll);
-                    if (distanceToTarget <= bestRollDistance)
+                    if (winningDict.ContainsKey(distanceToTarget))
                     {
-                        bestRollDistance = distanceToTarget;
-                        //winningParticipants.Clear();
-                        winningParticipants.Insert(0, participant);
+                        winningDict[distanceToTarget].Add(participant);
+                    }
+                    else
+                    {
                         winningDict.Add(distanceToTarget, new List<GiveawayParticipant> { participant });
-                        winningDict.or
-
-                        if (winningParticipants.Count > numWinners)
-                        {
-                            //winningParticipants = winningParticipants.OrderBy(a => a.GetDistance()).ToList();
-                            if (winningParticipants[winningParticipants.Count - 1].GetDistance() >
-                               winningParticipants[winningParticipants.Count - 2].GetDistance())
-                            {
-                                winningParticipants.RemoveAt(winningParticipants.Count - 1);
-                            }
-
-                        }
                     }
-                    else if (distanceToTarget > minDistanceToWin)
-                    {
-                        winningParticipants.Add(participant);
-                        if(winningParticipants.Count == numWinners) 
-                        {
-                            winningParticipants = winningParticipants.OrderBy(a => a.GetDistance()).ToList();
-                            minDistanceToWin = distanceToTarget;
-                        }
-                        
-                        else
-                        {
-                            winningParticipants = winningParticipants.OrderBy(a => a.GetDistance()).ToList();
-                            winningParticipants.RemoveAt(winningParticipants.Count - 1);
-                        }
-                    }
-                    else if(distanceToTarget == minDistanceToWin)
-                    {
-                        winningParticipants.Add(participant);
-                    }
-
-                    sb.Append($"<@{participant.playerInfo.UserId}>  rolled: **" + participant.GetDistance().ToString() + "** \n");
+                    sb.Append($"<@{participant.playerInfo.UserId}>  rolled: **" + participant.GetRoll().ToString() + "** \n");
                     if (participantsPerMessageIndex == participantsPerMessage)
                     {
                         sendMsg(sb.ToString());
@@ -160,16 +145,21 @@ namespace DiscordBot
 
                     //Thread.Sleep(delayBetweenMessagess);
                 }
-                participants = new List<GiveawayParticipant>(winningParticipants);
-                if (participants.Count == 1) winnerFound = true;
+                winningDict = CutExcessPlayers(winningDict, numWinners);
+                participants = GetListFromDict(winningDict);
+                winningDict.Clear();
+                if (participants.Count == numWinners) winnerFound = true;
                 else
                 {
-                    showMessageDelegate("At least two participants have rolled the same highest roll. A new round will be ran to find the true winner.");
-                    bestRollDistance = 1000;
+                    showMessageDelegate("A few participants have rolled the same minimum highest roll. A new round will be ran to find the true winner.");
                 }
             }
-
-            sendMsg($"End of giveaway! \n <@{winningParticipants[0].playerInfo.UserId}> is the winner!");
+            sb.Clear();
+            foreach (var part in participants)
+            {
+                sb.Append($"<@{part.playerInfo.UserId}>  roll: **" + part.GetRoll().ToString() + "** \n");
+            }
+            sendMsg($"End of giveaway! \n Winners:\n" + sb);
 
         }
     }

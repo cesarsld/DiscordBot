@@ -15,7 +15,7 @@ namespace DiscordBot
 
         private string GetGiveawayMessage(string userName, int maxMinutesToWait, int target)
         {
-            return $" Preparing to start a Giveaway for ```Markdown\r\n<{userName}> will start his giveaway in {maxMinutesToWait} seconds. The participant closest to the number  * {target} * wins!"
+            return $" Preparing to start a Giveaway for ```Markdown\r\n<{userName}> will start his giveaway in {maxMinutesToWait} seconds. The participant(s) closest to the number  * {target} * wins!"
                 + "```\r\n"
                 + $"React to this message with ANY emoji to enter!  Multiple Reactions(emojis) will NOT enter you more than once.\r\nPlayer entered: ";
         }
@@ -189,6 +189,7 @@ namespace DiscordBot
                 await Logger.Log(new LogMessage(LogSeverity.Error, "RunGame", "Unexpected Exception", ex));
                 try
                 {
+                    Console.WriteLine(ex.Message);
                     LogAndReply("Error Starting Game.");
                 }
                 catch (Exception ex2)

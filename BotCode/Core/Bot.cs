@@ -50,6 +50,7 @@ namespace DiscordBot
             _commands = new CommandService();
             DiscordClient.Log += Logger.Log;
             DiscordClient.MessageReceived += HandleCommandAsync;
+            DiscordClient.MessageUpdated += HandleEditsAsync;
             DiscordClient.Ready += Axie.Web3Axie.AxieDataGetter.StartService;
             var id = DiscordClient.ConnectionState;
             
@@ -83,8 +84,38 @@ namespace DiscordBot
         public static IUser GetUser(ulong userId) => DiscordClient.GetUser(userId);
 
         public static SocketChannel GetChannelContext(ulong channelId) => DiscordClient.GetChannel(channelId);
-        
 
+
+
+        public async Task HandleEditsAsync(Cacheable<IMessage, ulong> cacheable, SocketMessage messageParam, ISocketMessageChannel channel )
+        {
+            string userName = "";
+            string channelName = "";
+            string guildName = "";
+            try
+            {
+                var msg = messageParam as SocketUserMessage;
+                if (msg == null) return;
+
+                var context = new CommandContext(DiscordClient, msg);
+                guildName = context.Guild?.Name ?? "NULL";
+                if (context.Guild?.Id == 410537146672349205 /*remove 1 at the end*/ || context.Guild?.Id == 329959863545364480)
+                {
+                    await CheckIfMPFormat(msg);
+                    await CheckIfBadLinks(msg, context);
+                }
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    await Logger.Log(new LogMessage(LogSeverity.Error, "HandleCommandAsync", $"G:{guildName} C:{channelName} U:{userName} Unexpected Exception", ex));
+                }
+                catch
+                {
+                }
+            }
+        }
 
         public async Task HandleCommandAsync(SocketMessage messageParam)
         {
@@ -103,6 +134,7 @@ namespace DiscordBot
                 if(context.Guild?.Id == 410537146672349205 /*remove 1 at the end*/ || context.Guild?.Id == 329959863545364480)
                 {
                     await CheckIfMPFormat(msg);
+                    await CheckIfBadLinks(msg, context);
                 }
                 if (msg.HasCharPrefix(CommandPrefix, ref argPos)) /* || msg.HasMentionPrefix(_client.CurrentUser, ref pos) */
                 {
@@ -175,6 +207,31 @@ namespace DiscordBot
                 }
             }
         }
+
+        private async Task CheckIfBadLinks(SocketUserMessage msg, CommandContext context)
+        {
+            if (msg.Content.Contains("discord.amazingsexdating"))
+            {
+                try
+                {
+                    var channel = await context.Guild.GetChannelAsync(415154741174337537) as IMessageChannel;
+                    var guildUser = await context.Guild.GetUserAsync(msg.Author.Id);
+                    if (DateTimeOffset.UtcNow.Subtract(guildUser.JoinedAt.Value).TotalHours < 72)
+                    {
+                        await context.Guild.AddBanAsync(msg.Author, 1, "Inappropriate link");
+                    }
+                    else
+                    {
+                        await channel.SendMessageAsync($"User : <@{msg.Author.Id}> posted inappropriate links and old account");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+        }
+
 
         /// <summary>
         /// Start the Discord client.

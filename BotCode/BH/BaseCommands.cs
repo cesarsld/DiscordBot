@@ -688,8 +688,8 @@ namespace DiscordBot
         [Command("giveAway", RunMode = RunMode.Async), Summary("Starts a giveaway.")]
         protected async Task GiveAway(
             [Summary("Max minutes to wait for players")]string strMaxSecToWait = null,
-            [Summary("Target number")]string strTargetNumber = null,
             [Summary("Number of Winners")]string strNumWinners = null,
+            [Summary("Target number")]string strTargetNumber = null,
             [Summary("Number of Winners")]string strTestUsers = null)
         {
             GiveawayInstance gameInstance = new GiveawayInstance();
