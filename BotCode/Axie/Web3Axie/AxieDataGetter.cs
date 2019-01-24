@@ -1452,8 +1452,13 @@ namespace DiscordBot.Axie.Web3Axie
             SocketChannel channel = Bot.GetChannelContext(marketPlaceChannelId);  //479664564061995019
             IMessageChannel msgChannel = channel as IMessageChannel;
             var axieData = await AxieObject.GetAxieFromApi(index);
-            if(price >= 1 && axieData.stage <= 3) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
-            else if (price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
+
+            if (axieData.stage == 4)
+            {
+                if (price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
+            }
+            else if(price >= 1) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
+            //else if (price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
 
         }
 

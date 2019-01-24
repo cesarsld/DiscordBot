@@ -215,6 +215,8 @@
     <Compile Include="Axie\SubscriptionServices\SubServiceConverter.cs" />
     <Compile Include="BH\BhCommands.cs" />
     <Compile Include="BH\DataFetcher.cs" />
+    <Compile Include="Competition\Competiton.cs" />
+    <Compile Include="Competition\UserEntered.cs" />
     <Compile Include="GiveAway\GiveawayInstance.cs" />
     <Compile Include="GiveAway\GiveawayRunner.cs" />
     <Compile Include="Mongo\DatabaseConnection.cs" />
