@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -15,6 +16,7 @@ using DiscordBot.Axie.SubscriptionServices;
 using DiscordBot.Axie.Web3Axie;
 using DiscordBot.Axie.Battles;
 using DiscordBot.Axie.ApiCalls;
+using DiscordBot.Axie.TournamentTool;
 using DiscordBot.Mongo;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -95,6 +97,14 @@ namespace DiscordBot
                 if (roleList.Contains(role)) return true;
             }
             return false;
+        }
+        //537293463419486221
+
+        private bool IsLandSupport(ICommandContext context)
+        {
+            CommandContext ctxt = new CommandContext(context.Client, context.Message);
+            if (context.Guild != null && context.Guild.Id != 410537146672349205) return true;
+            return ctxt.IsPrivate || context.Channel.Id == 537293463419486221 || context.Channel.Id == 414794784448970752 || context.Guild.Id == 329959863545364480;
         }
 
         private bool IsGeneral(ICommandContext context)
@@ -777,6 +787,80 @@ namespace DiscordBot
 
         #endregion
 
+        #region Land commands
+        [Command("genesis"), Alias("gen")]
+        public async Task GetGenesisCount()
+        {
+            var total = 0;
+            var list = await DbFetch.FetchUniqueLandHolders();
+            foreach (var add in list)
+            {
+                total += await GetGenPerAdd(add);
+            }
+            await ReplyAsync($"Total Genesis plots rolled : **{total}**");
+        }
+
+        [Command("land")]
+        public async Task GetLandDistribution(string address)
+        {
+            if (IsBotCommand(Context) || IsDev(Context))
+            {
+                var dist = await GetDistributionPerAdd(address);
+
+                var embed = new EmbedBuilder();
+                embed.WithTitle("Land Distribution");
+                embed.WithDescription($"Owner : {address}");
+                embed.AddInlineField("Savannah Count", dist[0]);
+                embed.AddInlineField("Forest Count", dist[1]);
+                embed.AddInlineField("Arctic Count", dist[2]);
+                embed.AddInlineField("Mystic Count", dist[3]);
+                embed.AddInlineField("Genesis Count", dist[4]);
+                embed.WithColor(Color.Blue);
+                await ReplyAsync($"", embed: embed.Build());
+            }
+        }
+
+        [Command("item")]
+        public async Task GetItemDistribution(string address)
+        {
+            if (IsBotCommand(Context) || IsDev(Context))
+            {
+                var dist = await GetItemDistributionPerAdd(address);
+
+                var embed = new EmbedBuilder();
+                embed.WithTitle("Item Distribution");
+                embed.WithDescription($"Owner : {address}");
+                embed.AddInlineField("Common items", dist[0]);
+                embed.AddInlineField("Rare items", dist[1]);
+                embed.AddInlineField("Epic items", dist[2]);
+                embed.AddInlineField("Mystic items", dist[3]);
+                embed.WithColor(Color.Blue);
+                await ReplyAsync($"", embed: embed.Build());
+            }
+        }
+
+
+
+        #endregion
+
+        #region Tournament commands
+
+        [Command("prebattle"), Alias("pre")]
+        public async Task GetPreBttleData(int battleID)
+        {
+            //https://api.axieinfinity.com/v1/battle/challenge/match/
+            var json = "";
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                json = wc.DownloadString("https://api.axieinfinity.com/v1/battle/challenge/match/" + battleID.ToString());
+            }
+            JObject axieJson = JObject.Parse(json);
+            JObject script = JObject.Parse((string)axieJson["script"]);
+            await ReplyAsync("", embed: TournamentUtility.GetPreBattleData(script));
+        }
+
+        #endregion
+
         #region miscellaneous
         [Command("rebootSales"), Summary("show you addresses")]
         public async Task RebootSales()
@@ -975,6 +1059,92 @@ namespace DiscordBot
             //await StartGameInternal(gameInstance, strMaxMinutesToWait);
 
         }
+
+        public async Task<int> GetGenPerAdd(string add)
+        {
+            var json = "";
+            int gen = 0;
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/land-api/profile/" + add + "/land");
+            }
+            var jobj = JArray.Parse(json);
+            foreach (var entry in jobj)
+            {
+                if ((string)(entry["landType"]) == "Genesis")
+                    gen++;
+            }
+                return gen;
+        }
+
+        public async Task<int[]> GetItemDistributionPerAdd(string add)
+        {
+            var json = "";
+            var dist = new int[] { 0, 0, 0, 0, 0 };
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/land-api/profile/" + add + "/inventory/");
+            }
+            var jobj = JObject.Parse(json);
+            var itemArray = JArray.FromObject(jobj["items"]);
+            foreach (var entry in itemArray)
+            {
+                switch ((string)entry["rarity"])
+                {
+                    case "common":
+                        dist[0]++;
+                        break;
+                    case "rare":
+                        dist[1]++;
+                        break;
+                    case "epic":
+                        dist[2]++;
+                        break;
+                    case "mystic":
+                        dist[3]++;
+                        break;
+
+                }
+            }
+            return dist;
+        }
+
+
+
+        public async Task<int[]> GetDistributionPerAdd(string add)
+        {
+            var json = "";
+            var dist = new int[] { 0, 0, 0, 0, 0};
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/land-api/profile/" + add + "/land");
+            }
+            var jobj = JArray.Parse(json);
+            foreach (var entry in jobj)
+            {
+                switch ((string)entry["landType"])
+                {
+                    case "Savannah":
+                        dist[0]++;
+                        break;
+                    case "Forest":
+                        dist[1]++;
+                        break;
+                    case "Arctic":
+                        dist[2]++;
+                        break;
+                    case "Mystic":
+                        dist[3]++;
+                        break;
+                    case "Genesis":
+                        dist[4]++;
+                        break;
+
+                }
+            }
+            return dist;
+        }
+
 
         [Command("Migration", RunMode = RunMode.Async), Summary("Launch raceing game")]
         public async Task Migration()

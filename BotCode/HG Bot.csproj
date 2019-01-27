@@ -213,6 +213,8 @@
     <Compile Include="Axie\SubscriptionServices\MarketplaceService.cs" />
     <Compile Include="Axie\SubscriptionServices\MarketPlaceTriggerTypeEnum.cs" />
     <Compile Include="Axie\SubscriptionServices\SubServiceConverter.cs" />
+    <Compile Include="Axie\TournamentTool\BattleEntity.cs" />
+    <Compile Include="Axie\TournamentTool\TournamentUtil.cs" />
     <Compile Include="BH\BhCommands.cs" />
     <Compile Include="BH\DataFetcher.cs" />
     <Compile Include="Competition\Competiton.cs" />
@@ -220,6 +222,8 @@
     <Compile Include="GiveAway\GiveawayInstance.cs" />
     <Compile Include="GiveAway\GiveawayRunner.cs" />
     <Compile Include="Mongo\DatabaseConnection.cs" />
+    <Compile Include="Mongo\DBFetch.cs" />
+    <Compile Include="Mongo\UniqueBuyer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Axie\AxieHolder\AxieHolderListHandler.cs" />
