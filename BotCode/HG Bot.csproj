@@ -281,6 +281,7 @@
     <Compile Include="Core\Logger.cs" />
     <Compile Include="Core\RunningCommandInfo.cs" />
     <Compile Include="Core\ThreadSafeFileBuffer.cs" />
+    <Compile Include="Axie\TournamentTool\PostBattleEntity.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

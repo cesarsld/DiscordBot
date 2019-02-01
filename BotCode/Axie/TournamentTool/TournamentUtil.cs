@@ -34,5 +34,10 @@ namespace DiscordBot.Axie.TournamentTool
             embed.WithColor(Discord.Color.Red);
             return embed;
         }
+
+        public static void GetPostBattleData(JObject script)
+        { 
+
+        }
     }
 }

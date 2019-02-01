@@ -859,6 +859,19 @@ namespace DiscordBot
             await ReplyAsync("", embed: TournamentUtility.GetPreBattleData(script));
         }
 
+        [Command("PostBattle"), Alias("post")]
+        public async Task GetPostBattleData(int battleId)
+        {
+            var json = "";
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                json = wc.DownloadString("https://api.axieinfinity.com/v1/battle/challenge/match/" + battleId.ToString());
+            }
+            JObject axieJson = JObject.Parse(json);
+            JObject script = JObject.Parse((string)axieJson["script"]);
+            //await ReplyAsync("", embed: TournamentUtility.GetPostBattleData(script));
+        }
+
         #endregion
 
         #region miscellaneous
