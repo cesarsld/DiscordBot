@@ -647,7 +647,7 @@ namespace DiscordBot
             return totalExp >= expForBreeding;
         }
 
-        public int GetDPR()
+        public int GetDPR(bool isMax)
         {
             int dpr = 0;
             foreach (var part in parts)
@@ -655,6 +655,10 @@ namespace DiscordBot
                 if (part.type == "back" || part.type == "mouth" || part.type == "horn" || part.type == "tail")
                     dpr += part.moves[0].attack * part.moves[0].accuracy / 100;
             }
+            if(isMax)
+                dpr = Convert.ToInt32(dpr * ( ((float)100 + ((float)stats.morale / 2 - (float)33 / 4)) / 100f));
+            else
+                dpr = Convert.ToInt32(dpr * (((float)100 + ((float)stats.morale / 2 - (float)61 / 4)) / 100f));
             return dpr;
         }
         public float GetTNK()
@@ -673,10 +677,10 @@ namespace DiscordBot
             float minTnk = GetMinTNK();
             return (int)Math.Floor((tnk - minTnk) / (GetMaxTNK() - minTnk) * 100);
         }
-        public int GetDPRScore()
+        public int GetDPRScore(bool isMax)
         {
-            int dpr = GetDPR();
-            return (int)Math.Floor(GetDPR() / GetMaxDPR() * 100);
+            int dpr = GetDPR(isMax);
+            return (int)GetDPR(isMax);
         }
 
         public static float GetMaxDPR() => 91.5f;

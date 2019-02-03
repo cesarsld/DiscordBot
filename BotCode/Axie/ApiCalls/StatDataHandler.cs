@@ -153,10 +153,12 @@ namespace DiscordBot.Axie.ApiCalls
             }
         }
 
-        public void TankAndDpsLists(string address)
+        public static void TankAndDpsLists(string address)
         {
             Rank[] dpsRankingList = new Rank[100];
             Rank[] tankRankingList = new Rank[100];
+            var maxDict = new Dictionary<int, List<int>>();
+            var minDict = new Dictionary<int, List<int>>();
             for (int i = 0; i < dpsRankingList.Length; i++)
             {
                 dpsRankingList[i] = new Rank(i + 1);
@@ -211,23 +213,26 @@ namespace DiscordBot.Axie.ApiCalls
                             Console.WriteLine("Axie still egg, moving on.");
                             continue;
                         }
-                        int dpsScore = axieData.GetDPRScore();
-                        int tankScore = axieData.GetTNKScore();
-                        if (dpsScore == 0) dpsScore++;
-                        if (tankScore == 0) tankScore++;
-                        if (dpsScore > tankScore)
-                        {
-                            dpsRankingList[100 - dpsScore].axies.Add(axieData.id);
-                        }
+                        int maxDpsScore = axieData.GetDPRScore(true);
+                        int mindDpsScore = axieData.GetDPRScore(false);
+                        if (maxDict.ContainsKey(maxDpsScore))
+                            maxDict[maxDpsScore].Add(axieData.id);
                         else
-                        {
-                            tankRankingList[100 - tankScore].axies.Add(axieData.id);
-                        }
+                            maxDict.Add(maxDpsScore, new List<int> { axieData.id });
+
+                        if (minDict.ContainsKey(mindDpsScore))
+                            minDict[mindDpsScore].Add(axieData.id);
+                        else
+                            minDict.Add(mindDpsScore, new List<int> { axieData.id });
+
+
                     }
                 }
             }
-            string dpsData = JsonConvert.SerializeObject(dpsRankingList, Formatting.Indented);
-            string tankData = JsonConvert.SerializeObject(tankRankingList, Formatting.Indented);
+            var list = maxDict.ToList().OrderByDescending(a => a.Key).ToList();
+            var minList = minDict.ToList().OrderByDescending(a => a.Key).ToList();
+            string dpsData = JsonConvert.SerializeObject(list, Formatting.Indented);
+            string tankData = JsonConvert.SerializeObject(minList, Formatting.Indented);
 
 
             string dpsPath = "CocoDpsRankingList.txt";

@@ -28,6 +28,8 @@ namespace DiscordBot.Axie.Web3Axie
         private static string AxieLabContractAddress = "0x99ff9f4257D5b6aF1400C994174EbB56336BB79F";
         private static string AxieExtraDataContract = "0x10e304a53351b272dc415ad049ad06565ebdfe34";
         private static string ExpCheckpointContract = "0x71FfC95Ca3BcEbF26024f689F40006182916167f";
+        private static string AxieLandPresaleContract = "0x2299a91cc0bffd8c7f71349da8ab03527b79724f";
+        private static string landSaleABI = @"[{'constant':true,'inputs':[{'name':'','type':'uint8'}],'name':'chestCap','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'initialDiscountPercentage','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'cashbackPercentage','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_chestType','type':'uint8'},{'name':'_chestAmount','type':'uint256'},{'name':'_tokenAddress','type':'address'},{'name':'_maxTokenAmount','type':'uint256'},{'name':'_minConversionRate','type':'uint256'},{'name':'_owner','type':'address'}],'name':'purchaseFor','outputs':[],'payable':true,'stateMutability':'payable','type':'function'},{'constant':true,'inputs':[],'name':'daiAddress','outputs':[{'name':'','type':'address'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_chestCap','type':'uint256[4]'}],'name':'setChestCap','outputs':[],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[],'name':'loomAddress','outputs':[{'name':'','type':'address'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'endedAt','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[],'name':'unpause','outputs':[],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[],'name':'ethAddress','outputs':[{'name':'','type':'address'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'lunaBankAddress','outputs':[{'name':'','type':'address'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'paused','outputs':[{'name':'','type':'bool'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'defaultReferralPercentage','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[],'name':'withdrawEther','outputs':[],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':false,'inputs':[{'name':'_referrers','type':'address[]'},{'name':'_percentage','type':'uint256[]'}],'name':'setReferralPercentages','outputs':[],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[],'name':'savannahChestPrice','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'initialDiscountDays','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[],'name':'pause','outputs':[],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':false,'inputs':[{'name':'_chestType','type':'uint8'},{'name':'_chestAmount','type':'uint256'},{'name':'_tokenAddress','type':'address'},{'name':'_maxTokenAmount','type':'uint256'},{'name':'_minConversionRate','type':'uint256'},{'name':'_referrer','type':'address'}],'name':'purchase','outputs':[],'payable':true,'stateMutability':'payable','type':'function'},{'constant':true,'inputs':[{'name':'','type':'address'}],'name':'customTokenRate','outputs':[{'name':'quote','type':'address'},{'name':'value','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_token','type':'address'}],'name':'withdrawToken','outputs':[],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[],'name':'mysticChestPrice','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_newAdmin','type':'address'}],'name':'changeAdmin','outputs':[],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':false,'inputs':[{'name':'_from','type':'address'},{'name':'_value','type':'uint256'},{'name':'_tokenAddress','type':'address'},{'name':'','type':'bytes'}],'name':'receiveApproval','outputs':[],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':false,'inputs':[{'name':'_tokenAddresses','type':'address[]'},{'components':[{'name':'quote','type':'address'},{'name':'value','type':'uint256'}],'name':'_rates','type':'tuple[]'}],'name':'setCustomTokenRates','outputs':[],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':false,'inputs':[],'name':'removeAdmin','outputs':[],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[],'name':'kyber','outputs':[{'name':'','type':'address'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[{'name':'_chestType','type':'uint8'},{'name':'_chestAmount','type':'uint256'},{'name':'_tokenAddress','type':'address'}],'name':'getPrice','outputs':[{'name':'_tokenAmount','type':'uint256'},{'name':'_minConversionRate','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'lunaContract','outputs':[{'name':'','type':'address'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[{'name':'','type':'address'}],'name':'referralPercentage','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'arcticChestPrice','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'startedAt','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'admin','outputs':[{'name':'','type':'address'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'forestChestPrice','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'inputs':[{'name':'_lunaContract','type':'address'},{'name':'_lunaBankAddress','type':'address'}],'payable':false,'stateMutability':'nonpayable','type':'constructor'},{'payable':true,'stateMutability':'payable','type':'fallback'},{'anonymous':false,'inputs':[{'indexed':true,'name':'_chestType','type':'uint8'},{'indexed':false,'name':'_chestAmount','type':'uint256'},{'indexed':true,'name':'_tokenAddress','type':'address'},{'indexed':false,'name':'_tokenAmount','type':'uint256'},{'indexed':false,'name':'_totalPrice','type':'uint256'},{'indexed':false,'name':'_lunaCashbackAmount','type':'uint256'},{'indexed':false,'name':'_buyer','type':'address'},{'indexed':true,'name':'_owner','type':'address'}],'name':'ChestPurchased','type':'event'},{'anonymous':false,'inputs':[{'indexed':true,'name':'_referrer','type':'address'},{'indexed':false,'name':'_referralReward','type':'uint256'}],'name':'ReferralRewarded','type':'event'},{'anonymous':false,'inputs':[{'indexed':true,'name':'_referrer','type':'address'},{'indexed':false,'name':'_percentage','type':'uint256'}],'name':'ReferralPercentageUpdated','type':'event'},{'anonymous':false,'inputs':[{'indexed':true,'name':'_tokenAddress','type':'address'},{'indexed':true,'name':'_quoteTokenAddress','type':'address'},{'indexed':false,'name':'_rate','type':'uint256'}],'name':'CustomTokenRateUpdated','type':'event'},{'anonymous':false,'inputs':[],'name':'Paused','type':'event'},{'anonymous':false,'inputs':[],'name':'Unpaused','type':'event'},{'anonymous':false,'inputs':[{'indexed':true,'name':'_oldAdmin','type':'address'},{'indexed':true,'name':'_newAdmin','type':'address'}],'name':'AdminChanged','type':'event'},{'anonymous':false,'inputs':[{'indexed':true,'name':'_oldAdmin','type':'address'}],'name':'AdminRemoved','type':'event'}]";
         private static string auctionABI = @"[
   {
     'constant': false,
@@ -1351,11 +1353,13 @@ namespace DiscordBot.Axie.Web3Axie
             var auctionContract = web3.Eth.GetContract(auctionABI, AxieCoreContractAddress);
             var getSellerInfoFunction = auctionContract.GetFunction("getAuction");
             var labContract = web3.Eth.GetContract(labABI, AxieLabContractAddress);
+            var landPresaleContract = web3.Eth.GetContract(landSaleABI, AxieLandPresaleContract);
             //get events
             var auctionSuccesfulEvent = auctionContract.GetEvent("AuctionSuccessful");
             var auctionCreatedEvent = auctionContract.GetEvent("AuctionCreated");
             //var axieBoughtEvent = labContract.GetEvent("AxieBought");
             var auctionCancelled = auctionContract.GetEvent("AuctionCancelled");
+            var chestPurchasedEvent = landPresaleContract.GetEvent("ChestPurchased");
 
             //set block range search
             var lastBlock = await GetLastBlockCheckpoint(web3);
@@ -1368,6 +1372,7 @@ namespace DiscordBot.Axie.Web3Axie
                     var auctionFilterAll = auctionSuccesfulEvent.CreateFilterInput(firstBlock, lastBlock);
                     var auctionCancelledFilterAll = auctionCancelled.CreateFilterInput(firstBlock, lastBlock);
                     var auctionCreationFilterAll = auctionCreatedEvent.CreateFilterInput(firstBlock, lastBlock);
+                    var landSaleFilterAll = chestPurchasedEvent.CreateFilterInput(firstBlock, lastBlock);
                     //var labFilterAll = axieBoughtEvent.CreateFilterInput(firstBlock, lastBlock);
 
                     //get logs from blockchain
@@ -1375,10 +1380,12 @@ namespace DiscordBot.Axie.Web3Axie
                     var auctionCancelledLogs = await auctionSuccesfulEvent.GetAllChanges<AuctionCancelledEvent>(auctionFilterAll);
                     //var labLogs = await axieBoughtEvent.GetAllChanges<AxieBoughtEvent>(labFilterAll);
                     var auctionCreationLogs = await auctionCreatedEvent.GetAllChanges<AuctionCreatedEvent>(auctionCreationFilterAll);
+                    var landLogs = await chestPurchasedEvent.GetAllChanges<ChestPurchasedEvent>(landSaleFilterAll);
+
 
                     BigInteger latestLogBlock = 0;
                     //read logs
-                    if (auctionCancelledLogs != null && auctionCancelledLogs.Count > 0) _= HandleAuctionCancelTriggers(auctionCancelledLogs);
+                    if (auctionCancelledLogs != null && auctionCancelledLogs.Count > 0) _ = HandleAuctionCancelTriggers(auctionCancelledLogs);
 
                     if (auctionCreationLogs != null && auctionCreationLogs.Count > 0)
                     {
@@ -1389,6 +1396,15 @@ namespace DiscordBot.Axie.Web3Axie
                             var price = log.Event.startingPrice;
                             await axie.GetTrueAuctionData();
                             _ = CheckForSnipeFilters(axie, price);
+                        }
+                    }
+
+                    foreach (var log in landLogs)
+                    {
+                        if (log.Event.totalPrice >= BigInteger.Parse("1000000000000000000"))
+                        {
+                            float priceinEth = Convert.ToSingle(Nethereum.Util.UnitConversion.Convert.FromWei(log.Event.totalPrice).ToString());
+                            await PostLandSaleTOMarketPlace(priceinEth, log.Event.chestType, Convert.ToInt32(log.Event.chestAmount.ToString()));
                         }
                     }
 
@@ -1460,6 +1476,46 @@ namespace DiscordBot.Axie.Web3Axie
             else if(price >= 1) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
             //else if (price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
 
+        }
+
+        private static async Task PostLandSaleTOMarketPlace(float price, int chestType, int count)
+        {
+            SocketChannel channel = Bot.GetChannelContext(marketPlaceChannelId);  //479664564061995019
+            IMessageChannel msgChannel = channel as IMessageChannel;
+            var embed = new EmbedBuilder();
+            embed.WithTitle("Land sold!");
+            embed.WithDescription($"{price.ToString("F4")} eth worth of land have been sold!");
+            var chest = "";
+            var chestImage = "";
+            Color color = Color.Default;
+            switch (chestType)
+            {
+                case 0:
+                    chest = "Savannah";
+                    chestImage = "https://cdn.axieinfinity.com/assets/images/e5610a54886f5a93e053914b6980c96c.png";
+                    color = Color.Gold;
+                    break;
+                case 1:
+                    chest = "Forest";
+                    chestImage = "https://cdn.axieinfinity.com/assets/images/10b76293695edefb48846a47a721a11b.png";
+                    color = Color.Green;
+                    break;
+                case 2:
+                    chest = "Arctic";
+                    chestImage = "https://cdn.axieinfinity.com/assets/images/1e339cb5ff522af62158c7f0807646be.png";
+                    color = new Color(255, 255, 255);
+                    break;
+                case 3:
+                    chest = "Mystic";
+                    chestImage = "https://cdn.axieinfinity.com/assets/images/85ca5805f0d454f4abdacb01e86263dc.png";
+                    color = Color.Purple;
+                    break;
+            }
+            embed.AddInlineField(chest + " chests count", count);
+            embed.WithColor(color);
+            embed.WithUrl("https://land.axieinfinity.com/purchase");
+            embed.WithThumbnailUrl(chestImage);
+            await msgChannel.SendMessageAsync("", embed: embed);
         }
 
         private static async Task PostLabSaleToBotCommand(int count, float price)
@@ -1722,5 +1778,30 @@ namespace DiscordBot.Axie.Web3Axie
         public BigInteger axieId { get; set; }
 
     }
+    public class ChestPurchasedEvent
+    {
+        [Parameter("uint8", "_chestType", 1, true)]
+        public int chestType { get; set; }
 
+        [Parameter("uint256", "_chestAmount", 2)]
+        public BigInteger chestAmount { get; set; }
+
+        [Parameter("address", "_tokenAddress", 3, true)]
+        public string tokenAddress { get; set; }
+
+        [Parameter("uint256", "_tokenAmount", 4)]
+        public BigInteger tokenAmount { get; set; }
+
+        [Parameter("uint256", "_totalPrice", 5)]
+        public BigInteger totalPrice { get; set; }
+
+        [Parameter("uint256", "_lunaCashbackAmount", 6)]
+        public BigInteger lunaCashbackAmount { get; set; }
+
+        [Parameter("address", "_buyer", 7)]
+        public string buyer { get; set; }
+
+        [Parameter("address", "_owner", 8, true)]
+        public string owner { get; set; }
+    }
 }
