@@ -17,6 +17,13 @@ namespace DiscordBot.Axie.TournamentTool
         private int highestCrit;
 
 
+        public int GetDamageTaken() => damageTaken;
+        public int GetDamageDealt() => damageDealt;
+        public int GetPoisonDamageDealt() => poisonDamageDealt;
+        public int GetHealingReceived() => healingReceived;
+        public int GetCrits() => critsDone;
+        public int GetHighestCrit() => highestCrit;
+
         public void addDmgTaken(int dmg) => damageTaken += dmg;
         public void addDmgDealt(int dmg) => damageDealt += dmg;
 

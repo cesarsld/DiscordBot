@@ -35,7 +35,7 @@ namespace DiscordBot.Axie.TournamentTool
             return embed;
         }
 
-        public static void GetPostBattleData(JObject script)
+        public static Discord.EmbedBuilder GetPostBattleData(JObject script)
         {
             JArray fighterArray = JArray.FromObject(script["metadata"]["fighters"]);
             var entityArray = new PostBattleEntity[6];
@@ -52,28 +52,33 @@ namespace DiscordBot.Axie.TournamentTool
                 foreach (var turn in turns)
                 {
                     var attacker = entityArray.FirstOrDefault(a => a.id == (int)turn["attacker"]);
-                    var defender = entityArray.FirstOrDefault(a => a.id == (int)turn["defender"]);
                     if ((bool)turn["hit"])
                     {
                         attacker.addDmgDealt((int)turn["damageDealt"]);
                         if ((bool)turn["critical"])
                             attacker.AddCrit((int)turn["damageDealt"]);
-                        defender.addDmgTaken((int)turn["damageDealt"]);
-
-
-                        var effects = JArray.FromObject(turn["effectsApplied"]);
-                        foreach (var effect in effects)
+                        if (turn["defender"] != null)
                         {
-                            if ((string)effect["id"] == "heal-target")
-                            {
-                                entityArray.FirstOrDefault(a => a.id == (int)effect["targets"][0]).healingR((int)effect["extra"]["totalHealed"]);   
-                            }
+                            var defender = entityArray.FirstOrDefault(a => a.id == (int)turn["defender"]);
+                            defender.addDmgTaken((int)turn["damageDealt"]);
                         }
+                    }
+                    var effects = JArray.FromObject(turn["effectsApplied"]);
+                    foreach (var effect in effects)
+                    {
+                        if ((string)effect["id"] == "heal-target")
+                        {
+                            entityArray.FirstOrDefault(a => a.id == (int)effect["targets"][0]).healingR((int)effect["extra"]["totalHealed"]);
+                        }
+                    }
+                    if ((bool)turn["counter"])
+                    {
+
                     }
                     var postEffect = JArray.FromObject(turn["postTurnState"]);
                     foreach (var state in postEffect)
                     {
-                        var buffs = JArray.FromObject(turn["buffs"]);
+                        var buffs = JArray.FromObject(state["buffs"]);
                         foreach (var buff in buffs)
                         {
                             if ((string)buff["id"] == "poison" && (int)state["hp"] > 0)
@@ -82,6 +87,23 @@ namespace DiscordBot.Axie.TournamentTool
                     }
                 }
             }
+
+            var embed = new Discord.EmbedBuilder();
+            for (i = 0; i < 2; i++)
+            {
+                embed.AddField($"Team {i + 1}", "---------------");
+                for (int j = 0; j < 3; j++)
+                {
+                    embed.AddInlineField($"Axie #{entityArray[j + (3 * i)].id}", $"Damage done : {entityArray[j + (3 * i)].GetDamageDealt()}\n"+
+                                                                                 $"Damage taken : {entityArray[j + (3 * i)].GetDamageTaken()}\n"+
+                                                                                 $"Poison damage taken : {entityArray[j + (3 * i)].GetPoisonDamageDealt()}\n"+
+                                                                                 $"Healing received : {entityArray[j + (3 * i)].GetHealingReceived()}\n"+
+                                                                                 $"Crits done : {entityArray[j + (3 * i)].GetCrits()}\n"+
+                                                                                 $"Highest crit : {entityArray[j + (3 * i)].GetHighestCrit()}\n");
+                }
+            }
+            embed.WithColor(Discord.Color.Red);
+            return embed;
         }
     }
 }

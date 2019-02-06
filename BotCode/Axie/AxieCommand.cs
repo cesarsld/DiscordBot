@@ -869,8 +869,7 @@ namespace DiscordBot
             }
             JObject axieJson = JObject.Parse(json);
             JObject script = JObject.Parse((string)axieJson["script"]);
-            TournamentUtility.GetPostBattleData(script);
-            //await ReplyAsync("", embed: TournamentUtility.GetPostBattleData(script));
+            await ReplyAsync("", embed: TournamentUtility.GetPostBattleData(script));
         }
 
         #endregion
