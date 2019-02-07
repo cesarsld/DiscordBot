@@ -45,6 +45,12 @@ namespace DiscordBot.Axie.Breeding
                     return "aquatic";
                 case "0101":
                     return "reptile";
+                case "1000":
+                    return "hidden_1";
+                case "1001":
+                    return "hidden_2";
+                case "1010":
+                    return "hidden_3";
             }
             return "";
         }

@@ -207,7 +207,8 @@ namespace DiscordBot.Axie.Breeding
         {
             BigInteger gene256 = BigInteger.Parse(gene);
             var bytes = gene256.ToByteArray();
-            var idx = bytes.Length - 1;
+            //var idx = bytes.Length - 1;
+            var idx = 31;
 
             // Create a StringBuilder having appropriate capacity.
             var base2 = new StringBuilder(bytes.Length * 8);
@@ -224,7 +225,7 @@ namespace DiscordBot.Axie.Breeding
             // Ensure leading zero exists if value is positive.
             if (binary[0] != '0' && gene256.Sign == 1)
             {
-                base2.Append('0');
+                //base2.Append('0');
             }
 
             // Append binary string to StringBuilder.
