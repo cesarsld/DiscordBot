@@ -72,7 +72,7 @@ namespace DiscordBot.Competition
                     Random rand = new Random(DateTime.Now.Millisecond);
                     var value = rand.Next(100) + 1;
                     double factor = 100 / (double)(under - 1);
-                    var message = await ReplyAsync("", embed: GetAwaitingRollEmbed(bet, factor, user));
+                    var message = await ReplyAsync("", embed: GetAwaitingRollEmbed(bet, factor, user).Build());
 
                     await Task.Delay(2500);
                     if (under > value) //win
@@ -82,10 +82,10 @@ namespace DiscordBot.Competition
                             Builders<UsersEntered>.Update.Set(u => u.credits, userInCompetition.credits + Convert.ToInt64(winnings - bet)));
 
                         embed.WithColor(Color.Green);
-                        embed.AddInlineField("Result", "Winner");
-                        embed.AddInlineField("Random Value", value);
-                        embed.AddInlineField("Winnings", (int)winnings);
-                        embed.AddInlineField("Total points", userInCompetition.credits + Convert.ToInt64(winnings - bet));
+                        embed.AddField("Result", "Winner", true);
+                        embed.AddField("Random Value", value, true);
+                        embed.AddField("Winnings", (int)winnings, true);
+                        embed.AddField("Total points", userInCompetition.credits + Convert.ToInt64(winnings - bet), true);
                     }
                     else
                     {
@@ -93,9 +93,9 @@ namespace DiscordBot.Competition
                             Builders<UsersEntered>.Update.Set(u => u.credits, userInCompetition.credits - bet));
                         embed.WithColor(Color.Red);
                         embed.WithDescription($"Result for <@{user.Id}>");
-                        embed.AddInlineField("Outcome", "Loser");
-                        embed.AddInlineField("Random Value", value);
-                        embed.AddInlineField("Losing", -bet);
+                        embed.AddField("Outcome", "Loser", true);
+                        embed.AddField("Random Value", value, true);
+                        embed.AddField("Losing", -bet, true);
                         embed.AddField("Total points", userInCompetition.credits - bet);
                     }
                     await message.ModifyAsync(x => x.Embed = embed.Build());
@@ -110,9 +110,9 @@ namespace DiscordBot.Competition
             var embed = new EmbedBuilder();
             embed.WithTitle($"Roll for {user.Username}");
             embed.WithColor(new Color(95, 211, 232));
-            embed.AddInlineField("Result", "?");
-            embed.AddInlineField("Random Value", "?");
-            embed.AddInlineField("Potential gain", $"x{factor.ToString("F4")}");
+            embed.AddField("Result", "?", true);
+            embed.AddField("Random Value", "?", true);
+            embed.AddField("Potential gain", $"x{factor.ToString("F4")}", true);
             //embed.AddInlineField("Total points", userInCompetition.credits + Convert.ToInt64(winnings - bet));
             return embed;
         }

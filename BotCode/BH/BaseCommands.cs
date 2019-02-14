@@ -581,7 +581,7 @@ namespace DiscordBot
                     {
                         cleanupCommandInstance = true;
                         var botUser = Context.Client.CurrentUser;
-                        var result = await Context.Channel.GetMessagesAsync().Flatten();
+                        var result = await Context.Channel.GetMessagesAsync().FlattenAsync();
                         List<IMessage> messagesToDelete = new List<IMessage>();
                         if (result != null)
                         {
@@ -594,7 +594,8 @@ namespace DiscordBot
                             }
                             if (messagesToDelete.Count > 0)
                             {
-                                await Context.Channel.DeleteMessagesAsync(messagesToDelete);
+                                //await Context.Channel.DeleteMessagesAsync(messagesToDelete);
+                                await (Context.Channel as ITextChannel).DeleteMessagesAsync(messagesToDelete);
                                 if (messagesToDelete.Count == 1)
                                 {
                                     Logger.Log("Deleted 1 message.");

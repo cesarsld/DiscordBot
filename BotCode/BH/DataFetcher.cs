@@ -34,9 +34,9 @@ namespace DiscordBot.BH
 
             embed.WithTitle((string)obj["name"]);
             embed.AddField("zone", (string)obj["zone"]);
-            embed.AddInlineField("Power", (string)obj["power"] + "%");
-            embed.AddInlineField("Stamina", (string)obj["stamina"] + "%");
-            embed.AddInlineField("Agility", (string)obj["agility"] + "%");
+            embed.AddField("Power", (string)obj["power"] + "%", true);
+            embed.AddField("Stamina", (string)obj["stamina"] + "%", true);
+            embed.AddField("Agility", (string)obj["agility"] + "%", true);
             foreach (var skill in obj["skills"])
             {
                 string info = $"{(string)skill["action"]} | SP = {(int)skill["skillPoint"]} | Range = {(string)skill["pourcentage"]}";
@@ -71,9 +71,9 @@ namespace DiscordBot.BH
             var embed = new EmbedBuilder();
 
             embed.WithTitle((string)obj["name"]);
-            embed.AddInlineField("Power", (string)obj["power"] + "%");
-            embed.AddInlineField("Stamina", (string)obj["stamina"] + "%");
-            embed.AddInlineField("Agility", (string)obj["agility"] + "%");
+            embed.AddField("Power", (string)obj["power"] + "%", true);
+            embed.AddField("Stamina", (string)obj["stamina"] + "%", true);
+            embed.AddField("Agility", (string)obj["agility"] + "%", true);
             foreach (var skill in obj["skills"])
             {
                 string info = $"{(string)skill["action"]} | SP = {(int)skill["skillPoint"]} | Range = {(string)skill["pourcentage"]}";

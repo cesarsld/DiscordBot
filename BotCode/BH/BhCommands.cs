@@ -53,7 +53,7 @@ namespace DiscordBot.BH
 
                         image = new Image(new MemoryStream(data, 0, data.Length));
 
-                        await Context.Channel.SendMessageAsync("", false, DataFetcher.GetFamData(obj), null);
+                        await Context.Channel.SendMessageAsync("", false, DataFetcher.GetFamData(obj).Build(), null);
                         await Context.Channel.SendFileAsync(image.Stream, "fam.png");
                     }
                 }
@@ -69,7 +69,7 @@ namespace DiscordBot.BH
 
                         image = new Image(new MemoryStream(data, 0, data.Length));
 
-                        await Context.Channel.SendMessageAsync("", false, DataFetcher.GetFusionData(obj), null);
+                        await Context.Channel.SendMessageAsync("", false, DataFetcher.GetFusionData(obj).Build(), null);
                         await Context.Channel.SendFileAsync(image.Stream, "fam.png");
                     }
                 }
@@ -99,7 +99,7 @@ namespace DiscordBot.BH
 
                         image = new Image(new MemoryStream(data, 0, data.Length));
 
-                        await Context.Channel.SendMessageAsync("", false, DataFetcher.GetFamData(obj), null);
+                        await Context.Channel.SendMessageAsync("", false, DataFetcher.GetFamData(obj).Build(), null);
                         await Context.Channel.SendFileAsync(image.Stream, "mount.png");
                     }
                 }

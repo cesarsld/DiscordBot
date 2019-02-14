@@ -146,7 +146,7 @@ namespace DiscordBot
                     guildName = context.Guild?.Name ?? "NULL";
                     Logger.LogInternal($"HandleCommandAsync G: {guildName} C: {channelName} User: {userName}  Msg: {msg}");
 
-                    var result = await _commands.ExecuteAsync(context, argPos);
+                    var result = await _commands.ExecuteAsync(context, argPos, null);
 
                     if (!result.IsSuccess) // If execution failed, reply with the error message.
                     {
@@ -239,7 +239,7 @@ namespace DiscordBot
         public async Task RunAsync()
         {
             Logger.LogInternal("Registering commands.");
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
 
             Logger.LogInternal("Connecting to the server.");
             await DiscordClient.LoginAsync(TokenType.Bot, DiscordKeyGetter.GetKey());

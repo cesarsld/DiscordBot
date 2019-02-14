@@ -93,7 +93,7 @@ namespace DiscordBot.Axie
                             if (unixTime > trigger.triggerTime)
                             {
                                 hasTriggered = true;
-                                _ = Bot.GetUser(sub.GetId()).SendMessageAsync("", false, trigger.GetTriggerMessage());
+                                _ = Bot.GetUser(sub.GetId()).SendMessageAsync("", false, trigger.GetTriggerMessage().Build());
                                 triggersToRemove.Add(trigger);
                             }
                         }

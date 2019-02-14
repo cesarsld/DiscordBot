@@ -1471,9 +1471,9 @@ namespace DiscordBot.Axie.Web3Axie
 
             if (axieData.stage == 4)
             {
-                if (price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
+                if (price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price).Build());
             }
-            else if(price >= 1) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
+            else if(price >= 1) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price).Build());
             //else if (price >= 1 || axieData.hasMystic) await msgChannel.SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
 
         }
@@ -1511,11 +1511,11 @@ namespace DiscordBot.Axie.Web3Axie
                     color = Color.Purple;
                     break;
             }
-            embed.AddInlineField(chest + " chests count", count);
+            embed.AddField(chest + " chests count", count, true);
             embed.WithColor(color);
             embed.WithUrl("https://land.axieinfinity.com/purchase");
             embed.WithThumbnailUrl(chestImage);
-            await msgChannel.SendMessageAsync("", embed: embed);
+            await msgChannel.SendMessageAsync("", embed: embed.Build());
         }
 
         private static async Task PostLabSaleToBotCommand(int count, float price)
@@ -1559,7 +1559,7 @@ namespace DiscordBot.Axie.Web3Axie
                         if (trigger != null)
                         {
                             hasTriggered = true;
-                            await Bot.GetUser(user.GetId()).SendMessageAsync("", false, trigger.GetMissedTriggerMessage());
+                            await Bot.GetUser(user.GetId()).SendMessageAsync("", false, trigger.GetMissedTriggerMessage().Build());
                             marketService.RemoveTrigger(trigger);
                             await Task.Delay(5000);
                         }
@@ -1592,7 +1592,7 @@ namespace DiscordBot.Axie.Web3Axie
                         {
                             if (filter.Match(axieData, price))
                             {
-                                await Bot.GetUser(user.GetId()).SendMessageAsync("", embed: await filter.GetTriggerMessage(axieID, price));
+                                await Bot.GetUser(user.GetId()).SendMessageAsync("", embed: (await filter.GetTriggerMessage(axieID, price)).Build());
                             }
                         }
                     }
@@ -1622,7 +1622,7 @@ namespace DiscordBot.Axie.Web3Axie
                         {
                             if (await AxieHolderListHandler.DoesUserHaveAddress(user.GetId(), address))
                             {
-                                await Bot.GetUser(user.GetId()).SendMessageAsync("", false, axieData.EmbedAxieSaleData(price));
+                                await Bot.GetUser(user.GetId()).SendMessageAsync("", false, axieData.EmbedAxieSaleData(price).Build());
                             }
                         }
                     }
@@ -1641,7 +1641,7 @@ namespace DiscordBot.Axie.Web3Axie
                     var message = await marketService.IsFilterMatch(axie, price);
                     if (message != null)
                     {
-                        await Bot.GetUser(user.GetId()).SendMessageAsync("", embed: message);
+                        await Bot.GetUser(user.GetId()).SendMessageAsync("", embed: message.Build());
                     }
                 }
             }

@@ -107,6 +107,7 @@ namespace DiscordBot.Axie.Breeding
             }
             var axieList = predisposedAxieList.Values.ToList();
             var breedMatchList = new List<PureBreedMatch>();
+            Console.WriteLine("\nStarting matching : ");
             while (axieList.Count > 1)
             {
                 var axieA = axieList[0];
@@ -209,9 +210,10 @@ namespace DiscordBot.Axie.Breeding
             var bytes = gene256.ToByteArray();
             //var idx = bytes.Length - 1;
             var idx = 31;
-
+            if (bytes.Length < 32) idx = bytes.Length - 1;
+            if (bytes.Length >= 33) Console.WriteLine("33 elements in binary byte array!");
             // Create a StringBuilder having appropriate capacity.
-            var base2 = new StringBuilder(bytes.Length * 8);
+            var base2 = new StringBuilder(32 * 8);
 
             // Convert first byte to binary.
             var binary = Convert.ToString(bytes[idx], 2).PadLeft(8, '0');

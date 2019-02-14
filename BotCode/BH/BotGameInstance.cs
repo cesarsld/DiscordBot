@@ -187,46 +187,46 @@ namespace DiscordBot
             return true;
         }
 
-        protected void CheckReactionUsers(IUserMessage gameMessage, Dictionary<string, string> newPlayersNickNameLookup)
-        {
-            int eventReactionsCount = newPlayersNickNameLookup.Count;
-            int badGetReactions = 0;
-            int addedGetReactions = 0;
-            int existingGetReactions = 0;
-            int getReactionsCount = 0;
-            var result = gameMessage.GetReactionUsersAsync(ReactionToUse, DiscordConfig.MaxUsersPerBatch).GetAwaiter().GetResult();
-            if (result != null)
-            {
-                Dictionary<string, string> playersUserNameLookup = new Dictionary<string, string>();
-                foreach (KeyValuePair<string, string> keyValuePair in newPlayersNickNameLookup)
-                {
-                    playersUserNameLookup[keyValuePair.Value] = keyValuePair.Key;
-                }
+        //protected void CheckReactionUsers(IUserMessage gameMessage, Dictionary<string, string> newPlayersNickNameLookup)
+        //{
+        //    int eventReactionsCount = newPlayersNickNameLookup.Count;
+        //    int badGetReactions = 0;
+        //    int addedGetReactions = 0;
+        //    int existingGetReactions = 0;
+        //    int getReactionsCount = 0;
+        //    var result = gameMessage.GetReactionUsersAsync(ReactionToUse, DiscordConfig.MaxUsersPerBatch).GetAwaiter().GetResult();
+        //    if (result != null)
+        //    {
+        //        Dictionary<string, string> playersUserNameLookup = new Dictionary<string, string>();
+        //        foreach (KeyValuePair<string, string> keyValuePair in newPlayersNickNameLookup)
+        //        {
+        //            playersUserNameLookup[keyValuePair.Value] = keyValuePair.Key;
+        //        }
 
-                getReactionsCount = result.Count;
-                foreach (IUser user in result)
-                {
-                    if (playersUserNameLookup.ContainsKey(user.Username) == false)
-                    {
-                        SocketGuildUser userLookup = _channel.GetUserAsync(user.Id).GetAwaiter().GetResult() as SocketGuildUser;
-                        if (userLookup != null)
-                        {
-                            newPlayersNickNameLookup[userLookup.Nickname ?? userLookup.Username] = userLookup.Username;
-                            addedGetReactions++;
-                        }
-                        else
-                        {
-                            badGetReactions++;
-                        }
-                    }
-                    else
-                    {
-                        existingGetReactions++;
-                    }
-                }
-            }
-            Logger.Log($"RunGame - GetReactionsReturned: {getReactionsCount} EventReactions: {eventReactionsCount} BadUsers: {badGetReactions} AddedUsers: {addedGetReactions} ExistingUsers: {existingGetReactions} TotalPlayers: {newPlayersNickNameLookup.Count}");
-        }
+        //        getReactionsCount = result.Count;
+        //        foreach (IUser user in result)
+        //        {
+        //            if (playersUserNameLookup.ContainsKey(user.Username) == false)
+        //            {
+        //                SocketGuildUser userLookup = _channel.GetUserAsync(user.Id).GetAwaiter().GetResult() as SocketGuildUser;
+        //                if (userLookup != null)
+        //                {
+        //                    newPlayersNickNameLookup[userLookup.Nickname ?? userLookup.Username] = userLookup.Username;
+        //                    addedGetReactions++;
+        //                }
+        //                else
+        //                {
+        //                    badGetReactions++;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                existingGetReactions++;
+        //            }
+        //        }
+        //    }
+        //    Logger.Log($"RunGame - GetReactionsReturned: {getReactionsCount} EventReactions: {eventReactionsCount} BadUsers: {badGetReactions} AddedUsers: {addedGetReactions} ExistingUsers: {existingGetReactions} TotalPlayers: {newPlayersNickNameLookup.Count}");
+        //}
 
         protected virtual string GetRunGameMessage(string bhgRoleMention, string userName, int maxUsers, int maxMinutesToWait, bool startWhenMaxUsers)
         {

@@ -28,7 +28,7 @@ namespace DiscordBot.Axie.TournamentTool
                 embed.AddField($"Team {i + 1}", "---------------");
                 for (int j = 0; j < 3; j++)
                 {
-                    embed.AddInlineField($"Axie #{entityArray[j + (3 * i)].id}", entityArray[j + (3 * i)].GetRatings() + entityArray[j + (3 * i)].GetStats() + entityArray[j + (3 * i)].GetMoveset());
+                    embed.AddField($"Axie #{entityArray[j + (3 * i)].id}", entityArray[j + (3 * i)].GetRatings() + entityArray[j + (3 * i)].GetStats() + entityArray[j + (3 * i)].GetMoveset(), true);
                 }
             }
             embed.WithColor(Discord.Color.Red);
@@ -94,12 +94,12 @@ namespace DiscordBot.Axie.TournamentTool
                 embed.AddField($"Team {i + 1}", "---------------");
                 for (int j = 0; j < 3; j++)
                 {
-                    embed.AddInlineField($"Axie #{entityArray[j + (3 * i)].id}", $"Damage done : {entityArray[j + (3 * i)].GetDamageDealt()}\n"+
+                    embed.AddField($"Axie #{entityArray[j + (3 * i)].id}", $"Damage done : {entityArray[j + (3 * i)].GetDamageDealt()}\n"+
                                                                                  $"Damage taken : {entityArray[j + (3 * i)].GetDamageTaken()}\n"+
                                                                                  $"Poison damage taken : {entityArray[j + (3 * i)].GetPoisonDamageDealt()}\n"+
                                                                                  $"Healing received : {entityArray[j + (3 * i)].GetHealingReceived()}\n"+
                                                                                  $"Crits done : {entityArray[j + (3 * i)].GetCrits()}\n"+
-                                                                                 $"Highest crit : {entityArray[j + (3 * i)].GetHighestCrit()}\n");
+                                                                                 $"Highest crit : {entityArray[j + (3 * i)].GetHighestCrit()}\n", true);
                 }
             }
             embed.WithColor(Discord.Color.Red);

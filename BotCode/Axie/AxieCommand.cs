@@ -314,7 +314,7 @@ namespace DiscordBot
                 axieData.id = index;
 
                 if (axieData.stage <= 2) await Context.Channel.SendMessageAsync("Axie is still an egg! I can't check what it's going to be >:O ");
-                else await Context.Channel.SendMessageAsync("", false, axieData.EmbedAxieData(extra));
+                else await Context.Channel.SendMessageAsync("", false, axieData.EmbedAxieData(extra).Build());
             }
         }
 
@@ -326,7 +326,7 @@ namespace DiscordBot
             {
                 AxieObject data = await AxieObject.GetAxieFromApi(index);
                 data.id = index;
-                await Context.Channel.SendMessageAsync("", false, data.EmbedBaseData(true));
+                await Context.Channel.SendMessageAsync("", false, data.EmbedBaseData(true).Build());
 
             }
         }
@@ -348,13 +348,13 @@ namespace DiscordBot
         [Alias("pk")]
         public async Task FindAxieQQ([Remainder]string data)
         {
-            if (IsGeneral(Context) || IsBotCommand(Context) || IsBreeding(Context) || IsArena(Context))
+            if (IsGeneral(Context) || IsArena(Context))
             {
                 try
                 {
                     var id = Convert.ToInt32(data);
                     AxieObject axie = await AxieObject.GetAxieFromApi(id);
-                    await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false));
+                    await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false).Build());
 
                 }
                 catch
@@ -365,11 +365,32 @@ namespace DiscordBot
                     if (axieMap != null)
                     {
                         AxieObject axie = await AxieObject.GetAxieFromApi(axieMap.id);
-                        await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false));
+                        await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false).Build());
 
                     }
                 }
+            }
+            else if (IsBotCommand(Context) || IsBreeding(Context))
+            {
+                try
+                {
+                    var id = Convert.ToInt32(data);
+                    AxieObject axie = await AxieObject.GetAxieFromApi(id);
+                    await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseDataLarge(false).Build());
 
+                }
+                catch
+                {
+                    var collec = DatabaseConnection.GetDb().GetCollection<AxieMapping>("IdNameMapping");
+                    //var axieMap = (await collec.FindAsync(a => a.name.ToLower() == data.ToLower())).ToList().FirstOrDefault();
+                    var axieMap = (await collec.FindAsync(a => a.name.ToLower().Contains(data.ToLower()))).ToList().FirstOrDefault();
+                    if (axieMap != null)
+                    {
+                        AxieObject axie = await AxieObject.GetAxieFromApi(axieMap.id);
+                        await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseDataLarge(false).Build());
+
+                    }
+                }
             }
         }
 
@@ -384,7 +405,7 @@ namespace DiscordBot
                 {
                     AxieObject data = await AxieObject.GetAxieFromApi(index);
                     data.id = index;
-                    await Context.Channel.SendMessageAsync("", false, data.EmbedBreedData(Convert.ToInt32(web3Data.numBreeding.ToString())));
+                    await Context.Channel.SendMessageAsync("", false, data.EmbedBreedData(Convert.ToInt32(web3Data.numBreeding.ToString())).Build());
                 }
                 else await Context.Message.AddReactionAsync(new Emoji("❌"));
             }
@@ -522,7 +543,7 @@ namespace DiscordBot
             {
                 if (filter.Match(await AxieObject.GetAxieFromApi(axieId), 50))
                 {
-                    await Context.Channel.SendMessageAsync("", embed: await filter.GetTriggerMessage(axieId, new System.Numerics.BigInteger(1)));
+                    await Context.Channel.SendMessageAsync("", embed: (await filter.GetTriggerMessage(axieId, new System.Numerics.BigInteger(1))).Build());
                 }
             }
         }
@@ -532,7 +553,7 @@ namespace DiscordBot
         public async Task ShowFilters()
         {
             var auctionService = (await SubscriptionServicesHandler.FindService(ServiceEnum.AuctionWatch, Context.Message.Author.Id)) as AuctionWatchService;
-            await Context.Message.Author.SendMessageAsync("", embed: auctionService.GetFilterMesage());
+            await Context.Message.Author.SendMessageAsync("", embed: auctionService.GetFilterMesage().Build());
         }
 
 
@@ -555,7 +576,7 @@ namespace DiscordBot
             if (IsSuggestion(Context) || IsBotCommand(Context))
             {
                 var qol = new QolListHandler("QoLList.txt");
-                await Context.Channel.SendMessageAsync("", embed: await qol.GetEmbedQoLData());
+                await Context.Channel.SendMessageAsync("", embed: (await qol.GetEmbedQoLData()).Build());
             }
         }
 
@@ -564,7 +585,7 @@ namespace DiscordBot
         {
             if ((IsSuggestion(Context) || IsBotCommand(Context)) && IsCouncilOrHigherMember())
             {
-                await Context.Channel.SendMessageAsync("", embed: QolListHandler.GetTypeEmbed());
+                await Context.Channel.SendMessageAsync("", embed: QolListHandler.GetTypeEmbed().Build());
             }
         }
 
@@ -635,7 +656,7 @@ namespace DiscordBot
                     var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
                     var axieData = await AxieObject.GetAxieFromApi(id);
                     axieData.id = id;
-                    await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
+                    await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate).Build());
 
                 }
                 catch
@@ -652,7 +673,7 @@ namespace DiscordBot
                         var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
                         var axieData = await AxieObject.GetAxieFromApi(axieMap.id);
                         axieData.id = axieMap.id;
-                        await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate));
+                        await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrate(axieWinrate).Build());
 
                     }
                 }
@@ -673,7 +694,7 @@ namespace DiscordBot
                 var axieWinrate = BsonSerializer.Deserialize<AxieWinrate>(doc);
                 var axieData = await AxieObject.GetAxieFromApi(id);
                 axieData.id = id;
-                await Context.Channel.SendMessageAsync("", embed: axieData.EmbedGetQuickBattleLogs(axieWinrate));
+                await Context.Channel.SendMessageAsync("", embed: axieData.EmbedGetQuickBattleLogs(axieWinrate).Build());
             }
         }
 
@@ -705,7 +726,7 @@ namespace DiscordBot
                     var collection = db.GetCollection<AxieWinrate>("AxieWinrate");
                     var dbList = await collection.FindAsync(a => a.mysticCount == mysticCount && a.lastBattleDate > time - 345600);
                     var axieList = dbList.ToList().Where(a => (a.win + a.loss) >= 100).OrderByDescending(a => a.winrate).ToList();
-                    await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoard(axieList, mysticCount));
+                    await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoard(axieList, mysticCount).Build());
                 }
                 else await Context.Channel.SendMessageAsync($"The battle database is currently being updated. Please try again later. \nData fetched from API : **{WinrateCollector.apiPerc}%** \nData synced to DB : **{WinrateCollector.dbPerc}%**");
             }
@@ -724,7 +745,7 @@ namespace DiscordBot
                     var collection = db.GetCollection<AxieWinrate>("AxieWinrate");
                     var dbList = await collection.FindAsync(a => a.mysticCount == mysticCount && a.lastBattleDate > time - 345600);
                     var axieList = dbList.ToList().Where(a => (a.battleHistory.Length) >= 90).OrderByDescending(a => a.GetRecentWins()).ToList();
-                    await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoardLatest(axieList, mysticCount));
+                    await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoardLatest(axieList, mysticCount).Build());
                 }
                 else await Context.Channel.SendMessageAsync($"The battle database is currently being updated. Please try again later. \nData fetched from API : **{WinrateCollector.apiPerc}%** \nData synced to DB : **{WinrateCollector.dbPerc}%**");
             }
@@ -744,7 +765,7 @@ namespace DiscordBot
                 axieData.id = id;
                 if (length >= 100) length = 100;
                 if (length < 1) length = 1;
-                await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length));
+                await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length).Build());
 
             }
         }
@@ -791,6 +812,7 @@ namespace DiscordBot
         [Command("genesis"), Alias("gen")]
         public async Task GetGenesisCount()
         {
+            await ReplyAsync($"Fetching result. Please wait as this might take a few minutes :)");
             var total = 0;
             var list = await DbFetch.FetchUniqueLandHolders();
             foreach (var add in list)
@@ -810,11 +832,11 @@ namespace DiscordBot
                 var embed = new EmbedBuilder();
                 embed.WithTitle("Land Distribution");
                 embed.WithDescription($"Owner : {address}");
-                embed.AddInlineField("Savannah Count", dist[0]);
-                embed.AddInlineField("Forest Count", dist[1]);
-                embed.AddInlineField("Arctic Count", dist[2]);
-                embed.AddInlineField("Mystic Count", dist[3]);
-                embed.AddInlineField("Genesis Count", dist[4]);
+                embed.AddField("Savannah Count", dist[0], true);
+                embed.AddField("Forest Count", dist[1], true);
+                embed.AddField("Arctic Count", dist[2], true);
+                embed.AddField("Mystic Count", dist[3], true);
+                embed.AddField("Genesis Count", dist[4], true);
                 embed.WithColor(Color.Blue);
                 await ReplyAsync($"", embed: embed.Build());
             }
@@ -830,10 +852,10 @@ namespace DiscordBot
                 var embed = new EmbedBuilder();
                 embed.WithTitle("Item Distribution");
                 embed.WithDescription($"Owner : {address}");
-                embed.AddInlineField("Common items", dist[0]);
-                embed.AddInlineField("Rare items", dist[1]);
-                embed.AddInlineField("Epic items", dist[2]);
-                embed.AddInlineField("Mystic items", dist[3]);
+                embed.AddField("Common items", dist[0], true);
+                embed.AddField("Rare items", dist[1], true);
+                embed.AddField("Epic items", dist[2], true);
+                embed.AddField("Mystic items", dist[3], true);
                 embed.WithColor(Color.Blue);
                 await ReplyAsync($"", embed: embed.Build());
             }
@@ -856,7 +878,7 @@ namespace DiscordBot
             }
             JObject axieJson = JObject.Parse(json);
             JObject script = JObject.Parse((string)axieJson["script"]);
-            await ReplyAsync("", embed: TournamentUtility.GetPreBattleData(script));
+            await ReplyAsync("", embed: TournamentUtility.GetPreBattleData(script).Build());
         }
 
         [Command("PostBattle"), Alias("post")]
@@ -869,7 +891,7 @@ namespace DiscordBot
             }
             JObject axieJson = JObject.Parse(json);
             JObject script = JObject.Parse((string)axieJson["script"]);
-            await ReplyAsync("", embed: TournamentUtility.GetPostBattleData(script));
+            await ReplyAsync("", embed: TournamentUtility.GetPostBattleData(script).Build());
         }
 
         #endregion

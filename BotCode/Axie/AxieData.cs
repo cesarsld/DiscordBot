@@ -76,20 +76,20 @@ namespace DiscordBot
             var embed = new EmbedBuilder();
             embed.WithTitle(name);
 
-            embed.AddInlineField("Class", Class.First().ToString().ToUpper() + Class.Substring(1) + $" ({pureness}/6)");
-            embed.AddInlineField("Title", title == null ? "None" : title);
-            embed.AddInlineField("Exp", exp + $" | Pending exp : {pendingExp}");
-            embed.AddInlineField("Level", level);
-            embed.AddInlineField("HP", $" ({stats.hp})".PadLeft(5 + stats.hp / 2, '|'));
-            embed.AddInlineField("Skill", $" ({stats.skill})".PadLeft(5 + stats.skill / 2, '|'));
-            embed.AddInlineField("Speed", $" ({stats.speed})".PadLeft(5 + stats.speed / 2, '|'));
+            embed.AddField("Class", Class.First().ToString().ToUpper() + Class.Substring(1) + $" ({pureness}/6)", true);
+            embed.AddField("Title", title == null ? "None" : title, true);
+            embed.AddField("Exp", exp + $" | Pending exp : {pendingExp}", true);
+            embed.AddField("Level", level, true);
+            embed.AddField("HP", $" ({stats.hp})".PadLeft(5 + stats.hp / 2, '|'), true);
+            embed.AddField("Skill", $" ({stats.skill})".PadLeft(5 + stats.skill / 2, '|'), true);
+            embed.AddField("Speed", $" ({stats.speed})".PadLeft(5 + stats.speed / 2, '|'), true);
 
-            embed.AddInlineField("Morale", $" ({stats.morale})".PadLeft(5 + stats.morale / 2, '|'));
+            embed.AddField("Morale", $" ({stats.morale})".PadLeft(5 + stats.morale / 2, '|'), true);
             if (extra != null && extra == "m")
             {
                 embed.WithDescription("Disclaimer : DPS and Tank ratings are not official nor endorsed by the Axie team.");
-                embed.AddInlineField("DPS Score", (int)Math.Floor(GetDPR() / GetMaxDPR() * 100));
-                embed.AddInlineField("Tank Score", GetTNKScore());
+                embed.AddField("DPS Score", (int)Math.Floor(GetDPR() / GetMaxDPR() * 100), true);
+                embed.AddField("Tank Score", GetTNKScore(), true);
             }
             embed.WithThumbnailUrl(imageUrl);
             embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
@@ -133,7 +133,7 @@ namespace DiscordBot
             var embed = new EmbedBuilder();
             embed.WithTitle(name);
             embed.WithDescription("Has been sold!");
-            embed.AddInlineField("Price", price.ToString() + " ether");
+            embed.AddField("Price", price.ToString() + " ether", true);
             Color color = Color.Default;
             switch (Class)
             {
@@ -227,6 +227,62 @@ namespace DiscordBot
             embed.WithColor(color);
             return embed;
         }
+        public EmbedBuilder EmbedBaseDataLarge(bool expAllowed)
+        {
+            string json = "";
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                try
+                {
+                    json = wc.DownloadString("https://axieinfinity.com/api/axies/" + id.ToString()); //https://axieinfinity.com/api/axies/
+                }
+
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+            JObject axieJson = JObject.Parse(json);
+            oldjsonData = axieJson;
+            var embed = new EmbedBuilder();
+            embed.WithTitle($"Axie #{id}");
+            embed.WithImageUrl(GetImageUrl());
+            embed.WithUrl("https://axieinfinity.com/axie/" + id.ToString());
+            Color color = Color.Default;
+            switch (Class)
+            {
+                case "plant":
+                    color = Color.Green;
+                    break;
+                case "beast":
+                    color = Color.Gold;
+                    break;
+                case "aquatic":
+                    color = Color.Blue;
+                    break;
+                case "bug":
+                    color = Color.Red;
+                    break;
+                case "bird":
+                    color = new Color(255, 182, 193);
+                    break;
+                case "reptile":
+                    color = Color.Magenta;
+                    break;
+                case "hidden_1":
+                    color = new Color(224, 209, 216);
+                    break;
+                case "hidden_2":
+                    color = new Color(153, 204, 255);
+                    break;
+                case "hidden_3":
+                    color = new Color(0, 102, 153);
+                    break;
+            }
+            embed.WithColor(color);
+            return embed;
+        }
+
         public EmbedBuilder EmbedWinrate(AxieWinrate winRate)
         {
             var embed = new EmbedBuilder();
@@ -290,8 +346,8 @@ namespace DiscordBot
             var embed = new EmbedBuilder();
             embed.WithTitle($"Axie #{id}");
             embed.WithDescription("Battle logs");
-            embed.AddInlineField("Last won battles", sbWin);
-            embed.AddInlineField("Last lost battles", sbLoss);
+            embed.AddField("Last won battles", sbWin, true);
+            embed.AddField("Last lost battles", sbLoss, true);
             Color color = Color.Default;
             switch (Class)
             {
