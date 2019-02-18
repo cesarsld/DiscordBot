@@ -432,6 +432,30 @@ namespace DiscordBot
                 await Context.Channel.SendMessageAsync($"The chance to breed a pure axie with axies #{id1} and #{id2} is = {chance}%");
             }
         }
+
+        [Command("convert")]
+        public async Task ConvertEthLuna(float value, string currency)
+        {
+            var data = "";
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                data = await wc.DownloadStringTaskAsync("https://api.coinmarketcap.com/v1/ticker/ethereum/?convert=USD");
+            }
+            var json = JToken.FromObject(JArray.Parse(data)[0]);
+            double ethPrice = (double)json["price_usd"];
+            var ethValueinUsd = value * ethPrice;
+            if (currency.ToLower().Contains('e'))
+            {
+                var ethValueinLuna = ethValueinUsd * 10;
+                await ReplyAsync($"{value} ETH = {ethValueinLuna.ToString("F4")} LUNA");
+            }
+            else if (currency.ToLower().Contains('l'))
+            {
+                var lunaValueisUsd = value / 10f;
+                var lunaValueInEth = lunaValueisUsd / ethPrice;
+                await ReplyAsync($"{value} LUNA = {lunaValueInEth.ToString("F4")} ETH");
+            }
+        }
         #endregion
 
         #region Lab services

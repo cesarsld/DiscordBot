@@ -71,20 +71,33 @@ namespace DiscordBot
             string imageUrl = jsonData["figure"]["static"]["idle"].ToString();
             int pureness = GetPureness();
 
+            string json = "";
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                try
+                {
+                    json = wc.DownloadString("https://axieinfinity.com/api/axies/" + id.ToString()); //https://axieinfinity.com/api/axies/
+                }
 
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+            JObject axieJson = JObject.Parse(json);
 
             var embed = new EmbedBuilder();
             embed.WithTitle(name);
 
             embed.AddField("Class", Class.First().ToString().ToUpper() + Class.Substring(1) + $" ({pureness}/6)", true);
             embed.AddField("Title", title == null ? "None" : title, true);
-            embed.AddField("Exp", exp + $" | Pending exp : {pendingExp}", true);
+            embed.AddField("Exp",$"Exp : " + axieJson["exp"] + $" | Pending exp : {pendingExp - (AxieDataGetter.GetSyncedExp(id).GetAwaiter().GetResult())}", true);
             embed.AddField("Level", level, true);
-            embed.AddField("HP", $" ({stats.hp})".PadLeft(5 + stats.hp / 2, '|'), true);
-            embed.AddField("Skill", $" ({stats.skill})".PadLeft(5 + stats.skill / 2, '|'), true);
-            embed.AddField("Speed", $" ({stats.speed})".PadLeft(5 + stats.speed / 2, '|'), true);
+            embed.AddField("HP", $" ({stats.hp})".PadLeft(5 + stats.hp / 2, 'I'), true);
+            embed.AddField("Skill", $" ({stats.skill})".PadLeft(5 + stats.skill / 2, 'I'), true);
+            embed.AddField("Speed", $" ({stats.speed})".PadLeft(5 + stats.speed / 2, 'I'), true);
 
-            embed.AddField("Morale", $" ({stats.morale})".PadLeft(5 + stats.morale / 2, '|'), true);
+            embed.AddField("Morale", $" ({stats.morale})".PadLeft(5 + stats.morale / 2, 'I'), true);
             if (extra != null && extra == "m")
             {
                 embed.WithDescription("Disclaimer : DPS and Tank ratings are not official nor endorsed by the Axie team.");
