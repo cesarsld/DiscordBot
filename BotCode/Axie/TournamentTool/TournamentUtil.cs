@@ -4,7 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DiscordBot.Axie;
+using DiscordBot.Mongo;
 using Newtonsoft.Json.Linq;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using MongoDB.Bson.Serialization;
+using Newtonsoft.Json;
 
 namespace DiscordBot.Axie.TournamentTool
 {
@@ -35,7 +40,8 @@ namespace DiscordBot.Axie.TournamentTool
             return embed;
         }
 
-        public static Discord.EmbedBuilder GetPostBattleData(JObject script)
+
+        public static PostBattleEntity[] GetPostBattleData(JObject script)
         {
             JArray fighterArray = JArray.FromObject(script["metadata"]["fighters"]);
             var entityArray = new PostBattleEntity[6];
@@ -87,9 +93,14 @@ namespace DiscordBot.Axie.TournamentTool
                     }
                 }
             }
+            return entityArray;
+        }
 
+        public static Discord.EmbedBuilder GetPostBattleDataEmbed(JObject script)
+        {
+            var entityArray = GetPostBattleData(script);
             var embed = new Discord.EmbedBuilder();
-            for (i = 0; i < 2; i++)
+            for (int i = 0; i < 2; i++)
             {
                 embed.AddField($"Team {i + 1}", "---------------");
                 for (int j = 0; j < 3; j++)
@@ -103,6 +114,97 @@ namespace DiscordBot.Axie.TournamentTool
                 }
             }
             embed.WithColor(Discord.Color.Red);
+            return embed;
+        }
+
+        public static async Task<Discord.EmbedBuilder> GetPostTourneyData()
+        {
+            var collec = DatabaseConnection.GetDb().GetCollection<BattleScript>("Tourney");
+
+            var list = (await collec.FindAsync(a => true)).ToList();
+            var formattedList = new List<PostBattleEntity[]>();
+            foreach (var match in list)
+            {
+                JObject script = JObject.Parse(match.content);
+                var entityArray = GetPostBattleData(script);
+                formattedList.Add(entityArray);
+            }
+            var _poisonUse = formattedList.Where(entity => entity.Any(axie => axie.GetPoisonDamageDealt() > 0)).Count();
+            var postTourneyData = new PostTourneyData
+            {
+                dmgPerFight = formattedList.Sum(entity => entity.Sum(axie => axie.GetDamageTaken())) / formattedList.Count,
+                poisonUse = _poisonUse,
+                poisonPerFight = formattedList.Where(entity => entity.Any(axie => axie.GetPoisonDamageDealt() > 0)).Sum(entity => entity.Sum(axie => axie.GetPoisonDamageDealt())) / _poisonUse,
+                highestCrit = formattedList.Max(entity => entity.Max(axie => axie.GetHighestCrit())),
+                amountHealed = formattedList.Sum(entity => entity.Sum(axie => axie.GetHealingReceived())) / formattedList.Count
+            };
+
+            var embed = new Discord.EmbedBuilder();
+            embed.WithTitle("Post tournament stats");
+            embed.WithColor(Discord.Color.DarkRed);
+            embed.AddField("Damage per Fight", postTourneyData.dmgPerFight);
+            embed.AddField("Highest crit", postTourneyData.highestCrit);
+            embed.AddField("Amount healed per fight", postTourneyData.amountHealed);
+            embed.AddField("Poison usage", $"{_poisonUse} battle(s) out of {formattedList.Count} battles");
+            embed.AddField("Poison damage per fight", postTourneyData.poisonPerFight);
+            return embed;
+        }
+
+        public static async Task SetNewTourney()
+        {
+            var collec = DatabaseConnection.GetDb().GetCollection<ChallengeData>("Tourney");
+            await collec.DeleteManyAsync(a => a._id > 0);
+        }
+
+        public static async Task UpdateChallengesDB()
+        {
+            var collec = DatabaseConnection.GetDb().GetCollection<ChallengeData>("ChallengeCollec");
+            var count = await collec.CountAsync(new BsonDocument());
+            var serverError = false;
+            while (!serverError)
+            {
+                var json = "";
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    try
+                    {
+                        count++;
+                        json = wc.DownloadString("https://api.axieinfinity.com/v1/battle/challenge/match/" + count.ToString());
+                    }
+                    catch (Exception ex)
+                    {
+                        serverError = true;
+                        continue;
+                    }
+                }
+                JObject axieJson = JObject.Parse(json);
+                JObject script = JObject.Parse((string)axieJson["script"]);
+                var data = new ChallengeData
+                {
+                    _id = (int)axieJson["id"],
+                    winner = (string)axieJson["winner"],
+                    loser = (string)axieJson["loser"],
+                };
+                await collec.InsertOneAsync(data);
+            }
+        }
+
+        public static async Task<Discord.EmbedBuilder> GetMatchesFromRange(string address, int a = 0, int b = 2147483647)
+        {
+            var collec = DatabaseConnection.GetDb().GetCollection<ChallengeData>("ChallengeCollec");
+
+            var list = (await collec.FindAsync(data => (data.winner.ToLower() == address.ToLower() || data.loser.ToLower() == address.ToLower())
+                                                        && data._id > a && data._id < b)).ToList();
+            var matchList = new List<int>();
+            var sb = new StringBuilder();
+            foreach (var match in list)
+            {
+                 sb.Append($"[Battle #{match._id}](https://axieinfinity.com/battle/" + match._id.ToString() + ") \n");
+            }
+            var json = JsonConvert.SerializeObject(matchList);
+            var embed = new Discord.EmbedBuilder();
+            embed.WithTitle($"Match list of {address}");
+            embed.AddField("Matches", sb);
             return embed;
         }
     }

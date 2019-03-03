@@ -884,7 +884,18 @@ namespace DiscordBot
                 await ReplyAsync($"", embed: embed.Build());
             }
         }
-
+        [Command("luna")]
+        public async Task GetLunaLanding()
+        {
+            await ReplyAsync($"Fetching result. Please wait as this might take a few minutes :)");
+            var total = 0;
+            var list = await DbFetch.FetchUniqueLandHolders();
+            foreach (var add in list)
+            {
+                total += (await GetLunaLand(add))? 1 :0;
+            }
+            await ReplyAsync($"Total Genesis plots rolled : **{total}**");
+        }
 
 
         #endregion
@@ -908,6 +919,8 @@ namespace DiscordBot
         [Command("PostBattle"), Alias("post")]
         public async Task GetPostBattleData(int battleId)
         {
+            var collec = DatabaseConnection.GetDb().GetCollection<BattleScript>("Tourney");
+
             var json = "";
             using (System.Net.WebClient wc = new System.Net.WebClient())
             {
@@ -915,7 +928,36 @@ namespace DiscordBot
             }
             JObject axieJson = JObject.Parse(json);
             JObject script = JObject.Parse((string)axieJson["script"]);
-            await ReplyAsync("", embed: TournamentUtility.GetPostBattleData(script).Build());
+            if((await collec.FindAsync(a => a._id == battleId)).FirstOrDefault() == null)
+                await collec.InsertOneAsync(new BattleScript { _id = (int)axieJson["id"], content = (string)axieJson["script"]});
+            await ReplyAsync("", embed: TournamentUtility.GetPostBattleDataEmbed(script).Build());
+        }
+
+        [Command("PostTourney"), Alias("pTour")]
+        public async Task GetPostBattleTourney()
+        {
+            await ReplyAsync("", embed: (await TournamentUtility.GetPostTourneyData()).Build());
+        }
+
+        [Command("newTourney"), Alias("nTour")]
+        public async Task SetNewTournament()
+        {
+            await TournamentUtility.SetNewTourney();
+            await Context.Message.AddReactionAsync(new Emoji("✅"));
+        }
+
+        [Command("UpdateChallenge"), Alias("UChal")]
+        public async Task UpdateChallenges()
+        {
+            await TournamentUtility.UpdateChallengesDB();
+            await Context.Message.AddReactionAsync(new Emoji("✅"));
+        }
+
+        [Command("GetChallenged"), Alias("gChal")]
+        public async Task GetChallenes(string address, int a = 0, int b = 2147483647)
+        {
+            await ReplyAsync("", embed: (await TournamentUtility.GetMatchesFromRange(address, a , b)).Build());
+            
         }
 
         #endregion
@@ -1167,7 +1209,55 @@ namespace DiscordBot
             }
             return dist;
         }
+        public async Task<bool> GetLunaLand(string add)
+        {
+            var json = "";
+            var rarityList = new List<string>[4];
+            for (int i = 0; i < 4; i++)
+            {
+                rarityList[i] = new List<string>();
+            }
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/land-api/profile/" + add + "/inventory/");
+            }
+            var jobj = JObject.Parse(json);
+            var itemArray = JArray.FromObject(jobj["items"]);
+            foreach (var entry in itemArray)
+            {
+                switch ((string)entry["rarity"])
+                {
+                    case "common":
+                        if (!rarityList[0].Contains((string)entry["id"]))
+                        {
+                            rarityList[0].Add((string)entry["id"]);
+                        }
+                        break;
+                    case "rare":
+                        if (!rarityList[1].Contains((string)entry["id"]))
+                        {
+                            rarityList[1].Add((string)entry["id"]);
+                        }
+                        break;
+                    case "epic":
+                        if (!rarityList[2].Contains((string)entry["id"]))
+                        {
+                            rarityList[2].Add((string)entry["id"]);
+                        }
+                        break;
+                    case "mystic":
+                        if (!rarityList[3].Contains((string)entry["id"]))
+                        {
+                            rarityList[3].Add((string)entry["id"]);
+                        }
+                        break;
 
+                }
+            }
+            if (rarityList[0].Count == 60 && rarityList[1].Count == 60 && rarityList[2].Count == 60 && rarityList[3].Count == 13)
+                return true;
+            else return false;
+        }
 
 
         public async Task<int[]> GetDistributionPerAdd(string add)

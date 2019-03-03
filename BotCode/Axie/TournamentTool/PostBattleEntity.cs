@@ -3,6 +3,7 @@ namespace DiscordBot.Axie.TournamentTool
 {
     public class PostBattleEntity : BattleEntity
     {
+        private int id;
         private int damageTaken;
         private int damageDealt;
 

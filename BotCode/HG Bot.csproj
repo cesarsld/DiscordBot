@@ -214,6 +214,9 @@
     <Compile Include="Axie\SubscriptionServices\MarketPlaceTriggerTypeEnum.cs" />
     <Compile Include="Axie\SubscriptionServices\SubServiceConverter.cs" />
     <Compile Include="Axie\TournamentTool\BattleEntity.cs" />
+    <Compile Include="Axie\TournamentTool\ChallengeData.cs" />
+    <Compile Include="Axie\TournamentTool\PostTourneyData.cs" />
+    <Compile Include="Axie\TournamentTool\BattleScript.cs" />
     <Compile Include="Axie\TournamentTool\TournamentUtil.cs" />
     <Compile Include="BH\BhCommands.cs" />
     <Compile Include="BH\DataFetcher.cs" />
