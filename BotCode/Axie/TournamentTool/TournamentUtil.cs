@@ -199,7 +199,27 @@ namespace DiscordBot.Axie.TournamentTool
             var sb = new StringBuilder();
             foreach (var match in list)
             {
-                 sb.Append($"[Battle #{match._id}](https://axieinfinity.com/battle/" + match._id.ToString() + ") \n");
+                 sb.Append($"[Battle #{match._id}](https://axieinfinity.com/challenge-battle/" + match._id.ToString() + ") \n");
+            }
+            var json = JsonConvert.SerializeObject(matchList);
+            var embed = new Discord.EmbedBuilder();
+            embed.WithTitle($"Match list of {address}");
+            embed.AddField("Matches", sb);
+            return embed;
+        }
+
+        public static async Task<Discord.EmbedBuilder> GetMatchesFromRange(string address, string address2, int a = 0, int b = 2147483647)
+        {
+            var collec = DatabaseConnection.GetDb().GetCollection<ChallengeData>("ChallengeCollec");
+
+            var list = (await collec.FindAsync(data => (data.winner.ToLower() == address.ToLower() || data.loser.ToLower() == address.ToLower())
+                                                        &&(data.winner.ToLower() == address2.ToLower() || data.loser.ToLower() == address2.ToLower())
+                                                        && data._id > a && data._id < b)).ToList();
+            var matchList = new List<int>();
+            var sb = new StringBuilder();
+            foreach (var match in list)
+            {
+                sb.Append($"[Battle #{match._id}](https://axieinfinity.com/challenge-battle/" + match._id.ToString() + ") \n");
             }
             var json = JsonConvert.SerializeObject(matchList);
             var embed = new Discord.EmbedBuilder();

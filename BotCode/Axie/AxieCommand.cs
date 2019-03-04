@@ -953,11 +953,18 @@ namespace DiscordBot
             await Context.Message.AddReactionAsync(new Emoji("✅"));
         }
 
-        [Command("GetChallenged"), Alias("gChal")]
+        [Command("GetChallenge"), Alias("gChal")]
         public async Task GetChallenes(string address, int a = 0, int b = 2147483647)
         {
             await ReplyAsync("", embed: (await TournamentUtility.GetMatchesFromRange(address, a , b)).Build());
             
+        }
+
+        [Command("GetChallenge"), Alias("gChal")]
+        public async Task GetChallenes(string address, string address2, int a = 0, int b = 2147483647)
+        {
+            await ReplyAsync("", embed: (await TournamentUtility.GetMatchesFromRange(address, a, b)).Build());
+
         }
 
         #endregion
