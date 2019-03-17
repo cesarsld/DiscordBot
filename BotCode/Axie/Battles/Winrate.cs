@@ -122,4 +122,25 @@ namespace DiscordBot.Axie.Battles
             winrate = (float)win / (win + loss) * 100;
         }
     }
+
+    public class AxieWinrateReduced
+    {
+        public int id;
+        public int win;
+        public int loss;
+        public float winrate;
+        public string battleHistory;
+        public int mysticCount;
+        public int lastBattleDate;
+        public string[] moves;
+
+        public AxieWinrateReduced(AxieWinrate wr)
+        {
+            id = wr.id;
+            win = wr.win;
+            loss = wr.loss;
+            winrate = wr.winrate;
+            battleHistory = wr.battleHistory;
+        }
+    }
 }

@@ -327,7 +327,7 @@ namespace DiscordBot
                 AxieObject data = await AxieObject.GetAxieFromApi(index);
                 data.id = index;
                 await Context.Channel.SendMessageAsync("", false, data.EmbedBaseData(true).Build());
-
+                await Context.Message.DeleteAsync();
             }
         }
 
@@ -355,7 +355,7 @@ namespace DiscordBot
                     var id = Convert.ToInt32(data);
                     AxieObject axie = await AxieObject.GetAxieFromApi(id);
                     await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false).Build());
-
+                    await Context.Message.DeleteAsync();
                 }
                 catch
                 {
@@ -366,7 +366,7 @@ namespace DiscordBot
                     {
                         AxieObject axie = await AxieObject.GetAxieFromApi(axieMap.id);
                         await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false).Build());
-
+                        await Context.Message.DeleteAsync();
                     }
                 }
             }
@@ -377,7 +377,7 @@ namespace DiscordBot
                     var id = Convert.ToInt32(data);
                     AxieObject axie = await AxieObject.GetAxieFromApi(id);
                     await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseDataLarge(false).Build());
-
+                    await Context.Message.DeleteAsync();
                 }
                 catch
                 {
@@ -388,7 +388,7 @@ namespace DiscordBot
                     {
                         AxieObject axie = await AxieObject.GetAxieFromApi(axieMap.id);
                         await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseDataLarge(false).Build());
-
+                        await Context.Message.DeleteAsync();
                     }
                 }
             }
@@ -406,8 +406,10 @@ namespace DiscordBot
                     AxieObject data = await AxieObject.GetAxieFromApi(index);
                     data.id = index;
                     await Context.Channel.SendMessageAsync("", false, data.EmbedBreedData(Convert.ToInt32(web3Data.numBreeding.ToString())).Build());
+                    
                 }
                 else await Context.Message.AddReactionAsync(new Emoji("❌"));
+                await Context.Message.DeleteAsync();
             }
         }
 
@@ -701,6 +703,7 @@ namespace DiscordBot
 
                     }
                 }
+                await Context.Message.DeleteAsync();
             }
         }
 
@@ -719,6 +722,7 @@ namespace DiscordBot
                 var axieData = await AxieObject.GetAxieFromApi(id);
                 axieData.id = id;
                 await Context.Channel.SendMessageAsync("", embed: axieData.EmbedGetQuickBattleLogs(axieWinrate).Build());
+                await Context.Message.DeleteAsync();
             }
         }
 
@@ -741,7 +745,7 @@ namespace DiscordBot
         [Alias("mysticlb")]
         public async Task GetMysticLeaderBoard(int mysticCount)
         {
-            if (IsArena(Context) || IsBotCommand(Context)|| Context.Message.Author.Id == 195567858133106697)
+            if (IsArena(Context) || IsBotCommand(Context) || Context.Message.Author.Id == 195567858133106697)
             {
                 if (!WinrateCollector.IsDbSyncing)
                 {
@@ -753,6 +757,7 @@ namespace DiscordBot
                     await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoard(axieList, mysticCount).Build());
                 }
                 else await Context.Channel.SendMessageAsync($"The battle database is currently being updated. Please try again later. \nData fetched from API : **{WinrateCollector.apiPerc}%** \nData synced to DB : **{WinrateCollector.dbPerc}%**");
+                await Context.Message.DeleteAsync();
             }
         }
 
@@ -772,6 +777,7 @@ namespace DiscordBot
                     await Context.Channel.SendMessageAsync("", embed: WinrateCollector.GetTop10LeaderBoardLatest(axieList, mysticCount).Build());
                 }
                 else await Context.Channel.SendMessageAsync($"The battle database is currently being updated. Please try again later. \nData fetched from API : **{WinrateCollector.apiPerc}%** \nData synced to DB : **{WinrateCollector.dbPerc}%**");
+                await Context.Message.DeleteAsync();
             }
         }
 
@@ -790,7 +796,7 @@ namespace DiscordBot
                 if (length >= 100) length = 100;
                 if (length < 1) length = 1;
                 await Context.Channel.SendMessageAsync("", embed: axieData.EmbedWinrateRecent(axieWinrate, length).Build());
-
+                await Context.Message.DeleteAsync();
             }
         }
 
@@ -844,6 +850,7 @@ namespace DiscordBot
                 total += await GetGenPerAdd(add);
             }
             await ReplyAsync($"Total Genesis plots rolled : **{total}**");
+            await Context.Message.DeleteAsync();
         }
 
         [Command("land")]
@@ -863,6 +870,7 @@ namespace DiscordBot
                 embed.AddField("Genesis Count", dist[4], true);
                 embed.WithColor(Color.Blue);
                 await ReplyAsync($"", embed: embed.Build());
+                await Context.Message.DeleteAsync();
             }
         }
 
@@ -882,6 +890,7 @@ namespace DiscordBot
                 embed.AddField("Mystic items", dist[3], true);
                 embed.WithColor(Color.Blue);
                 await ReplyAsync($"", embed: embed.Build());
+                await Context.Message.DeleteAsync();
             }
         }
         [Command("luna")]
@@ -892,9 +901,10 @@ namespace DiscordBot
             var list = await DbFetch.FetchUniqueLandHolders();
             foreach (var add in list)
             {
-                total += (await GetLunaLand(add))? 1 :0;
+                total += (await GetLunaLand(add)) ? 1 : 0;
             }
             await ReplyAsync($"Total Genesis plots rolled : **{total}**");
+            await Context.Message.DeleteAsync();
         }
 
 
@@ -928,8 +938,8 @@ namespace DiscordBot
             }
             JObject axieJson = JObject.Parse(json);
             JObject script = JObject.Parse((string)axieJson["script"]);
-            if((await collec.FindAsync(a => a._id == battleId)).FirstOrDefault() == null)
-                await collec.InsertOneAsync(new BattleScript { _id = (int)axieJson["id"], content = (string)axieJson["script"]});
+            if ((await collec.FindAsync(a => a._id == battleId)).FirstOrDefault() == null)
+                await collec.InsertOneAsync(new BattleScript { _id = (int)axieJson["id"], content = (string)axieJson["script"] });
             await ReplyAsync("", embed: TournamentUtility.GetPostBattleDataEmbed(script).Build());
         }
 
@@ -956,14 +966,14 @@ namespace DiscordBot
         [Command("GetChallenge"), Alias("gChal")]
         public async Task GetChallenes(string address, int a = 0, int b = 2147483647)
         {
-            await ReplyAsync("", embed: (await TournamentUtility.GetMatchesFromRange(address, a , b)).Build());
-            
+            await ReplyAsync("", embed: (await TournamentUtility.GetMatchesFromRange(address, a, b)).Build());
+
         }
 
         [Command("GetChallenge"), Alias("gChal")]
         public async Task GetChallenes(string address, string address2, int a = 0, int b = 2147483647)
         {
-            await ReplyAsync("", embed: (await TournamentUtility.GetMatchesFromRange(address, a, b)).Build());
+            await ReplyAsync("", embed: (await TournamentUtility.GetMatchesFromRange(address, address2, a, b)).Build());
 
         }
 
@@ -1052,7 +1062,7 @@ namespace DiscordBot
                 if (i != 0) addresses += " ";
                 addresses += addressList[i];
             }
-            
+
 
             await TaskHandler.AddTask(Context, addresses, TaskType.BreedQuery, classFilters);
             await Context.Message.AddReactionAsync(new Emoji("✅"));
@@ -1080,7 +1090,7 @@ namespace DiscordBot
         [Alias("sl")]
         public async Task GetShapeList([Remainder]string trait)
         {
-            await TaskHandler.AddTask(Context, "",TaskType.ShapeQuery, trait);
+            await TaskHandler.AddTask(Context, "", TaskType.ShapeQuery, trait);
             await Context.Message.AddReactionAsync(new Emoji("✅"));
             if (!TaskHandler.FetchingDataFromApi)
             {
@@ -1172,9 +1182,25 @@ namespace DiscordBot
         {
             var json = "";
             int gen = 0;
-            using (System.Net.WebClient wc = new System.Net.WebClient())
+            int maxTries = 10;
+            int tries = 0;
+            while (tries < maxTries)
             {
-                json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/land-api/profile/" + add + "/land");
+                try
+                {
+                    using (System.Net.WebClient wc = new System.Net.WebClient())
+                    {
+                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/land-api/profile/" + add + "/land");
+                        break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    tries++;
+                    
+                    await ReplyAsync(e.Message + $"Issue at <https://axieinfinity.com/land-api/profile/"+add+"/land>");
+                    await Task.Delay(1000);
+                }
             }
             var jobj = JArray.Parse(json);
             foreach (var entry in jobj)
@@ -1182,16 +1208,23 @@ namespace DiscordBot
                 if ((string)(entry["landType"]) == "Genesis")
                     gen++;
             }
-                return gen;
+            return gen;
         }
 
         public async Task<int[]> GetItemDistributionPerAdd(string add)
         {
             var json = "";
             var dist = new int[] { 0, 0, 0, 0, 0 };
-            using (System.Net.WebClient wc = new System.Net.WebClient())
+            try
             {
-                json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/land-api/profile/" + add + "/inventory/");
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/land-api/profile/" + add + "/inventory/");
+                }
+            }
+            catch (Exception e)
+            {
+                await ReplyAsync(e.Message);
             }
             var jobj = JObject.Parse(json);
             var itemArray = JArray.FromObject(jobj["items"]);
@@ -1270,7 +1303,7 @@ namespace DiscordBot
         public async Task<int[]> GetDistributionPerAdd(string add)
         {
             var json = "";
-            var dist = new int[] { 0, 0, 0, 0, 0};
+            var dist = new int[] { 0, 0, 0, 0, 0 };
             using (System.Net.WebClient wc = new System.Net.WebClient())
             {
                 json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/land-api/profile/" + add + "/land");

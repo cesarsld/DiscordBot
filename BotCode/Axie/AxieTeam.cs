@@ -27,6 +27,28 @@ namespace DiscordBot.Axie
 
         }
     }
+
+    public class AxieTeamReduced
+    {
+        public string name;
+        public AxieWinrateReduced[] teamMembers;
+        public AxieWinrateReduced GetAxieByIndex(int i) => teamMembers[i];
+        public AxieTeamReduced(AxieTeam team)
+        {
+            name = team.name;
+            teamMembers = new AxieWinrateReduced[3];
+            for (int i = 0; i < 3; i++)
+            {
+                teamMembers[i] = new AxieWinrateReduced(team.teamMembers[i]);
+            }
+
+        }
+
+        public void CalculateTeamWinrate()
+        {
+
+        }
+    }
 }
 
 

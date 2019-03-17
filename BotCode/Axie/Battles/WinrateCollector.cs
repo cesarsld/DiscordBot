@@ -167,7 +167,12 @@ namespace DiscordBot.Axie.Battles
                     }
                 }
             }
-            string teamData = JsonConvert.SerializeObject(teamList, Formatting.Indented);
+            var reducedList = new List<AxieTeamReduced>();
+            foreach (var team in teamList)
+            {
+                reducedList.Add(new AxieTeamReduced(team));
+            }
+            string teamData = JsonConvert.SerializeObject(reducedList, Formatting.Indented);
             using (var tw = new StreamWriter(winrateAddressPath))
             {
                 await tw.WriteAsync(teamData);

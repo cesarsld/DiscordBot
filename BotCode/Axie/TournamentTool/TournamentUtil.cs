@@ -212,8 +212,8 @@ namespace DiscordBot.Axie.TournamentTool
         {
             var collec = DatabaseConnection.GetDb().GetCollection<ChallengeData>("ChallengeCollec");
 
-            var list = (await collec.FindAsync(data => (data.winner.ToLower() == address.ToLower() || data.loser.ToLower() == address.ToLower())
-                                                        &&(data.winner.ToLower() == address2.ToLower() || data.loser.ToLower() == address2.ToLower())
+            var list = (await collec.FindAsync(data => (data.winner.ToLower() == address.ToLower()  && data.loser.ToLower() == address2.ToLower() )
+                                                    || (data.winner.ToLower() == address2.ToLower() && data.loser.ToLower() == address.ToLower()  )
                                                         && data._id > a && data._id < b)).ToList();
             var matchList = new List<int>();
             var sb = new StringBuilder();
