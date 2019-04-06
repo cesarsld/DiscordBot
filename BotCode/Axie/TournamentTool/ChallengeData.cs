@@ -11,5 +11,6 @@ namespace DiscordBot.Axie.TournamentTool
         public int _id;
         public string winner;
         public string loser;
+        public int unixTime;
     }
 }

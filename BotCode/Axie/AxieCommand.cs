@@ -343,7 +343,14 @@ namespace DiscordBot
 
         //    }
         //}
-
+        [Command("leek")]
+        public async Task Leek()
+        {
+            if (IsDev(Context))
+            {
+                Bot.stopLeek = !Bot.stopLeek;
+            }
+        }
         [Command("peek"), Summary("find an axie from API")]
         [Alias("pk")]
         public async Task FindAxieQQ([Remainder]string data)
@@ -355,7 +362,6 @@ namespace DiscordBot
                     var id = Convert.ToInt32(data);
                     AxieObject axie = await AxieObject.GetAxieFromApi(id);
                     await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false).Build());
-                    await Context.Message.DeleteAsync();
                 }
                 catch
                 {
@@ -366,9 +372,9 @@ namespace DiscordBot
                     {
                         AxieObject axie = await AxieObject.GetAxieFromApi(axieMap.id);
                         await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseData(false).Build());
-                        await Context.Message.DeleteAsync();
                     }
                 }
+                await Context.Message.DeleteAsync();
             }
             else if (IsBotCommand(Context) || IsBreeding(Context))
             {
@@ -377,7 +383,6 @@ namespace DiscordBot
                     var id = Convert.ToInt32(data);
                     AxieObject axie = await AxieObject.GetAxieFromApi(id);
                     await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseDataLarge(false).Build());
-                    await Context.Message.DeleteAsync();
                 }
                 catch
                 {
@@ -388,9 +393,9 @@ namespace DiscordBot
                     {
                         AxieObject axie = await AxieObject.GetAxieFromApi(axieMap.id);
                         await Context.Channel.SendMessageAsync("", false, axie.EmbedBaseDataLarge(false).Build());
-                        await Context.Message.DeleteAsync();
                     }
                 }
+                await Context.Message.DeleteAsync();
             }
         }
 
@@ -1038,9 +1043,11 @@ namespace DiscordBot
             string[] inputData = address.Split(' ');
             List<string> classFilters = new List<string>();
             List<string> addressList = new List<string>();
+            bool noMystic = false;
+            bool noPures = false;
             foreach (var input in inputData)
             {
-                switch (input)
+                switch (input.ToLower())
                 {
                     case "bird":
                     case "beast":
@@ -1049,6 +1056,12 @@ namespace DiscordBot
                     case "plant":
                     case "bug":
                         classFilters.Add(input);
+                        break;
+                    case "nopures":
+                        noPures = true;
+                        break;
+                    case "nomystic":
+                        noMystic = true;
                         break;
                     default:
                         addressList.Add(input);
@@ -1064,7 +1077,7 @@ namespace DiscordBot
             }
 
 
-            await TaskHandler.AddTask(Context, addresses, TaskType.BreedQuery, classFilters);
+            await TaskHandler.AddTask(Context, addresses, TaskType.BreedQuery, classFilters, noMystic, noPures);
             await Context.Message.AddReactionAsync(new Emoji("✅"));
             if (!TaskHandler.FetchingDataFromApi)
             {

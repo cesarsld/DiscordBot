@@ -27,13 +27,13 @@ namespace DiscordBot.Axie
         public static bool IsOn = false;
         public static readonly object SyncObj = new object();
         public static bool FetchingDataFromApi = false;
-        private static Queue<Tuple<IUserMessage, string, TaskType, object>> taskList = new Queue<Tuple<IUserMessage, string, TaskType, object>>();
+        private static Queue<Tuple<IUserMessage, string, TaskType, object, bool, bool>> taskList = new Queue<Tuple<IUserMessage, string, TaskType, object, bool, bool>>();
 
         public static async Task RunTasks()
         {
             while (taskList.Count != 0 || !FetchingDataFromApi)
             {
-                Tuple<IUserMessage, string, TaskType, object> query;
+                Tuple<IUserMessage, string, TaskType, object, bool, bool> query;
                 lock (SyncObj)
                 {
                     query = taskList.Dequeue();
@@ -41,7 +41,7 @@ namespace DiscordBot.Axie
                 switch(query.Item3)
                 {
                     case TaskType.BreedQuery:
-                        await PureBreeder.GetPureBreedingChancesFromAddress(query.Item2, query.Item1, query.Item4 as List<string>);
+                        await PureBreeder.GetPureBreedingChancesFromAddress(query.Item2, query.Item1, query.Item4 as List<string>, query.Item5, query.Item6);
                         break;
                     case TaskType.WinrateQuery:
                         await WinrateCollector.FetchDataFromAddress(query.Item2, query.Item1);
@@ -66,7 +66,15 @@ namespace DiscordBot.Axie
             var message = await context.Message.Author.SendMessageAsync($"Added to task queue at position #{taskList.Count + 1}. Please wait.");
             lock (SyncObj)
             {
-                taskList.Enqueue(new Tuple<IUserMessage, string, TaskType, object>(message, address, taskType, obj));
+                taskList.Enqueue(new Tuple<IUserMessage, string, TaskType, object, bool, bool>(message, address, taskType, obj, true, true));
+            }
+        }
+        public static async Task AddTask(ICommandContext context, string address, TaskType taskType, object obj, bool obj2, bool obj3)
+        {
+            var message = await context.Message.Author.SendMessageAsync($"Added to task queue at position #{taskList.Count + 1}. Please wait.");
+            lock (SyncObj)
+            {
+                taskList.Enqueue(new Tuple<IUserMessage, string, TaskType, object, bool, bool>(message, address, taskType, obj, obj2, obj3));
             }
         }
 

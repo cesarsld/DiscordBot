@@ -33,14 +33,38 @@ namespace DiscordBot
         public string title;
         public int sireId;
         public int matronId;
-        public AxiePart[] OldParts;
-        public AxieParts parts;
-        
+        public AxiePart[] parts;
+        //public AxieParts parts;
+
+        //public bool hasMystic
+        //{
+        //    get
+        //    {
+        //        return parts.ears.mystic || parts.mouth.mystic || parts.horn.mystic || parts.tail.mystic || parts.eyes.mystic || parts.back.mystic;
+        //    }
+        //}
+        //public int mysticCount
+        //{
+        //    get
+        //    {
+        //        int count = 0;
+        //        if (parts.ears.mystic) count++;
+        //        if (parts.mouth.mystic) count++;
+        //        if (parts.tail.mystic) count++;
+        //        if (parts.eyes.mystic) count++;
+        //        if (parts.back.mystic) count++;
+        //        if (parts.horn.mystic) count++;
+        //        return count;
+        //    }
+        //}
         public bool hasMystic
         {
             get
             {
-                return parts.ears.mystic || parts.mouth.mystic || parts.horn.mystic || parts.tail.mystic || parts.eyes.mystic || parts.back.mystic;
+                foreach (var part in parts)
+                    if (part.mystic)
+                        return true;
+                return false;
             }
         }
         public int mysticCount
@@ -48,16 +72,14 @@ namespace DiscordBot
             get
             {
                 int count = 0;
-                if (parts.ears.mystic) count++;
-                if (parts.mouth.mystic) count++;
-                if (parts.tail.mystic) count++;
-                if (parts.eyes.mystic) count++;
-                if (parts.back.mystic) count++;
-                if (parts.horn.mystic) count++;
+                foreach (var part in parts)
+                    if (part.mystic)
+                        count++;
+
                 return count;
             }
         }
-        public int exp;
+        public int? exp;
         public int pendingExp;
         public int level;
         public int stage;
@@ -101,7 +123,7 @@ namespace DiscordBot
             if (extra != null && extra == "m")
             {
                 embed.WithDescription("Disclaimer : DPS and Tank ratings are not official nor endorsed by the Axie team.");
-                embed.AddField("DPS Score", (int)Math.Floor(GetDPR() / GetMaxDPR() * 100), true);
+                embed.AddField("DPS Score", (int)Math.Floor(GetDPR(false) / GetMaxDPR() * 100), true);
                 embed.AddField("Tank Score", GetTNKScore(), true);
             }
             embed.WithThumbnailUrl(imageUrl);
@@ -481,30 +503,39 @@ namespace DiscordBot
         public int GetPureness()
         {
             int pureness = 0;
-            if (parts.ears.Class == Class) pureness++;
-            if (parts.tail.Class == Class) pureness++;
-            if (parts.horn.Class == Class) pureness++;
-            if (parts.back.Class == Class) pureness++;
-            if (parts.eyes.Class == Class) pureness++;
-            if (parts.mouth.Class == Class) pureness++;
+            foreach (var part in parts)
+                if (part.Class == Class)
+                    pureness++;
+            //if (parts.ears.Class == Class) pureness++;
+            //if (parts.tail.Class == Class) pureness++;
+            //if (parts.horn.Class == Class) pureness++;
+            //if (parts.back.Class == Class) pureness++;
+            //if (parts.eyes.Class == Class) pureness++;
+            //if (parts.mouth.Class == Class) pureness++;
             return pureness;
         }
-        public int GetDPR()
+        public int GetDPR(bool isMax)
         {
             int dpr = 0;
-            dpr += parts.back.moves[0].attack * parts.back.moves[0].accuracy / 100;
-            dpr += parts.mouth.moves[0].attack * parts.mouth.moves[0].accuracy / 100;
-            dpr += parts.horn.moves[0].attack * parts.horn.moves[0].accuracy / 100;
-            dpr += parts.tail.moves[0].attack * parts.tail.moves[0].accuracy / 100;
+            foreach (var part in parts)
+            {
+                if (part.type == "back" || part.type == "mouth" || part.type == "horn" || part.type == "tail")
+                    dpr += part.moves[0].attack * part.moves[0].accuracy / 100;
+            }
+            if (isMax)
+                dpr = Convert.ToInt32(dpr * (((float)100 + ((float)stats.morale / 2 - (float)33 / 4)) / 100f));
+            else
+                dpr = Convert.ToInt32(dpr * (((float)100 + ((float)stats.morale / 2 - (float)61 / 4)) / 100f));
             return dpr;
         }
         public float GetTNK()
         {
             float tnk = stats.hp;
-            tnk += parts.back.moves[0].defense;
-            tnk += parts.mouth.moves[0].defense;
-            tnk += parts.horn.moves[0].defense;
-            tnk += parts.tail.moves[0].defense;
+            foreach (var part in parts)
+            {
+                if (part.type == "back" || part.type == "mouth" || part.type == "horn" || part.type == "tail")
+                    tnk += part.moves[0].defense;
+            }
             return tnk;
         }
         public int GetTNKScore()
@@ -513,10 +544,10 @@ namespace DiscordBot
             float minTnk = GetMinTNK();
             return (int)Math.Floor((tnk - minTnk) / (GetMaxTNK() - minTnk) * 100);
         }
-        public int GetDPRScore()
+        public int GetDPRScore(bool isMax)
         {
-            int dpr = GetDPR();
-            return (int)Math.Floor(GetDPR() / GetMaxDPR() * 100);
+            int dpr = GetDPR(isMax);
+            return (int)GetDPR(isMax);
         }
 
         public static float GetMaxDPR() => 91.5f;
@@ -525,14 +556,7 @@ namespace DiscordBot
 
         public string GetImageUrl()
         {
-            try
-            {
-                return jsonData["figure"]["static"]["idle"].ToString();
-            }
-            catch (Exception e)
-            {
-                return "";
-            }
+            return "http://assets.axieinfinity.com/axies/" + id.ToString() + "/axie/axie-full.png";
         }
         public static async Task<AxieObject> GetAxieFromApi(int axieId)
         {
@@ -545,7 +569,9 @@ namespace DiscordBot
                 {
                     try
                     {
-                        json = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/ || https://api.axieinfinity.com/v1/axies/
+                        //https://axieinfinity.com/api/v2/axies/
+                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/v2/axies/" + axieId.ToString());
+                        //json = await wc.DownloadStringTaskAsync("https://api.axieinfinity.com/v1/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/ || https://api.axieinfinity.com/v1/axies/
                         hasFetched = true;
                     }
 
@@ -644,6 +670,7 @@ namespace DiscordBot
         public AxieAuction auction;
         public JObject jsonData;
 
+        public bool breedable;
 
         public bool hasMystic
         {
@@ -778,7 +805,7 @@ namespace DiscordBot
                 {
                     try
                     {
-                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/ || https://api.axieinfinity.com/v1/axies/
+                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/v2/axies/" + axieId.ToString()); //https://axieinfinity.com/api/axies/ || https://api.axieinfinity.com/v1/axies/
                         hasFetched = true;
                     }
 

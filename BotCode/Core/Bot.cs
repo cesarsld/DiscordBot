@@ -5,6 +5,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Mongo;
+using Discord.Rest;
 using System.Collections.Generic;
 
 namespace DiscordBot
@@ -18,7 +19,7 @@ namespace DiscordBot
         */
         public static string AppName = "BHungerGamesBot";
         public static string AppVersion = "1.0.1.0";
-
+        public static bool stopLeek = false;
 
         public static char CommandPrefix = '>';
 
@@ -50,7 +51,7 @@ namespace DiscordBot
             _commands = new CommandService();
             DiscordClient.Log += Logger.Log;
             DiscordClient.MessageReceived += HandleCommandAsync;
-            DiscordClient.MessageUpdated += HandleEditsAsync;
+            //DiscordClient.MessageUpdated += HandleEditsAsync;
             DiscordClient.Ready += Axie.Web3Axie.AxieDataGetter.StartService;
             var id = DiscordClient.ConnectionState;
             
@@ -129,11 +130,14 @@ namespace DiscordBot
 
                 var context = new CommandContext(DiscordClient, msg);
                 guildName = context.Guild?.Name ?? "NULL";
-
+                if ((context.Message.Author.Id == 386948687525576704 || context.Message.Author.Id == 106697) && stopLeek)
+                {
+                    await context.Message.AddReactionAsync(Emote.Parse("<:Axie_Leek:449777992760164353>"));
+                }
                 int argPos = 0;
                 if(context.Guild?.Id == 410537146672349205 /*remove 1 at the end*/ || context.Guild?.Id == 329959863545364480)
                 {
-                    await CheckIfMPFormat(msg);
+                    //await CheckIfMPFormat(msg);
                     await CheckIfBadLinks(msg, context);
                 }
                 if (msg.HasCharPrefix(CommandPrefix, ref argPos)) /* || msg.HasMentionPrefix(_client.CurrentUser, ref pos) */
@@ -232,6 +236,14 @@ namespace DiscordBot
             }
         }
 
+        public async Task SendNotificationToUser(ulong userId)
+        {
+            var restClient = new DiscordRestClient();
+            await restClient.LoginAsync(TokenType.Bot, DiscordKeyGetter.GetKey());
+            var user = await restClient.GetUserAsync(userId);
+            await user.SendMessageAsync("This is a restful test!");
+            //await restClient.LogoutAsync();
+        }
 
         /// <summary>
         /// Start the Discord client.
@@ -244,7 +256,18 @@ namespace DiscordBot
             Logger.LogInternal("Connecting to the server.");
             await DiscordClient.LoginAsync(TokenType.Bot, DiscordKeyGetter.GetKey());
             await DiscordClient.StartAsync();
-            await Task.Delay(-1);
+            //await DiscordClient.LogoutAsync();
+            var config = new DiscordRestConfig
+            {
+                LogLevel = LogSeverity.Verbose,
+            };
+            //var restSocketClient = DiscordClient.Rest;
+            // await restSocketClient.LoginAsync(TokenType.Bot, DiscordKeyGetter.GetKey());
+            //var restClient = new DiscordRestClient(config);
+            //await restClient.LoginAsync(TokenType.Bot, DiscordKeyGetter.GetKey());
+            //var user = await restClient.GetUserAsync(195567858133106697);
+            //await user.SendMessageAsync("This is a rsetful test!");
+            await Task.Delay(-1); ;
         }
     }
 }

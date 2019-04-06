@@ -121,7 +121,7 @@ namespace DiscordBot.Axie.ApiCalls
                         Console.WriteLine("Axie still egg, moving on.");
                         continue;
                     }
-                    int dpsScore = (int)Math.Floor(axieData.GetDPR() / AxieObject.GetMaxDPR() * 100);
+                    int dpsScore = (int)Math.Floor(axieData.GetDPR(true) / AxieObject.GetMaxDPR() * 100);
                     if (dpsScore == 0) dpsScore++;
                     try
                     {
@@ -273,7 +273,7 @@ namespace DiscordBot.Axie.ApiCalls
                     try
                     {
                         //var uri = new Uri("https://axieinfinity.com/api/addresses/" + address + "/axies?offset=" + (12 * axieIndex).ToString());
-                        json = await wc.DownloadStringTaskAsync("https://axieinfinity.com/api/addresses/" + address + "/axies?offset=" + (12 * axieIndex).ToString());
+                        json = await wc.DownloadStringTaskAsync("http://axieinfinity.com/api/v2/addresses/" + address + "/axies?offset=" + (12 * axieIndex).ToString());
                         safetyNet = 0;
                     }
                     catch (Exception ex)
@@ -289,24 +289,26 @@ namespace DiscordBot.Axie.ApiCalls
                     JObject addressJson = JObject.Parse(json);
                     if (!setupDone)
                     {
-                        axiePages = (int)addressJson["totalPages"];
+                        var axies = (int)addressJson["totalAxies"];
+                        axiePages = (axies / 12) + (axies % 12 == 0 ? 0 : 1);
                         setupDone = true;
                     }
                     foreach (var axie in addressJson["axies"])
                     {
                         AxieDataOld axieData = new AxieDataOld();
-                        //try
-                        //{
-                        axieData = axie.ToObject<AxieDataOld>();
-                        //}
-                        //catch (Exception e)
-                        //{ Console.WriteLine(e.Message); }
-                        axieData.jsonData = JObject.Parse(axie.ToString());
-                        if (axieData.stage <= 2)
+                        if ((int)axie["stage"] < 4)
                         {
                             Console.WriteLine("Axie still egg, moving on.");
                             continue;
                         }
+                        //try
+                        //{
+                            axieData = axie.ToObject<AxieDataOld>();
+                        //}
+                        //catch (Exception e)
+                        //{ Console.WriteLine(e.Message); }
+                        axieData.jsonData = JObject.Parse(axie.ToString());
+
                         axieList.Add(axieData);
                     }
                 }
@@ -380,7 +382,7 @@ namespace DiscordBot.Axie.ApiCalls
         {
             var axieList = new List<AxieMapping>();
             var axieCount = await GetAxieCount();
-            int axiePages = axieCount / 12 + (axieCount % 12 == 0? 0 :1 );
+            int axiePages = axieCount / 12 + (axieCount % 12 == 0 ? 0 : 1);
             int total = axiePages;
             int perc = axiePages / 100;
             while (axiePages >= 0)
@@ -410,13 +412,13 @@ namespace DiscordBot.Axie.ApiCalls
                         AxieDataOld axieData = new AxieDataOld();
                         //try
                         //{
-                            axieData = axie.ToObject<AxieDataOld>();
+                        axieData = axie.ToObject<AxieDataOld>();
                         //}
 
                         //catch (Exception e)
                         //{ Console.WriteLine(e.Message); }
                         axieData.jsonData = JObject.Parse(axie.ToString());
-                        if(axieList.Exists(obj => obj.name == (string)axie["name"]))
+                        if (axieList.Exists(obj => obj.name == (string)axie["name"]))
                             axieList.Add(new AxieMapping((int)axie["id"], (string)axie["id"]));
                         else
                             axieList.Add(new AxieMapping((int)axie["id"], (string)axie["name"]));
@@ -473,7 +475,7 @@ namespace DiscordBot.Axie.ApiCalls
                     foreach (var team in teamJson["teams"])
                     {
                         AxieTeam axieTeam = new AxieTeam();
-                        
+
                         axieTeam.name = (string)team["name"];
                         for (int i = 0; i < 3; i++)
                         {

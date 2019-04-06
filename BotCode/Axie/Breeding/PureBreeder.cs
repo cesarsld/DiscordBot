@@ -27,7 +27,7 @@ namespace DiscordBot.Axie.Breeding
             return GetChance(axieGeneData1, axieGeneData2);
         }
 
-        public static async Task GetPureBreedingChancesFromAddress(string address, IUserMessage message, List<string> classFilters = null)
+        public static async Task GetPureBreedingChancesFromAddress(string address, IUserMessage message, List<string> classFilters = null, bool noMystic = true, bool noPures = false)
         {
             string[] addresses = address.Split(' ');
             var listFromApi = new List<AxieDataOld>();
@@ -50,16 +50,21 @@ namespace DiscordBot.Axie.Breeding
             Console.WriteLine("Starting filtering : ");
             foreach (var axie in listFromApi)
             {
+                if (noMystic)
+                    if (axie.hasMystic)
+                        continue;
                 Console.Write("|");
                 if (classFilters.Count > 0)
                 {
                     if (classFilters.Contains(axie.Class))
                     {
-                        if (await axie.CanBreed())
+                        if (axie.breedable)
                         {
                             switch (axie.GetAbsolutePureness())
                             {
                                 case 6:
+                                    if (noPures)
+                                        continue;
                                     axieList_6_6.Add(axie);
                                     predisposedAxieList.Add(axie.id, axie);
                                     break;
@@ -81,7 +86,7 @@ namespace DiscordBot.Axie.Breeding
                 }
                 else
                 {
-                    if (await axie.CanBreed())
+                    if (axie.breedable)
                     {
                         switch (axie.GetAbsolutePureness())
                         {

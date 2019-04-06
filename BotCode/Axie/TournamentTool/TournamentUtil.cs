@@ -184,6 +184,7 @@ namespace DiscordBot.Axie.TournamentTool
                     _id = (int)axieJson["id"],
                     winner = (string)axieJson["winner"],
                     loser = (string)axieJson["loser"],
+                    unixTime = Convert.ToInt32(((string)axieJson["createdAt"]).Remove(((string)axieJson["createdAt"]).Length - 3, 3))
                 };
                 await collec.InsertOneAsync(data);
             }
@@ -195,11 +196,13 @@ namespace DiscordBot.Axie.TournamentTool
 
             var list = (await collec.FindAsync(data => (data.winner.ToLower() == address.ToLower() || data.loser.ToLower() == address.ToLower())
                                                         && data._id > a && data._id < b)).ToList();
+            list = list.OrderByDescending(c => c._id).ToList();
             var matchList = new List<int>();
             var sb = new StringBuilder();
             foreach (var match in list)
             {
-                 sb.Append($"[Battle #{match._id}](https://axieinfinity.com/challenge-battle/" + match._id.ToString() + ") \n");
+                sb.Append($"[Battle #{match._id}](https://axieinfinity.com/challenge-battle/" + match._id.ToString() + $") winner: {match.winner.Substring(0, 7)}\n");
+                if (sb.Length > 900) break;
             }
             var json = JsonConvert.SerializeObject(matchList);
             var embed = new Discord.EmbedBuilder();
@@ -213,13 +216,15 @@ namespace DiscordBot.Axie.TournamentTool
             var collec = DatabaseConnection.GetDb().GetCollection<ChallengeData>("ChallengeCollec");
 
             var list = (await collec.FindAsync(data => (data.winner.ToLower() == address.ToLower()  && data.loser.ToLower() == address2.ToLower() )
-                                                    || (data.winner.ToLower() == address2.ToLower() && data.loser.ToLower() == address.ToLower()  )
-                                                        && data._id > a && data._id < b)).ToList();
+                                                    || (data.winner.ToLower() == address2.ToLower() && data.loser.ToLower() == address.ToLower()  ))).ToList();
+            list = list.Where(w => w._id > a && w._id < b).ToList();
+            list = list.OrderByDescending(c => c._id).ToList();
             var matchList = new List<int>();
             var sb = new StringBuilder();
             foreach (var match in list)
             {
-                sb.Append($"[Battle #{match._id}](https://axieinfinity.com/challenge-battle/" + match._id.ToString() + ") \n");
+                sb.Append($"[Battle #{match._id}](https://axieinfinity.com/challenge-battle/" + match._id.ToString() + $") winner: {match.winner.Substring(0, 7)}\n");
+                if (sb.Length > 900) break;
             }
             var json = JsonConvert.SerializeObject(matchList);
             var embed = new Discord.EmbedBuilder();
