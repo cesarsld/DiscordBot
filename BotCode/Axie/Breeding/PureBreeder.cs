@@ -91,6 +91,8 @@ namespace DiscordBot.Axie.Breeding
                         switch (axie.GetAbsolutePureness())
                         {
                             case 6:
+                                if (noPures)
+                                    continue;
                                 axieList_6_6.Add(axie);
                                 predisposedAxieList.Add(axie.id, axie);
                                 break;

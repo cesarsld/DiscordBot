@@ -1394,7 +1394,7 @@ namespace DiscordBot.Axie.Web3Axie
                         {
                             var axie = await AxieObject.GetAxieFromApi(Convert.ToInt32(log.Event.tokenId.ToString()));
                             var price = log.Event.startingPrice;
-                            await axie.GetTrueAuctionData();
+                            //await axie.GetTrueAuctionData();
                             _ = CheckForSnipeFilters(axie, price);
                         }
                     }
